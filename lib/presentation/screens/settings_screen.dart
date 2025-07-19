@@ -1,22 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../l10n/app_localizations.dart';
+import '../../business/providers/locale_provider.dart';
 
-class SettingsScreen extends StatefulWidget {
+class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
+  ConsumerState<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _notificationsEnabled = true;
   bool _darkModeEnabled = false;
-  String _selectedLanguage = 'English';
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final currentLocale = ref.watch(localeProvider);
+    
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: Text(l10n.settingsTitle),
+        elevation: 0,
       ),
       body: ListView(
         children: [
@@ -26,7 +32,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const Divider(),
           _buildNotificationSection(),
           const Divider(),
-          _buildAppPreferencesSection(),
+          _buildAppPreferencesSection(l10n, currentLocale),
           const Divider(),
           _buildDataSection(),
           const Divider(),
@@ -141,7 +147,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildAppPreferencesSection() {
+  Widget _buildAppPreferencesSection(AppLocalizations l10n, Locale currentLocale) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -167,10 +173,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
           },
         ),
         ListTile(
-          leading: const Icon(Icons.language),
-          title: const Text('Language'),
-          subtitle: Text(_selectedLanguage),
-          trailing: const Icon(Icons.chevron_right),
+          leading: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFF69B4).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: const Icon(Icons.language_rounded, color: Color(0xFFFF69B4)),
+          ),
+          title: Text(l10n.language),
+          subtitle: Text(currentLocale.languageCode == 'ja' ? l10n.japanese : l10n.english),
+          trailing: const Icon(Icons.chevron_right, color: Color(0xFFFF69B4)),
           onTap: () {
             _showLanguageDialog();
           },
@@ -385,32 +398,67 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   void _showLanguageDialog() {
+    final l10n = AppLocalizations.of(context)!;
+    final currentLocale = ref.read(localeProvider);
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Select Language'),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFF69B4).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.language_rounded, color: Color(0xFFFF69B4)),
+            ),
+            const SizedBox(width: 12),
+            Text(l10n.language),
+          ],
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
-          children: ['English', 'Spanish', 'French', 'German', 'Japanese']
-              .map((language) => RadioListTile(
-                    title: Text(language),
-                    value: language,
-                    groupValue: _selectedLanguage,
-                    onChanged: (value) {
-                      setState(() {
-                        _selectedLanguage = value!;
-                      });
-                      Navigator.pop(context);
-                    },
-                  ))
-              .toList(),
+          children: [
+            _buildLanguageOption('English', 'en', currentLocale),
+            _buildLanguageOption('日本語', 'ja', currentLocale),
+          ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildLanguageOption(String title, String languageCode, Locale currentLocale) {
+    final isSelected = currentLocale.languageCode == languageCode;
+    
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      decoration: BoxDecoration(
+        color: isSelected ? const Color(0xFFFF69B4).withOpacity(0.1) : null,
+        borderRadius: BorderRadius.circular(12),
+        border: isSelected ? Border.all(color: const Color(0xFFFF69B4), width: 2) : null,
+      ),
+      child: ListTile(
+        title: Text(
+          title,
+          style: TextStyle(
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            color: isSelected ? const Color(0xFFFF69B4) : null,
+          ),
+        ),
+        trailing: isSelected ? const Icon(Icons.check_circle, color: Color(0xFFFF69B4)) : null,
+        onTap: () {
+          ref.read(localeProvider.notifier).setLocale(Locale(languageCode));
+          Navigator.pop(context);
+        },
       ),
     );
   }

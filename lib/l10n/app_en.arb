@@ -1,0 +1,119 @@
+{
+  "@@locale": "en",
+  "appTitle": "Calorie Checker AI",
+  "@appTitle": {
+    "description": "The title of the application"
+  },
+  "homeTitle": "Home",
+  "@homeTitle": {
+    "description": "Home screen title"
+  },
+  "cameraTitle": "Camera",
+  "@cameraTitle": {
+    "description": "Camera screen title"
+  },
+  "historyTitle": "History",
+  "@historyTitle": {
+    "description": "History screen title"
+  },
+  "statisticsTitle": "Statistics",
+  "@statisticsTitle": {
+    "description": "Statistics screen title"
+  },
+  "settingsTitle": "Settings",
+  "@settingsTitle": {
+    "description": "Settings screen title"
+  },
+  "takePicture": "Take Picture",
+  "@takePicture": {
+    "description": "Button to take a picture"
+  },
+  "gallery": "Gallery",
+  "@gallery": {
+    "description": "Button to select from gallery"
+  },
+  "analyzing": "Analyzing...",
+  "@analyzing": {
+    "description": "Text shown while analyzing image"
+  },
+  "calories": "Calories",
+  "@calories": {
+    "description": "Calories label"
+  },
+  "protein": "Protein",
+  "@protein": {
+    "description": "Protein label"
+  },
+  "carbs": "Carbs",
+  "@carbs": {
+    "description": "Carbohydrates label"
+  },
+  "fat": "Fat",
+  "@fat": {
+    "description": "Fat label"
+  },
+  "todayTotal": "Today's Total",
+  "@todayTotal": {
+    "description": "Today's total calories"
+  },
+  "weeklyAverage": "Weekly Average",
+  "@weeklyAverage": {
+    "description": "Weekly average calories"
+  },
+  "noDataAvailable": "No data available",
+  "@noDataAvailable": {
+    "description": "Message when no data is available"
+  },
+  "language": "Language",
+  "@language": {
+    "description": "Language setting"
+  },
+  "english": "English",
+  "@english": {
+    "description": "English language option"
+  },
+  "japanese": "Japanese",
+  "@japanese": {
+    "description": "Japanese language option"
+  },
+  "save": "Save",
+  "@save": {
+    "description": "Save button"
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Cancel button"
+  },
+  "delete": "Delete",
+  "@delete": {
+    "description": "Delete button"
+  },
+  "confirmDelete": "Are you sure you want to delete this item?",
+  "@confirmDelete": {
+    "description": "Confirmation message for delete"
+  },
+  "foodItem": "Food Item",
+  "@foodItem": {
+    "description": "Food item label"
+  },
+  "mealTime": "Meal Time",
+  "@mealTime": {
+    "description": "Meal time label"
+  },
+  "breakfast": "Breakfast",
+  "@breakfast": {
+    "description": "Breakfast meal"
+  },
+  "lunch": "Lunch",
+  "@lunch": {
+    "description": "Lunch meal"
+  },
+  "dinner": "Dinner",
+  "@dinner": {
+    "description": "Dinner meal"
+  },
+  "snack": "Snack",
+  "@snack": {
+    "description": "Snack meal"
+  }
+}
