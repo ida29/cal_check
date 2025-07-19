@@ -10,13 +10,13 @@ class FoodNameDisplay extends StatelessWidget {
   final TextOverflow? overflow;
 
   const FoodNameDisplay({
-    Key? key,
+    super.key,
     required this.foodName,
     this.style,
     this.showOriginal = false,
     this.maxLines,
     this.overflow,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
