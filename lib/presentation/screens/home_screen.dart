@@ -153,6 +153,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   _buildMainActionButton(),
                   const SizedBox(height: 16),
                   _buildFoodRecordButton(),
+                  const SizedBox(height: 16),
+                  _buildExerciseRecordButton(),
                   const Spacer(),
                 ],
               ),
@@ -188,7 +190,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     final randomMessage = messages[DateTime.now().millisecond % messages.length];
 
     return Positioned(
-      bottom: 120,
+      top: 80,
       right: 0,
       child: SlideTransition(
         position: _slideAnimation,
@@ -410,36 +412,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildSummaryItem(l10n.calories, '1,245', '2,000'),
-                _buildSummaryItem(l10n.protein, '45g', '60g'),
-                _buildSummaryItem(l10n.carbs, '180g', '250g'),
-                _buildSummaryItem(l10n.fat, '40g', '65g'),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.9),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Column(
-              children: [
-                LinearProgressIndicator(
-                  value: 0.62,
-                  backgroundColor: Colors.pink[100],
-                  valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFF69B4)),
-                  minHeight: 8,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '62${l10n.dailyGoalProgress}',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: const Color(0xFFFF69B4),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+                _buildSummaryItem(l10n.calories, '1,245'),
+                _buildSummaryItem(l10n.protein, '45g'),
+                _buildSummaryItem(l10n.carbs, '180g'),
+                _buildSummaryItem(l10n.fat, '40g'),
               ],
             ),
           ),
@@ -450,209 +426,115 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   }
 
   Widget _buildHealthMetricsPage(AppLocalizations l10n) {
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 20.0),
       child: Column(
         children: [
-          // BMI
-          Container(
-            padding: const EdgeInsets.all(16),
-            margin: const EdgeInsets.only(bottom: 12),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(15),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    const Icon(Icons.monitor_weight, color: Colors.white, size: 20),
-                    const SizedBox(width: 8),
-                    Text(
-                      'BMI',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
+          const SizedBox(height: 8),
+          // BMI & 水分摂取（横並び）
+          Row(
+            children: [
+              Expanded(
+                child: _buildCompactMetricCard(
+                  Icons.monitor_weight,
+                  'BMI',
+                  '22.5',
+                  '標準',
                 ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      '22.5',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      '標準',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.white70,
-                      ),
-                    ),
-                  ],
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildCompactMetricCard(
+                  Icons.water_drop,
+                  '水分',
+                  '1.8L',
+                  '/ 2.0L',
                 ),
-              ],
-            ),
-          ),
-          // 水分摂取
-          Container(
-            padding: const EdgeInsets.all(16),
-            margin: const EdgeInsets.only(bottom: 12),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(15),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    const Icon(Icons.water_drop, color: Colors.white, size: 20),
-                    const SizedBox(width: 8),
-                    Text(
-                      '水分摂取',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      '1.8L',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      '/ 2.0L',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.white70,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          // 運動時間
-          Container(
-            padding: const EdgeInsets.all(16),
-            margin: const EdgeInsets.only(bottom: 12),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(15),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    const Icon(Icons.fitness_center, color: Colors.white, size: 20),
-                    const SizedBox(width: 8),
-                    Text(
-                      '運動時間',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      '45分',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      '240kcal消費',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.white70,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          // 体重変化予測
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(15),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Row(
-                  children: [
-                    const Icon(Icons.trending_up, color: Colors.white, size: 20),
-                    const SizedBox(width: 8),
-                    Text(
-                      '体重変化予測',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      '-0.3kg',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      '今月予測',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.white70,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
+          // 運動時間 & 体重予測（横並び）
+          Row(
+            children: [
+              Expanded(
+                child: _buildCompactMetricCard(
+                  Icons.fitness_center,
+                  '運動',
+                  '45分',
+                  '240kcal',
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildCompactMetricCard(
+                  Icons.trending_up,
+                  '体重予測',
+                  '-0.3kg',
+                  '今月',
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
         ],
       ),
     );
   }
 
-  Widget _buildSummaryItem(String label, String value, String target) {
+  Widget _buildCompactMetricCard(IconData icon, String title, String value, String subtitle) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: Colors.white, size: 16),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  title,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            subtitle,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Colors.white70,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSummaryItem(String label, String value) {
     return Column(
       children: [
         Text(
           value,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+          style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
-              ),
-        ),
-        Text(
-          '/ $target',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.white70,
               ),
         ),
         const SizedBox(height: 4),
@@ -796,42 +678,74 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   }
 
   Widget _buildMainActionButton() {
-    final l10n = AppLocalizations.of(context)!;
-    
-    return Container(
-      width: double.infinity,
-      height: 60,
-      child: ElevatedButton(
-        onPressed: () {
-          Navigator.pushNamed(context, '/camera');
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFFF69B4),
-          foregroundColor: Colors.white,
-          elevation: 4,
-          shadowColor: Colors.black26,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          gradient: const LinearGradient(
+            colors: [Color(0xFFFFB6C1), Color(0xFFFF69B4)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-        ).copyWith(
-          overlayColor: MaterialStateProperty.all(Colors.white.withOpacity(0.1)),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(
-              Icons.camera_alt_rounded,
-              size: 28,
-            ),
-            const SizedBox(width: 12),
-            Text(
-              '写真で食事を記録',
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              Navigator.pushNamed(context, '/camera');
+            },
+            borderRadius: BorderRadius.circular(20),
+            hoverColor: Colors.transparent,
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Row(
+                children: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: const Icon(
+                      Icons.camera_alt_rounded,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '写真から記録',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'カメラで撮影して自動記録',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Colors.white70,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(
+                    Icons.arrow_forward_ios,
+                    color: Colors.white70,
+                    size: 16,
+                  ),
+                ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -845,7 +759,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           gradient: const LinearGradient(
-            colors: [Color(0xFF87CEEB), Color(0xFF4169E1)],
+            colors: [Color(0xFFFFB347), Color(0xFFFF8C00)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -881,7 +795,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '食べ物から記録を追加',
+                          '食べ物を選んで記録',
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -890,6 +804,80 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         const SizedBox(height: 4),
                         Text(
                           '食べ物を検索して手動で記録',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Colors.white70,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(
+                    Icons.arrow_forward_ios,
+                    color: Colors.white70,
+                    size: 16,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildExerciseRecordButton() {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          gradient: const LinearGradient(
+            colors: [Color(0xFF98FB98), Color(0xFF32CD32)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              Navigator.pushNamed(context, '/exercise');
+            },
+            borderRadius: BorderRadius.circular(20),
+            hoverColor: Colors.transparent,
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Row(
+                children: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: const Icon(
+                      Icons.fitness_center_rounded,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '運動を記録',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '運動の種類と時間を記録',
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: Colors.white70,
                           ),
