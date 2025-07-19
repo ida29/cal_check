@@ -105,7 +105,9 @@ class _CameraScreenState extends State<CameraScreen> {
           ),
         ],
       ),
-      body: Stack(
+      body: SafeArea(
+        bottom: false,
+        child: Stack(
         children: [
           if (_isInitialized && _controller != null)
             Positioned.fill(
@@ -120,7 +122,7 @@ class _CameraScreenState extends State<CameraScreen> {
             left: 0,
             right: 0,
             child: Container(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.fromLTRB(20, 20, 20, 20 + MediaQuery.of(context).padding.bottom),
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.bottomCenter,
@@ -290,6 +292,7 @@ class _CameraScreenState extends State<CameraScreen> {
             ),
           ),
         ],
+        ),
       ),
     );
   }
