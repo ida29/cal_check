@@ -222,64 +222,55 @@ class AppLocalizationsJa extends AppLocalizations {
   String get privacyPolicyIntroTitle => 'はじめに';
 
   @override
-  String get privacyPolicyIntroContent =>
-      'カロリーチェッカー AI は、お客様のプライバシーを保護することをお約束します。このプライバシーポリシーでは、モバイルアプリケーションをご利用いただく際に、お客様の個人情報をどのように収集、使用、保護するかについて説明します。';
+  String get privacyPolicyIntroContent => 'カロリーチェッカー AI は、お客様のプライバシーを保護することをお約束します。このプライバシーポリシーでは、モバイルアプリケーションをご利用いただく際に、お客様の個人情報をどのように収集、使用、保護するかについて説明します。';
 
   @override
   String get privacyPolicyDataCollectionTitle => 'データの収集';
 
   @override
-  String get privacyPolicyDataCollectionContent =>
-      '以下の情報を収集します：\n• 分析のために撮影された食品の写真\n• 食事からの栄養データ\n• 個人プロフィール情報（年齢、身長、体重、活動レベル）\n• 健康目標と好み\n• 記録した運動活動\n• 体重追跡履歴\n\nすべてのデータはお客様のデバイスにローカルに保存されます。個人データを外部サーバーにアップロードしたり保存したりすることはありません。';
+  String get privacyPolicyDataCollectionContent => '以下の情報を収集します：\n• 分析のために撮影された食品の写真\n• 食事からの栄養データ\n• 個人プロフィール情報（年齢、身長、体重、活動レベル）\n• 健康目標と好み\n• 記録した運動活動\n• 体重追跡履歴\n\nすべてのデータはお客様のデバイスにローカルに保存されます。個人データを外部サーバーにアップロードしたり保存したりすることはありません。';
 
   @override
   String get privacyPolicyDataUsageTitle => 'データの使用';
 
   @override
-  String get privacyPolicyDataUsageContent =>
-      'お客様のデータは以下の目的にのみ使用されます：\n• 食品写真を分析し、栄養情報を提供する\n• カロリー摂取量と栄養バランスを追跡する\n• 健康目標に向けた進捗を監視する\n• パーソナライズされた推奨事項を提供する\n• 食習慣に関する統計と洞察を生成する\n• 食事リマインダーを送信する（有効な場合）';
+  String get privacyPolicyDataUsageContent => 'お客様のデータは以下の目的にのみ使用されます：\n• 食品写真を分析し、栄養情報を提供する\n• カロリー摂取量と栄養バランスを追跡する\n• 健康目標に向けた進捗を監視する\n• パーソナライズされた推奨事項を提供する\n• 食習慣に関する統計と洞察を生成する\n• 食事リマインダーを送信する（有効な場合）';
 
   @override
   String get privacyPolicyDataStorageTitle => 'データの保存';
 
   @override
-  String get privacyPolicyDataStorageContent =>
-      'すべての個人データは、安全な保存方法を使用してデバイスにローカルに保存されます。食品の写真は分析のために一時的に処理され、いつでも削除できます。明示的にそのような機能を有効にしない限り、データをクラウドサービスにバックアップまたは同期することはありません。';
+  String get privacyPolicyDataStorageContent => 'すべての個人データは、安全な保存方法を使用してデバイスにローカルに保存されます。食品の写真は分析のために一時的に処理され、いつでも削除できます。明示的にそのような機能を有効にしない限り、データをクラウドサービスにバックアップまたは同期することはありません。';
 
   @override
   String get privacyPolicyDataSharingTitle => 'データの共有';
 
   @override
-  String get privacyPolicyDataSharingContent =>
-      'お客様の個人情報を第三者に販売、取引、共有することはありません。食品の写真はAIサービスを使用して処理されますが、個人を特定できる情報は送信されません。栄養分析に必要な画像データのみが処理され、これは安全に行われます。';
+  String get privacyPolicyDataSharingContent => 'お客様の個人情報を第三者に販売、取引、共有することはありません。食品の写真はAIサービスを使用して処理されますが、個人を特定できる情報は送信されません。栄養分析に必要な画像データのみが処理され、これは安全に行われます。';
 
   @override
   String get privacyPolicyUserRightsTitle => 'お客様の権利';
 
   @override
-  String get privacyPolicyUserRightsContent =>
-      'お客様には以下の権利があります：\n• 保存されているすべてのデータにアクセスする\n• 一般的な形式でデータをエクスポートする\n• いつでもデータを削除する\n• データ収集をオプトアウトする\n• データを使用する特定の機能を無効にする\n\nこれらの権利を行使するには、設定のデータ管理セクションを使用してください。';
+  String get privacyPolicyUserRightsContent => 'お客様には以下の権利があります：\n• 保存されているすべてのデータにアクセスする\n• 一般的な形式でデータをエクスポートする\n• いつでもデータを削除する\n• データ収集をオプトアウトする\n• データを使用する特定の機能を無効にする\n\nこれらの権利を行使するには、設定のデータ管理セクションを使用してください。';
 
   @override
   String get privacyPolicySecurityTitle => 'セキュリティ';
 
   @override
-  String get privacyPolicySecurityContent =>
-      '不正アクセスからデータを保護するために、業界標準のセキュリティ対策を実装しています。これには、機密データの暗号化と安全な保存方法が含まれます。ただし、電子的な保存方法は100％安全ではなく、絶対的なセキュリティを保証することはできません。';
+  String get privacyPolicySecurityContent => '不正アクセスからデータを保護するために、業界標準のセキュリティ対策を実装しています。これには、機密データの暗号化と安全な保存方法が含まれます。ただし、電子的な保存方法は100％安全ではなく、絶対的なセキュリティを保証することはできません。';
 
   @override
   String get privacyPolicyChangesTitle => 'このポリシーの変更';
 
   @override
-  String get privacyPolicyChangesContent =>
-      'このプライバシーポリシーは随時更新される場合があります。変更はアプリに反映され、重要な変更についてはお知らせします。変更後もアプリの使用を継続することで、更新されたポリシーに同意したものとみなされます。';
+  String get privacyPolicyChangesContent => 'このプライバシーポリシーは随時更新される場合があります。変更はアプリに反映され、重要な変更についてはお知らせします。変更後もアプリの使用を継続することで、更新されたポリシーに同意したものとみなされます。';
 
   @override
   String get privacyPolicyContactTitle => 'お問い合わせ';
 
   @override
-  String get privacyPolicyContactContent =>
-      'このプライバシーポリシーやデータの取り扱いに関してご質問や懸念がある場合は、アプリのヘルプ・サポートセクションからお問い合わせいただくか、ウェブサイトをご覧ください。';
+  String get privacyPolicyContactContent => 'このプライバシーポリシーやデータの取り扱いに関してご質問や懸念がある場合は、アプリのヘルプ・サポートセクションからお問い合わせいただくか、ウェブサイトをご覧ください。';
 
   @override
   String get privacyPolicyLastUpdated => '最終更新日：2025年1月';

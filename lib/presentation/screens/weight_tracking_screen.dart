@@ -125,19 +125,24 @@ class _WeightRecordTabState extends ConsumerState<_WeightRecordTab> {
               const SizedBox(height: 24),
               _buildBMIDisplay(),
               const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isSaving ? null : _saveWeight,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
+              Padding(
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).padding.bottom + 16,
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isSaving ? null : _saveWeight,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                    ),
+                    child: _isSaving
+                        ? const CircularProgressIndicator()
+                        : const Text(
+                            '記録する',
+                            style: TextStyle(fontSize: 18),
+                          ),
                   ),
-                  child: _isSaving
-                      ? const CircularProgressIndicator()
-                      : const Text(
-                          '記録する',
-                          style: TextStyle(fontSize: 18),
-                        ),
                 ),
               ),
             ],

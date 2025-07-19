@@ -76,24 +76,29 @@ class _ManagerCharacterSetupScreenState extends ConsumerState<ManagerCharacterSe
                 _buildSampleMessage(),
               ],
               const Spacer(),
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: _selectedCharacter != null ? _onConfirm : null,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.pink[400],
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28),
+              Padding(
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).padding.bottom + 16,
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: _selectedCharacter != null ? _onConfirm : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.pink[400],
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(28),
+                      ),
+                      disabledBackgroundColor: Colors.grey[300],
                     ),
-                    disabledBackgroundColor: Colors.grey[300],
-                  ),
-                  child: const Text(
-                    '決定',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                    child: const Text(
+                      '決定',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),

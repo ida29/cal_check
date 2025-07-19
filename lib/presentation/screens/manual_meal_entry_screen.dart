@@ -205,7 +205,12 @@ class _ManualMealEntryScreenState extends State<ManualMealEntryScreen> {
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                      padding: EdgeInsets.fromLTRB(
+                        16, 
+                        0, 
+                        16, 
+                        MediaQuery.of(context).padding.bottom + 16
+                      ),
                       child: ElevatedButton(
                         onPressed: _isSaving ? null : _saveMeal,
                         style: ElevatedButton.styleFrom(
