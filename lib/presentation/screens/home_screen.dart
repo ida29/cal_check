@@ -13,20 +13,62 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> 
+    with TickerProviderStateMixin {
   final PageController _pageController = PageController();
   int _currentPage = 0;
+  late AnimationController _slideController;
+  late Animation<Offset> _slideAnimation;
+  bool _showCatMessage = false;
 
   @override
   void initState() {
     super.initState();
     // 食事リマインダータイマーを開始
     ref.read(mealReminderTimerProvider);
+    
+    // にゃんこのスライドアニメーション初期化
+    _slideController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(1.0, 0.0),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(
+      parent: _slideController,
+      curve: Curves.easeOutBack,
+    ));
+    
+    // 3秒後ににゃんこを表示
+    Future.delayed(const Duration(seconds: 3), () {
+      if (mounted) {
+        final managerCharacter = ref.read(managerCharacterProvider);
+        if (managerCharacter?.type == CharacterType.cat) {
+          _showCatMessage = true;
+          _slideController.forward();
+          
+          // 4秒後に自動的に隠す
+          Future.delayed(const Duration(seconds: 4), () {
+            if (mounted && _showCatMessage) {
+              _slideController.reverse().then((_) {
+                if (mounted) {
+                  setState(() {
+                    _showCatMessage = false;
+                  });
+                }
+              });
+            }
+          });
+        }
+      }
+    });
   }
 
   @override
   void dispose() {
     _pageController.dispose();
+    _slideController.dispose();
     super.dispose();
   }
 
@@ -85,29 +127,166 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           const SizedBox(width: 8),
         ],
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _buildManagerCharacterSection(),
-              const SizedBox(height: 16),
-              _buildDailySummaryCard(),
-              const SizedBox(height: 8),
-              // スワイプヒント
-              Text(
-                '左右にスワイプして詳細を表示',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Colors.grey[600],
-                ),
-                textAlign: TextAlign.center,
+      body: Stack(
+        children: [
+          // メインコンテンツ
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _buildManagerCharacterSection(),
+                  const SizedBox(height: 16),
+                  _buildDailySummaryCard(),
+                  const SizedBox(height: 8),
+                  // スワイプヒント
+                  Text(
+                    '左右にスワイプして詳細を表示',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.grey[600],
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  _buildMainActionButton(),
+                  const SizedBox(height: 16),
+                  _buildFoodRecordButton(),
+                  const Spacer(),
+                ],
               ),
-              const SizedBox(height: 20),
-              _buildMainActionButton(),
-              const SizedBox(height: 16),
-              _buildFoodRecordButton(),
-              const Spacer(),
+            ),
+          ),
+          // にゃんこメッセージオーバーレイ
+          if (_showCatMessage) _buildCatMessageOverlay(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCatMessageOverlay() {
+    final managerCharacter = ref.watch(managerCharacterProvider);
+    if (managerCharacter?.type != CharacterType.cat) {
+      return const SizedBox.shrink();
+    }
+
+    final messages = [
+      'にゃーん！今日も食事記録頑張るにゃ〜！',
+      'おつかれさまにゃ〜！水分補給も忘れずににゃ！',
+      '運動もしてえらいにゃ〜！この調子にゃ！',
+      'バランス良く食べてるにゃ〜！素晴らしいにゃ！',
+    ];
+    
+    final randomMessage = messages[DateTime.now().millisecond % messages.length];
+
+    return Positioned(
+      top: MediaQuery.of(context).size.height * 0.35,
+      right: 0,
+      child: SlideTransition(
+        position: _slideAnimation,
+        child: Container(
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width * 0.85,
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 吹き出し
+              Container(
+                margin: const EdgeInsets.only(right: 12),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.orange.withOpacity(0.3), width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.15),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: Colors.orange[400],
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'にゃんこ',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.orange[700],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      constraints: BoxConstraints(
+                        maxWidth: MediaQuery.of(context).size.width * 0.55,
+                      ),
+                      child: Text(
+                        randomMessage,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.black87,
+                          height: 1.4,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // にゃんこキャラクター（シルエット）
+              GestureDetector(
+                onTap: () {
+                  // タップで早めに消す
+                  _slideController.reverse().then((_) {
+                    if (mounted) {
+                      setState(() {
+                        _showCatMessage = false;
+                      });
+                    }
+                  });
+                },
+                child: Container(
+                  width: 65,
+                  height: 65,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.orange[300]!, Colors.orange[400]!],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.orange.withOpacity(0.3),
+                        blurRadius: 10,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.pets,
+                    size: 35,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
             ],
           ),
         ),
