@@ -56,28 +56,6 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
               ),
               const SizedBox(height: 40),
               
-              // キャラクター表示
-              Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  color: widget.selectedCharacter == CharacterType.human 
-                      ? Colors.pink[100] 
-                      : Colors.orange[100],
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  widget.selectedCharacter == CharacterType.human 
-                      ? Icons.person 
-                      : Icons.pets,
-                  size: 60,
-                  color: widget.selectedCharacter == CharacterType.human 
-                      ? Colors.pink[300] 
-                      : Colors.orange[300],
-                ),
-              ),
-              const SizedBox(height: 40),
-              
               Text(
                 '通知の頻度',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -86,8 +64,6 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
               ),
               const SizedBox(height: 24),
               _buildNotificationLevelSelector(),
-              const SizedBox(height: 40),
-              _buildSampleMessage(),
               const SizedBox(height: 40),
               SizedBox(
                 width: double.infinity,
@@ -188,51 +164,6 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
     );
   }
 
-  Widget _buildSampleMessage() {
-    final message = ManagerCharacterMessages.getRandomMessage(
-      widget.selectedCharacter,
-      _notificationLevel,
-    );
-    
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey[300]!),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            widget.selectedCharacter == CharacterType.human ? Icons.person : Icons.pets,
-            color: widget.selectedCharacter == CharacterType.human ? Colors.pink[300] : Colors.orange[300],
-            size: 32,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '通知メッセージの例',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  message,
-                  style: const TextStyle(fontSize: 14),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   _LevelInfo _getLevelInfo(NotificationLevel level) {
     switch (level) {

@@ -63,7 +63,10 @@ class _ManagerCharacterSetupScreenState extends ConsumerState<ManagerCharacterSe
                 ],
               ),
               const SizedBox(height: 40),
-              const SizedBox(height: 40),
+              if (_selectedCharacter != null) ...[
+                _buildSampleMessage(),
+                const SizedBox(height: 40),
+              ],
               SizedBox(
                 width: double.infinity,
                 height: 56,
@@ -166,6 +169,51 @@ class _ManagerCharacterSetupScreenState extends ConsumerState<ManagerCharacterSe
     );
   }
 
+  Widget _buildSampleMessage() {
+    final message = ManagerCharacterMessages.getRandomMessage(
+      _selectedCharacter!,
+      NotificationLevel.normal, // デフォルトレベルでサンプル表示
+    );
+    
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.grey[100],
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey[300]!),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            _selectedCharacter == CharacterType.human ? Icons.person : Icons.pets,
+            color: _selectedCharacter == CharacterType.human ? Colors.pink[300] : Colors.orange[300],
+            size: 32,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '通知メッセージの例',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  message,
+                  style: const TextStyle(fontSize: 14),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   void _onConfirm() {
     if (_selectedCharacter == null) return;
