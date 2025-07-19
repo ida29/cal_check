@@ -3,6 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../l10n/app_localizations.dart';
 import '../../business/providers/providers.dart';
+import '../../data/entities/user.dart';
 import 'dart:math' as math;
 
 class StatisticsScreen extends ConsumerStatefulWidget {
@@ -14,6 +15,8 @@ class StatisticsScreen extends ConsumerStatefulWidget {
 
 class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
   int _selectedPeriod = 0;
+  
+  dynamic get _userProfile => ref.watch(userProfileProvider);
 
   @override
   Widget build(BuildContext context) {
@@ -193,7 +196,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
   }
 
   Widget _buildHealthMetricsCard() {
-    final userProfile = ref.watch(userProfileProvider);
+    final userProfile = _userProfile;
     final l10n = AppLocalizations.of(context)!;
     
     // BMI計算
@@ -201,10 +204,9 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
     String bmiCategory = '';
     Color bmiColor = Colors.grey;
     
-    if (userProfile != null && userProfile.height != null && userProfile.height! > 0 && 
-        userProfile.weight != null && userProfile.weight! > 0) {
-      final heightInMeters = userProfile.height! / 100;
-      bmi = userProfile.weight! / (heightInMeters * heightInMeters);
+    if (userProfile != null && userProfile.height > 0 && userProfile.weight > 0) {
+      final heightInMeters = userProfile.height / 100;
+      bmi = userProfile.weight / (heightInMeters * heightInMeters);
       
       if (bmi < 18.5) {
         bmiCategory = '低体重';
@@ -224,13 +226,11 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
     // 基礎代謝率（BMR）計算 - ハリス・ベネディクト方程式（改定版）
     double? bmr;
     double? tdee;
-    if (userProfile != null && userProfile.age != null && userProfile.age! > 0 && 
-        userProfile.weight != null && userProfile.weight! > 0 && 
-        userProfile.height != null && userProfile.height! > 0) {
-      if (userProfile.gender == 'male') {
-        bmr = (13.397 * userProfile.weight!) + (4.799 * userProfile.height!) - (5.677 * userProfile.age!) + 88.362;
+    if (userProfile != null && userProfile.age > 0 && userProfile.weight > 0 && userProfile.height > 0) {
+      if (userProfile.gender == Gender.male) {
+        bmr = (13.397 * userProfile.weight) + (4.799 * userProfile.height) - (5.677 * userProfile.age) + 88.362;
       } else {
-        bmr = (9.247 * userProfile.weight!) + (3.098 * userProfile.height!) - (4.330 * userProfile.age!) + 447.593;
+        bmr = (9.247 * userProfile.weight) + (3.098 * userProfile.height) - (4.330 * userProfile.age) + 447.593;
       }
       
       // 活動レベルに応じたTDEE計算
@@ -356,7 +356,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
 
   Widget _buildPFCBalanceCard() {
     final l10n = AppLocalizations.of(context)!;
-    final userProfile = ref.watch(userProfileProvider);
+    final userProfile = _userProfile;
     
     // 推奨PFCバランス（厚生労働省の日本人の食事摂取基準より）
     const recommendedProtein = 15.0; // 13-20%
@@ -666,7 +666,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
   }
 
   Widget _buildWeightPrediction() {
-    final userProfile = ref.watch(userProfileProvider);
+    final userProfile = _userProfile;
     final l10n = AppLocalizations.of(context)!;
     
     // カロリー収支から体重変化を予測
@@ -740,13 +740,13 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
             _buildPredictionRow(
               '1週間後',
               weeklyChange,
-              (userProfile?.weight ?? 60.0).toDouble(),
+              userProfile?.weight ?? 60.0,
             ),
             const Divider(height: 24),
             _buildPredictionRow(
               '1ヶ月後',
               monthlyChange,
-              (userProfile?.weight ?? 60.0).toDouble(),
+              userProfile?.weight ?? 60.0,
             ),
             const SizedBox(height: 16),
             Container(
@@ -799,18 +799,16 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
     );
   }
   
-  double _calculateTDEE(dynamic userProfile) {
-    if (userProfile?.age == null || userProfile.age! <= 0 || 
-        userProfile?.weight == null || userProfile.weight! <= 0 || 
-        userProfile?.height == null || userProfile.height! <= 0) {
+  double _calculateTDEE(User? userProfile) {
+    if (userProfile == null || userProfile.age <= 0 || userProfile.weight <= 0 || userProfile.height <= 0) {
       return 2000.0; // デフォルト値
     }
     
     double bmr;
-    if (userProfile.gender == 'male') {
-      bmr = (13.397 * userProfile.weight!) + (4.799 * userProfile.height!) - (5.677 * userProfile.age!) + 88.362;
+    if (userProfile.gender == Gender.male) {
+      bmr = (13.397 * userProfile.weight) + (4.799 * userProfile.height) - (5.677 * userProfile.age) + 88.362;
     } else {
-      bmr = (9.247 * userProfile.weight!) + (3.098 * userProfile.height!) - (4.330 * userProfile.age!) + 447.593;
+      bmr = (9.247 * userProfile.weight) + (3.098 * userProfile.height) - (4.330 * userProfile.age) + 447.593;
     }
     
     final activityMultipliers = {

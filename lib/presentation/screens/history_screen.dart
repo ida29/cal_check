@@ -510,7 +510,7 @@ class _MealDetailDialog extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(Icons.broken_image, size: 48),
-                                Text(AppLocalizations.of(context)!.imageNotFound),
+                                const Text('画像が見つかりません'),
                               ],
                             ),
                           );
