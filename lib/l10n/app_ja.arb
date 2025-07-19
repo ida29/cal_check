@@ -148,5 +148,7 @@
   "thursday": "木",
   "friday": "金",
   "saturday": "土",
-  "sunday": "日"
+  "sunday": "日",
+  "foodMode": "食べ物",
+  "barcodeMode": "バーコード"
 }

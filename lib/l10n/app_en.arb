@@ -595,5 +595,13 @@
   "sunday": "Sun",
   "@sunday": {
     "description": "Sunday"
+  },
+  "foodMode": "Food",
+  "@foodMode": {
+    "description": "Food camera mode"
+  },
+  "barcodeMode": "Barcode",
+  "@barcodeMode": {
+    "description": "Barcode camera mode"
   }
 }

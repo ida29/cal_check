@@ -9,11 +9,14 @@ class CameraScreen extends StatefulWidget {
   State<CameraScreen> createState() => _CameraScreenState();
 }
 
+enum CameraMode { food, barcode }
+
 class _CameraScreenState extends State<CameraScreen> {
   CameraController? _controller;
   List<CameraDescription>? _cameras;
   bool _isInitialized = false;
   bool _isProcessing = false;
+  CameraMode _currentMode = CameraMode.food;
 
   @override
   void initState() {
@@ -64,7 +67,10 @@ class _CameraScreenState extends State<CameraScreen> {
         Navigator.pushNamed(
           context,
           '/result',
-          arguments: {'imagePath': photo.path},
+          arguments: {
+            'imagePath': photo.path,
+            'mode': _currentMode.name,
+          },
         );
       }
     } catch (e) {
@@ -109,6 +115,108 @@ class _CameraScreenState extends State<CameraScreen> {
             const Center(
               child: CircularProgressIndicator(),
             ),
+          Positioned(
+            top: 20,
+            left: 20,
+            right: 20,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.7),
+                borderRadius: BorderRadius.circular(25),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _currentMode = CameraMode.food;
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: _currentMode == CameraMode.food 
+                              ? const Color(0xFFFF69B4)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.restaurant,
+                              color: _currentMode == CameraMode.food 
+                                  ? Colors.white 
+                                  : Colors.white70,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              AppLocalizations.of(context)!.foodMode,
+                              style: TextStyle(
+                                color: _currentMode == CameraMode.food 
+                                    ? Colors.white 
+                                    : Colors.white70,
+                                fontSize: 14,
+                                fontWeight: _currentMode == CameraMode.food 
+                                    ? FontWeight.bold 
+                                    : FontWeight.normal,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _currentMode = CameraMode.barcode;
+                        });
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: _currentMode == CameraMode.barcode 
+                              ? const Color(0xFFFF69B4)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.qr_code_scanner,
+                              color: _currentMode == CameraMode.barcode 
+                                  ? Colors.white 
+                                  : Colors.white70,
+                              size: 18,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              AppLocalizations.of(context)!.barcodeMode,
+                              style: TextStyle(
+                                color: _currentMode == CameraMode.barcode 
+                                    ? Colors.white 
+                                    : Colors.white70,
+                                fontSize: 14,
+                                fontWeight: _currentMode == CameraMode.barcode 
+                                    ? FontWeight.bold 
+                                    : FontWeight.normal,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
           Positioned(
             bottom: 0,
             left: 0,

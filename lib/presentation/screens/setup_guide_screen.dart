@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import '../../l10n/app_localizations.dart';
 import '../../business/services/setup_service.dart';
 
 class SetupGuideScreen extends StatefulWidget {
@@ -10,18 +8,19 @@ class SetupGuideScreen extends StatefulWidget {
   State<SetupGuideScreen> createState() => _SetupGuideScreenState();
 }
 
-class _SetupGuideScreenState extends State<SetupGuideScreen> {
+class _SetupGuideScreenState extends State<SetupGuideScreen> with TickerProviderStateMixin {
   final PageController _pageController = PageController();
   final TextEditingController _heightController = TextEditingController();
   final TextEditingController _weightController = TextEditingController();
   final TextEditingController _targetWeightController = TextEditingController();
   final TextEditingController _ageController = TextEditingController();
-  final TextEditingController _apiKeyController = TextEditingController();
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  
+  late AnimationController _progressAnimationController;
+  late Animation<double> _progressAnimation;
   
   int _currentPage = 0;
+  int _totalPages = 10; // Total number of questions
   bool _isLoading = false;
-  bool _showApiKey = false;
   String _selectedGender = '';
   String _selectedActivityLevel = '';
   String _selectedGoal = '';
@@ -30,14 +29,54 @@ class _SetupGuideScreenState extends State<SetupGuideScreen> {
   final SetupService _setupService = SetupService();
 
   @override
+  void initState() {
+    super.initState();
+    _progressAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _progressAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _progressAnimationController,
+      curve: Curves.easeInOut,
+    ));
+    _updateProgress();
+  }
+
+  @override
   void dispose() {
     _pageController.dispose();
     _heightController.dispose();
     _weightController.dispose();
     _targetWeightController.dispose();
     _ageController.dispose();
-    _apiKeyController.dispose();
+    _progressAnimationController.dispose();
     super.dispose();
+  }
+
+  int _getEffectiveTotalPages() {
+    if (_selectedGoal == 'maintain_weight') {
+      return _totalPages - 2; // Skip target weight and timeframe pages
+    }
+    return _totalPages;
+  }
+  
+  int _getEffectiveCurrentPage() {
+    if (_selectedGoal == 'maintain_weight' && _currentPage >= 6) {
+      if (_currentPage == 8) {
+        return 6; // Activity level becomes page 6
+      } else if (_currentPage == 9) {
+        return 7; // Complete becomes page 7
+      }
+    }
+    return _currentPage;
+  }
+  
+  void _updateProgress() {
+    final progress = (_getEffectiveCurrentPage() + 1) / _getEffectiveTotalPages();
+    _progressAnimationController.animateTo(progress);
   }
 
   @override
@@ -46,24 +85,60 @@ class _SetupGuideScreenState extends State<SetupGuideScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Progress indicator
+            // Enhanced progress indicator
             Container(
               padding: const EdgeInsets.all(20),
-              child: Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  for (int i = 0; i < 6; i++)
-                    Expanded(
-                      child: Container(
-                        margin: EdgeInsets.only(right: i < 5 ? 8 : 0),
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: i <= _currentPage 
-                            ? Theme.of(context).primaryColor 
-                            : Colors.grey[300],
-                          borderRadius: BorderRadius.circular(2),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Question ${_getEffectiveCurrentPage() + 1} of ${_getEffectiveTotalPages()}',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(context).primaryColor,
                         ),
                       ),
-                    ),
+                      Text(
+                        '${((_getEffectiveCurrentPage() + 1) / _getEffectiveTotalPages() * 100).round()}%',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  AnimatedBuilder(
+                    animation: _progressAnimation,
+                    builder: (context, child) {
+                      return Container(
+                        width: double.infinity,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                        child: FractionallySizedBox(
+                          alignment: Alignment.centerLeft,
+                          widthFactor: _progressAnimation.value,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Theme.of(context).primaryColor,
+                                  Theme.of(context).primaryColor.withOpacity(0.8),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
@@ -75,15 +150,20 @@ class _SetupGuideScreenState extends State<SetupGuideScreen> {
                 onPageChanged: (index) {
                   setState(() {
                     _currentPage = index;
+                    _updateProgress();
                   });
                 },
                 children: [
-                  _buildWelcomePage(),
-                  _buildBasicInfoPage(),
-                  _buildPhysicalInfoPage(),
-                  _buildGoalsPage(),
-                  _buildApiSetupPage(),
-                  _buildCompletePage(),
+                  _buildWelcomePage(),          // 0: Welcome
+                  _buildAgePage(),              // 1: Age
+                  _buildGenderPage(),           // 2: Gender  
+                  _buildHeightPage(),           // 3: Height
+                  _buildCurrentWeightPage(),    // 4: Current Weight
+                  _buildGoalTypePage(),         // 5: Goal Type
+                  _buildTargetWeightPage(),     // 6: Target Weight (conditional)
+                  _buildTimeframePage(),        // 7: Timeframe (conditional)
+                  _buildActivityLevelPage(),    // 8: Activity Level
+                  _buildCompletePage(),         // 9: Complete
                 ],
               ),
             ),
@@ -129,43 +209,72 @@ class _SetupGuideScreenState extends State<SetupGuideScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.restaurant_menu,
-            size: 100,
-            color: Theme.of(context).primaryColor,
+          Container(
+            width: 120,
+            height: 120,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Theme.of(context).primaryColor,
+                  Theme.of(context).primaryColor.withOpacity(0.7),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.favorite,
+              size: 60,
+              color: Colors.white,
+            ),
           ),
           const SizedBox(height: 32),
           Text(
-            'Welcome to Calorie Checker!',
+            'Your Personal\nNutrition Coach',
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
               fontWeight: FontWeight.bold,
+              height: 1.2,
             ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 16),
           Text(
-            'AI-powered calorie calculation from your meal photos',
-            style: Theme.of(context).textTheme.bodyLarge,
+            'Let\'s create a personalized plan to help you achieve your health goals.',
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              color: Colors.grey[600],
+              height: 1.4,
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 32),
           Container(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
+              color: Colors.blue.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.blue.withOpacity(0.2)),
             ),
             child: Column(
               children: [
                 Icon(
-                  Icons.photo_camera,
-                  color: Theme.of(context).primaryColor,
-                  size: 48,
+                  Icons.timer,
+                  color: Colors.blue[700],
+                  size: 32,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Takes only 2 minutes',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue[700],
+                    fontSize: 16,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Simply take a photo of your meal and get instant calorie information!',
-                  style: Theme.of(context).textTheme.bodyMedium,
+                  'Answer a few questions to get started with your personalized nutrition plan.',
+                  style: TextStyle(color: Colors.blue[600]),
                   textAlign: TextAlign.center,
                 ),
               ],
@@ -176,388 +285,384 @@ class _SetupGuideScreenState extends State<SetupGuideScreen> {
     );
   }
 
-  Widget _buildBasicInfoPage() {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.person,
-              size: 80,
-              color: Theme.of(context).primaryColor,
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'Basic Information',
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'This helps us provide better calorie recommendations',
-              style: Theme.of(context).textTheme.bodyLarge,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 32),
-            
-            // Age input
-            TextFormField(
-              controller: _ageController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Age',
-                hintText: 'Enter your age',
-                border: OutlineInputBorder(),
-                suffixText: 'years',
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your age';
-                }
-                final age = int.tryParse(value);
-                if (age == null || age < 10 || age > 120) {
-                  return 'Please enter a valid age (10-120)';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 24),
-            
-            // Gender selection
-            Text(
-              'Gender',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => setState(() => _selectedGender = 'male'),
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: _selectedGender == 'male' 
-                            ? Theme.of(context).primaryColor 
-                            : Colors.grey[300]!,
-                          width: 2,
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                        color: _selectedGender == 'male' 
-                          ? Theme.of(context).primaryColor.withOpacity(0.1)
-                          : null,
-                      ),
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.male,
-                            size: 32,
-                            color: _selectedGender == 'male' 
-                              ? Theme.of(context).primaryColor 
-                              : Colors.grey[600],
-                          ),
-                          const SizedBox(height: 8),
-                          Text('Male'),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => setState(() => _selectedGender = 'female'),
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: _selectedGender == 'female' 
-                            ? Theme.of(context).primaryColor 
-                            : Colors.grey[300]!,
-                          width: 2,
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                        color: _selectedGender == 'female' 
-                          ? Theme.of(context).primaryColor.withOpacity(0.1)
-                          : null,
-                      ),
-                      child: Column(
-                        children: [
-                          Icon(
-                            Icons.female,
-                            size: 32,
-                            color: _selectedGender == 'female' 
-                              ? Theme.of(context).primaryColor 
-                              : Colors.grey[600],
-                          ),
-                          const SizedBox(height: 8),
-                          Text('Female'),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPhysicalInfoPage() {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.monitor_weight,
-              size: 80,
-              color: Theme.of(context).primaryColor,
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'Physical Information',
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Help us calculate your daily calorie needs',
-              style: Theme.of(context).textTheme.bodyLarge,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 32),
-            
-            // Height input
-            TextFormField(
-              controller: _heightController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Height',
-                hintText: 'Enter your height',
-                border: OutlineInputBorder(),
-                suffixText: 'cm',
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your height';
-                }
-                final height = double.tryParse(value);
-                if (height == null || height < 100 || height > 250) {
-                  return 'Please enter a valid height (100-250 cm)';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 24),
-            
-            // Weight input
-            TextFormField(
-              controller: _weightController,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Weight',
-                hintText: 'Enter your weight',
-                border: OutlineInputBorder(),
-                suffixText: 'kg',
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your weight';
-                }
-                final weight = double.tryParse(value);
-                if (weight == null || weight < 30 || weight > 300) {
-                  return 'Please enter a valid weight (30-300 kg)';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 24),
-            
-            // Activity level selection
-            Text(
-              'Activity Level',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Column(
-              children: [
-                _buildActivityOption('sedentary', 'Sedentary', 'Little to no exercise'),
-                _buildActivityOption('light', 'Lightly Active', 'Light exercise 1-3 days/week'),
-                _buildActivityOption('moderate', 'Moderately Active', 'Moderate exercise 3-5 days/week'),
-                _buildActivityOption('very', 'Very Active', 'Hard exercise 6-7 days/week'),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGoalsPage() {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.flag,
-              size: 80,
-              color: Theme.of(context).primaryColor,
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'Your Goals',
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Tell us about your weight goals',
-              style: Theme.of(context).textTheme.bodyLarge,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 32),
-            
-            // Goal selection
-            Text(
-              'Your Goal',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Column(
-              children: [
-                _buildGoalOption('lose_weight', 'Lose Weight', Icons.trending_down),
-                _buildGoalOption('maintain_weight', 'Maintain Weight', Icons.trending_flat),
-                _buildGoalOption('gain_weight', 'Gain Weight', Icons.trending_up),
-              ],
-            ),
-            const SizedBox(height: 24),
-            
-            // Target weight (only show if losing or gaining weight)
-            if (_selectedGoal == 'lose_weight' || _selectedGoal == 'gain_weight') ...[
-              TextFormField(
-                controller: _targetWeightController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: 'Target Weight',
-                  hintText: 'Enter your target weight',
-                  border: const OutlineInputBorder(),
-                  suffixText: 'kg',
-                ),
-                validator: (value) {
-                  if ((_selectedGoal == 'lose_weight' || _selectedGoal == 'gain_weight') && 
-                      (value == null || value.isEmpty)) {
-                    return 'Please enter your target weight';
-                  }
-                  if (value != null && value.isNotEmpty) {
-                    final target = double.tryParse(value);
-                    if (target == null || target < 30 || target > 300) {
-                      return 'Please enter a valid target weight (30-300 kg)';
-                    }
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 24),
-              
-              // Timeframe selection
-              Text(
-                'Timeframe',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Column(
-                children: [
-                  _buildTimeframeOption('3_months', '3 Months', 'Gradual and sustainable'),
-                  _buildTimeframeOption('6_months', '6 Months', 'Balanced approach'),
-                  _buildTimeframeOption('1_year', '1 Year', 'Long-term transformation'),
-                  _buildTimeframeOption('custom', 'Custom', 'Set your own timeline'),
-                ],
-              ),
-            ],
-            
-            if (_selectedGoal == 'maintain_weight') ...[
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.green.withOpacity(0.3)),
-                ),
-                child: Column(
-                  children: [
-                    Icon(
-                      Icons.balance,
-                      color: Colors.green[700],
-                      size: 48,
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Great Choice!',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green[700],
-                        fontSize: 18,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'We\'ll help you maintain your current weight with balanced nutrition tracking.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.green[700]),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGoalOption(String value, String title, IconData icon) {
-    final isSelected = _selectedGoal == value;
-    return GestureDetector(
-      onTap: () => setState(() => _selectedGoal = value),
+  Widget _buildAgePage() {
+    return _buildQuestionPage(
+      question: 'How old are you?',
+      subtitle: 'This helps us calculate your metabolic rate accurately.',
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
+          color: Colors.grey[50],
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: TextFormField(
+          controller: _ageController,
+          keyboardType: TextInputType.number,
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+          textAlign: TextAlign.center,
+          decoration: InputDecoration(
+            hintText: 'Enter your age',
+            hintStyle: TextStyle(color: Colors.grey[400]),
+            border: InputBorder.none,
+            suffixText: 'years old',
+            suffixStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              color: Colors.grey[600],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGenderPage() {
+    return _buildQuestionPage(
+      question: 'What\'s your gender?',
+      subtitle: 'Men and women have different caloric needs due to differences in muscle mass and metabolism.',
+      child: Column(
+        children: [
+          _buildGenderOption('male', 'Male', Icons.male),
+          const SizedBox(height: 16),
+          _buildGenderOption('female', 'Female', Icons.female),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeightPage() {
+    return _buildQuestionPage(
+      question: 'What\'s your height?',
+      subtitle: 'Height is a key factor in determining your daily calorie needs.',
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.grey[50],
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: TextFormField(
+          controller: _heightController,
+          keyboardType: TextInputType.number,
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+          textAlign: TextAlign.center,
+          decoration: InputDecoration(
+            hintText: 'Enter height',
+            hintStyle: TextStyle(color: Colors.grey[400]),
+            border: InputBorder.none,
+            suffixText: 'cm',
+            suffixStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              color: Colors.grey[600],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCurrentWeightPage() {
+    return _buildQuestionPage(
+      question: 'What\'s your current weight?',
+      subtitle: 'Be honest - this information is kept private and helps us create the best plan for you.',
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.grey[50],
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: TextFormField(
+          controller: _weightController,
+          keyboardType: TextInputType.number,
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+          textAlign: TextAlign.center,
+          decoration: InputDecoration(
+            hintText: 'Enter weight',
+            hintStyle: TextStyle(color: Colors.grey[400]),
+            border: InputBorder.none,
+            suffixText: 'kg',
+            suffixStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              color: Colors.grey[600],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGoalTypePage() {
+    return _buildQuestionPage(
+      question: 'What\'s your primary goal?',
+      subtitle: 'Choose the goal that best describes what you want to achieve.',
+      child: Column(
+        children: [
+          _buildGoalTypeOption(
+            'lose_weight',
+            'Lose Weight',
+            'Reduce body weight and improve body composition',
+            Icons.trending_down,
+            Colors.red,
+          ),
+          const SizedBox(height: 16),
+          _buildGoalTypeOption(
+            'maintain_weight',
+            'Maintain Weight',
+            'Keep current weight and build healthy habits',
+            Icons.balance,
+            Colors.green,
+          ),
+          const SizedBox(height: 16),
+          _buildGoalTypeOption(
+            'gain_weight',
+            'Gain Weight',
+            'Increase muscle mass and overall body weight',
+            Icons.trending_up,
+            Colors.blue,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTargetWeightPage() {
+    if (_selectedGoal == 'maintain_weight') return Container();
+    
+    return _buildQuestionPage(
+      question: 'What\'s your target weight?',
+      subtitle: _selectedGoal == 'lose_weight' 
+        ? 'Set a realistic goal. Healthy weight loss is 0.5-1 kg per week.'
+        : 'Set a healthy goal. Aim for gradual weight gain through muscle building.',
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.grey[50],
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: TextFormField(
+          controller: _targetWeightController,
+          keyboardType: TextInputType.number,
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
+          textAlign: TextAlign.center,
+          decoration: InputDecoration(
+            hintText: 'Target weight',
+            hintStyle: TextStyle(color: Colors.grey[400]),
+            border: InputBorder.none,
+            suffixText: 'kg',
+            suffixStyle: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              color: Colors.grey[600],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTimeframePage() {
+    if (_selectedGoal == 'maintain_weight') return Container();
+    
+    return _buildQuestionPage(
+      question: 'What\'s your target timeframe?',
+      subtitle: 'Sustainable changes take time. Choose a realistic timeframe for lasting results.',
+      child: Column(
+        children: [
+          _buildTimeframeOptionCard('3_months', '3 Months', 'Quick but sustainable results', Icons.flash_on),
+          const SizedBox(height: 12),
+          _buildTimeframeOptionCard('6_months', '6 Months', 'Balanced and steady progress', Icons.trending_up),
+          const SizedBox(height: 12),
+          _buildTimeframeOptionCard('1_year', '1 Year', 'Gradual lifestyle transformation', Icons.emoji_events),
+          const SizedBox(height: 12),
+          _buildTimeframeOptionCard('custom', 'My Own Pace', 'Flexible timeline', Icons.self_improvement),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActivityLevelPage() {
+    return _buildQuestionPage(
+      question: 'How active are you?',
+      subtitle: 'Be honest about your current activity level - you can always increase it later!',
+      child: Column(
+        children: [
+          _buildActivityCard('sedentary', 'Mostly Sitting', 'Office job, little to no exercise', Icons.weekend),
+          const SizedBox(height: 12),
+          _buildActivityCard('light', 'Lightly Active', 'Light exercise 1-3 days per week', Icons.directions_walk),
+          const SizedBox(height: 12),
+          _buildActivityCard('moderate', 'Moderately Active', 'Moderate exercise 3-5 days per week', Icons.fitness_center),
+          const SizedBox(height: 12),
+          _buildActivityCard('very', 'Very Active', 'Hard exercise 6-7 days per week', Icons.sports_gymnastics),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuestionPage({
+    required String question,
+    required String subtitle,
+    required Widget child,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 40),
+          Text(
+            question,
+            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+              height: 1.2,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            subtitle,
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              color: Colors.grey[600],
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 40),
+          child,
+          const Spacer(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGenderOption(String value, String title, IconData icon) {
+    final isSelected = _selectedGender == value;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedGender = value),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: isSelected 
+            ? Theme.of(context).primaryColor.withOpacity(0.1)
+            : Colors.grey[50],
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected 
               ? Theme.of(context).primaryColor 
               : Colors.grey[300]!,
             width: 2,
           ),
-          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isSelected 
+                  ? Theme.of(context).primaryColor
+                  : Colors.grey[400],
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                icon,
+                color: Colors.white,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                color: isSelected 
+                  ? Theme.of(context).primaryColor 
+                  : Colors.grey[700],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGoalTypeOption(String value, String title, String description, IconData icon, Color color) {
+    final isSelected = _selectedGoal == value;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedGoal = value),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: isSelected 
+            ? color.withOpacity(0.1)
+            : Colors.grey[50],
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected 
+              ? color
+              : Colors.grey[300]!,
+            width: 2,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isSelected ? color : Colors.grey[400],
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                icon,
+                color: Colors.white,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      color: isSelected ? color : Colors.grey[700],
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    description,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTimeframeOptionCard(String value, String title, String description, IconData icon) {
+    final isSelected = _selectedTimeframe == value;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedTimeframe = value),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
           color: isSelected 
             ? Theme.of(context).primaryColor.withOpacity(0.1)
-            : null,
+            : Colors.grey[50],
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected 
+              ? Theme.of(context).primaryColor 
+              : Colors.grey[300]!,
+            width: 2,
+          ),
         ),
         child: Row(
           children: [
@@ -566,15 +671,30 @@ class _SetupGuideScreenState extends State<SetupGuideScreen> {
               color: isSelected 
                 ? Theme.of(context).primaryColor 
                 : Colors.grey[600],
+              size: 20,
             ),
-            const SizedBox(width: 16),
-            Text(
-              title,
-              style: TextStyle(
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: isSelected 
-                  ? Theme.of(context).primaryColor 
-                  : null,
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      color: isSelected 
+                        ? Theme.of(context).primaryColor 
+                        : Colors.grey[700],
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    description,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -583,206 +703,70 @@ class _SetupGuideScreenState extends State<SetupGuideScreen> {
     );
   }
 
-  Widget _buildActivityOption(String value, String title, String description) {
+  Widget _buildActivityCard(String value, String title, String description, IconData icon) {
     final isSelected = _selectedActivityLevel == value;
     return GestureDetector(
       onTap: () => setState(() => _selectedActivityLevel = value),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
+          color: isSelected 
+            ? Theme.of(context).primaryColor.withOpacity(0.1)
+            : Colors.grey[50],
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: isSelected 
               ? Theme.of(context).primaryColor 
               : Colors.grey[300]!,
             width: 2,
           ),
-          borderRadius: BorderRadius.circular(12),
-          color: isSelected 
-            ? Theme.of(context).primaryColor.withOpacity(0.1)
-            : null,
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: TextStyle(
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: isSelected 
-                  ? Theme.of(context).primaryColor 
-                  : null,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              description,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.grey[600],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFeatureItem(IconData icon, String title, String description) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: Theme.of(context).primaryColor.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(
-            icon,
-            color: Theme.of(context).primaryColor,
-            size: 24,
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                description,
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Colors.grey[600],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildApiSetupPage() {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+        child: Row(
           children: [
             Icon(
-              Icons.key,
-              size: 80,
-              color: Theme.of(context).primaryColor,
+              icon,
+              color: isSelected 
+                ? Theme.of(context).primaryColor 
+                : Colors.grey[600],
+              size: 20,
             ),
-            const SizedBox(height: 24),
-            Text(
-              'API Setup',
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'To use AI analysis, you need an OpenRouter API key',
-              style: Theme.of(context).textTheme.bodyLarge,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 32),
-            
-            // Instructions
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.blue.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.blue.withOpacity(0.3)),
-              ),
+            const SizedBox(width: 12),
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Icon(Icons.info, color: Colors.blue[700]),
-                      const SizedBox(width: 8),
-                      Text(
-                        'How to get your API key:',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue[700],
-                        ),
-                      ),
-                    ],
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      color: isSelected 
+                        ? Theme.of(context).primaryColor 
+                        : Colors.grey[700],
+                    ),
                   ),
-                  const SizedBox(height: 12),
-                  Text('1. Visit https://openrouter.ai'),
-                  const SizedBox(height: 4),
-                  Text('2. Sign up for a free account'),
-                  const SizedBox(height: 4),
-                  Text('3. Go to Keys section'),
-                  const SizedBox(height: 4),
-                  Text('4. Create a new API key'),
-                  const SizedBox(height: 4),
-                  Text('5. Copy and paste it below'),
+                  const SizedBox(height: 2),
+                  Text(
+                    description,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.grey[600],
+                    ),
+                  ),
                 ],
               ),
-            ),
-            const SizedBox(height: 24),
-            
-            // API Key input
-            TextFormField(
-              controller: _apiKeyController,
-              obscureText: !_showApiKey,
-              decoration: InputDecoration(
-                labelText: 'OpenRouter API Key',
-                hintText: 'sk-or-v1-...',
-                border: const OutlineInputBorder(),
-                suffixIcon: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: Icon(_showApiKey ? Icons.visibility_off : Icons.visibility),
-                      onPressed: () {
-                        setState(() {
-                          _showApiKey = !_showApiKey;
-                        });
-                      },
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.paste),
-                      onPressed: _pasteFromClipboard,
-                    ),
-                  ],
-                ),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your API key';
-                }
-                if (!value.startsWith('sk-or-v1-')) {
-                  return 'Invalid API key format';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            
-            // Skip option
-            TextButton(
-              onPressed: _skipApiSetup,
-              child: const Text('Skip for now (use demo mode)'),
             ),
           ],
         ),
       ),
     );
   }
+
+
+
+
+
+
+
 
   Widget _buildCompletePage() {
     return Padding(
@@ -862,8 +846,16 @@ class _SetupGuideScreenState extends State<SetupGuideScreen> {
       case 3:
         return 'Continue';
       case 4:
-        return 'Save & Continue';
+        return 'Continue';
       case 5:
+        return 'Continue';
+      case 6:
+        return 'Continue';
+      case 7:
+        return 'Continue';
+      case 8:
+        return 'Continue';
+      case 9:
         return 'Start Using App';
       default:
         return 'Next';
@@ -871,37 +863,88 @@ class _SetupGuideScreenState extends State<SetupGuideScreen> {
   }
 
   void _nextPage() async {
+    // Validation for each page
     if (_currentPage == 1) {
-      // Basic info page - validate
-      if (_ageController.text.isEmpty || _selectedGender.isEmpty || _selectedGoal.isEmpty) {
+      // Age page
+      if (_ageController.text.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please fill in all basic information')),
+          const SnackBar(content: Text('Please enter your age')),
+        );
+        return;
+      }
+      final age = int.tryParse(_ageController.text);
+      if (age == null || age < 10 || age > 120) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please enter a valid age (10-120)')),
         );
         return;
       }
     } else if (_currentPage == 2) {
-      // Physical info page - validate
-      if (_heightController.text.isEmpty || _weightController.text.isEmpty || _selectedActivityLevel.isEmpty) {
+      // Gender page
+      if (_selectedGender.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please fill in all physical information')),
+          const SnackBar(content: Text('Please select your gender')),
         );
         return;
       }
     } else if (_currentPage == 3) {
-      // Goals page - validate
+      // Height page
+      if (_heightController.text.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please enter your height')),
+        );
+        return;
+      }
+      final height = double.tryParse(_heightController.text);
+      if (height == null || height < 100 || height > 250) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please enter a valid height (100-250 cm)')),
+        );
+        return;
+      }
+    } else if (_currentPage == 4) {
+      // Current weight page
+      if (_weightController.text.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please enter your weight')),
+        );
+        return;
+      }
+      final weight = double.tryParse(_weightController.text);
+      if (weight == null || weight < 30 || weight > 300) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please enter a valid weight (30-300 kg)')),
+        );
+        return;
+      }
+    } else if (_currentPage == 5) {
+      // Goal type page
       if (_selectedGoal.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Please select your goal')),
         );
         return;
       }
-      if ((_selectedGoal == 'lose_weight' || _selectedGoal == 'gain_weight')) {
+    } else if (_currentPage == 6) {
+      // Target weight page (conditional)
+      if (_selectedGoal != 'maintain_weight') {
         if (_targetWeightController.text.isEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Please enter your target weight')),
           );
           return;
         }
+        final targetWeight = double.tryParse(_targetWeightController.text);
+        if (targetWeight == null || targetWeight < 30 || targetWeight > 300) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Please enter a valid target weight (30-300 kg)')),
+          );
+          return;
+        }
+      }
+    } else if (_currentPage == 7) {
+      // Timeframe page (conditional)
+      if (_selectedGoal != 'maintain_weight') {
         if (_selectedTimeframe.isEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Please select a timeframe')),
@@ -909,141 +952,84 @@ class _SetupGuideScreenState extends State<SetupGuideScreen> {
           return;
         }
       }
-    } else if (_currentPage == 4) {
-      // API setup page - validate and save
-      if (_formKey.currentState?.validate() ?? false) {
-        setState(() => _isLoading = true);
-        
-        try {
-          // Save all user data
-          await _setupService.saveUserProfile(
-            age: int.parse(_ageController.text),
-            gender: _selectedGender,
-            height: double.parse(_heightController.text),
-            weight: double.parse(_weightController.text),
-            targetWeight: _targetWeightController.text.isNotEmpty 
-              ? double.parse(_targetWeightController.text) 
-              : null,
-            activityLevel: _selectedActivityLevel,
-            goal: _selectedGoal,
-            timeframe: _selectedTimeframe.isNotEmpty ? _selectedTimeframe : null,
-          );
-          
-          await _setupService.saveApiKey(_apiKeyController.text.trim());
-          await _setupService.markSetupComplete();
-          
-          setState(() => _isLoading = false);
-          _pageController.nextPage(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-          );
-        } catch (e) {
-          setState(() => _isLoading = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error saving data: $e')),
-          );
-        }
+    } else if (_currentPage == 8) {
+      // Activity level page
+      if (_selectedActivityLevel.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please select your activity level')),
+        );
+        return;
       }
-    } else if (_currentPage == 5) {
-      // Complete setup and navigate to main app
-      Navigator.of(context).pushReplacementNamed('/');
-    } else {
-      // Regular navigation
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+    } else if (_currentPage == 9) {
+      // Complete page - save data and navigate to main app
+      setState(() => _isLoading = true);
+      
+      try {
+        // Save all user data
+        await _setupService.saveUserProfile(
+          age: int.parse(_ageController.text),
+          gender: _selectedGender,
+          height: double.parse(_heightController.text),
+          weight: double.parse(_weightController.text),
+          targetWeight: _targetWeightController.text.isNotEmpty 
+            ? double.parse(_targetWeightController.text) 
+            : null,
+          activityLevel: _selectedActivityLevel,
+          goal: _selectedGoal,
+          timeframe: _selectedTimeframe.isNotEmpty ? _selectedTimeframe : null,
+        );
+        
+        await _setupService.markSetupComplete();
+        
+        setState(() => _isLoading = false);
+        Navigator.of(context).pushReplacementNamed('/main');
+        return;
+      } catch (e) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error saving data: $e')),
+        );
+        return;
+      }
     }
+    
+    // Handle conditional navigation for maintain_weight goal
+    if (_selectedGoal == 'maintain_weight') {
+      if (_currentPage == 5) {
+        // Skip pages 6 and 7 (target weight and timeframe)
+        _pageController.animateToPage(
+          8, // Go directly to activity level page
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+        return;
+      }
+    }
+    
+    // Regular navigation
+    _pageController.nextPage(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
   }
 
   void _previousPage() {
+    // Handle conditional navigation for maintain_weight goal
+    if (_selectedGoal == 'maintain_weight' && _currentPage == 8) {
+      // Skip back over pages 6 and 7 (target weight and timeframe)
+      _pageController.animateToPage(
+        5, // Go back to goal type page
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+      return;
+    }
+    
     _pageController.previousPage(
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
     );
   }
 
-  void _pasteFromClipboard() async {
-    final data = await Clipboard.getData(Clipboard.kTextPlain);
-    if (data?.text != null) {
-      _apiKeyController.text = data!.text!;
-    }
-  }
 
-  void _skipApiSetup() async {
-    setState(() => _isLoading = true);
-    
-    try {
-      // Save user profile data even if API key is skipped
-      await _setupService.saveUserProfile(
-        age: int.parse(_ageController.text),
-        gender: _selectedGender,
-        height: double.parse(_heightController.text),
-        weight: double.parse(_weightController.text),
-        targetWeight: _targetWeightController.text.isNotEmpty 
-          ? double.parse(_targetWeightController.text) 
-          : null,
-        activityLevel: _selectedActivityLevel,
-        goal: _selectedGoal,
-        timeframe: _selectedTimeframe.isNotEmpty ? _selectedTimeframe : null,
-      );
-      
-      await _setupService.markSetupComplete();
-      setState(() => _isLoading = false);
-      
-      _pageController.nextPage(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-    } catch (e) {
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error: $e')),
-      );
-    }
-  }
-
-  Widget _buildTimeframeOption(String value, String title, String description) {
-    final isSelected = _selectedTimeframe == value;
-    return GestureDetector(
-      onTap: () => setState(() => _selectedTimeframe = value),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: isSelected 
-              ? Theme.of(context).primaryColor 
-              : Colors.grey[300]!,
-            width: 2,
-          ),
-          borderRadius: BorderRadius.circular(12),
-          color: isSelected 
-            ? Theme.of(context).primaryColor.withOpacity(0.1)
-            : null,
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: TextStyle(
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                color: isSelected 
-                  ? Theme.of(context).primaryColor 
-                  : null,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              description,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.grey[600],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }
