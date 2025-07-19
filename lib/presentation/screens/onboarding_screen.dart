@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({Key? key}) : super(key: key);
@@ -71,7 +72,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           const SizedBox(height: 40),
           Text(
-            'Welcome to\nCalorie Checker AI',
+            AppLocalizations.of(context)!.welcomeTitle,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
@@ -79,7 +80,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           const SizedBox(height: 20),
           Text(
-            'Track your nutrition effortlessly with AI-powered food recognition. Just snap a photo and get instant calorie information!',
+            AppLocalizations.of(context)!.welcomeDescription,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                   color: Colors.grey[600],
@@ -95,9 +96,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget _buildFeatureList() {
     return Column(
       children: [
-        _buildFeatureItem(Icons.camera_alt, 'Photo Recognition', 'Identify food from photos'),
-        _buildFeatureItem(Icons.analytics, 'Smart Tracking', 'Automatic calorie calculation'),
-        _buildFeatureItem(Icons.insights, 'Progress Insights', 'Track your nutrition goals'),
+        _buildFeatureItem(Icons.camera_alt, AppLocalizations.of(context)!.photoRecognition, AppLocalizations.of(context)!.photoRecognitionDesc),
+        _buildFeatureItem(Icons.analytics, AppLocalizations.of(context)!.smartTracking, AppLocalizations.of(context)!.smartTrackingDesc),
+        _buildFeatureItem(Icons.insights, AppLocalizations.of(context)!.progressInsights, AppLocalizations.of(context)!.progressInsightsDesc),
       ],
     );
   }
@@ -130,14 +131,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Personal Information',
+            AppLocalizations.of(context)!.personalInformationTitle,
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Help us personalize your experience',
+            AppLocalizations.of(context)!.personalizeExperience,
             style: TextStyle(color: Colors.grey[600]),
           ),
           const SizedBox(height: 40),

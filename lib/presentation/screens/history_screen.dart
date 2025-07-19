@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({Key? key}) : super(key: key);
@@ -14,7 +15,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Meal History'),
+        title: Text(AppLocalizations.of(context)!.mealHistory),
         actions: [
           IconButton(
             icon: const Icon(Icons.calendar_today),
@@ -93,11 +94,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Total Calories',
+                  AppLocalizations.of(context)!.totalCalories,
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 Text(
-                  '1,770 cal',
+                  AppLocalizations.of(context)!.calorieAmount,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         color: Theme.of(context).primaryColor,
                         fontWeight: FontWeight.bold,
@@ -162,9 +163,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final dateToCheck = DateTime(date.year, date.month, date.day);
 
     if (dateToCheck == today) {
-      return 'Today';
+      return AppLocalizations.of(context)!.today;
     } else if (dateToCheck == yesterday) {
-      return 'Yesterday';
+      return AppLocalizations.of(context)!.yesterday;
     } else {
       return '${date.day}/${date.month}/${date.year}';
     }
