@@ -188,7 +188,9 @@ class _CameraScreenState extends State<CameraScreen> {
                                 _currentMode = CameraMode.food;
                               });
                             },
-                            child: Container(
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
                               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                               decoration: BoxDecoration(
                                 color: _currentMode == CameraMode.food 
@@ -206,18 +208,28 @@ class _CameraScreenState extends State<CameraScreen> {
                                         : Colors.white70,
                                     size: 18,
                                   ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    AppLocalizations.of(context)!.foodMode,
-                                    style: TextStyle(
-                                      color: _currentMode == CameraMode.food 
-                                          ? Colors.white 
-                                          : Colors.white70,
-                                      fontSize: 14,
-                                      fontWeight: _currentMode == CameraMode.food 
-                                          ? FontWeight.bold 
-                                          : FontWeight.normal,
-                                    ),
+                                  AnimatedSize(
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut,
+                                    child: _currentMode == CameraMode.food
+                                        ? Row(
+                                            children: [
+                                              const SizedBox(width: 4),
+                                              AnimatedOpacity(
+                                                duration: const Duration(milliseconds: 300),
+                                                opacity: _currentMode == CameraMode.food ? 1.0 : 0.0,
+                                                child: Text(
+                                                  AppLocalizations.of(context)!.foodMode,
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          )
+                                        : const SizedBox.shrink(),
                                   ),
                                 ],
                               ),
@@ -231,7 +243,9 @@ class _CameraScreenState extends State<CameraScreen> {
                                 _currentMode = CameraMode.barcode;
                               });
                             },
-                            child: Container(
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
                               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                               decoration: BoxDecoration(
                                 color: _currentMode == CameraMode.barcode 
@@ -249,18 +263,28 @@ class _CameraScreenState extends State<CameraScreen> {
                                         : Colors.white70,
                                     size: 18,
                                   ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    AppLocalizations.of(context)!.barcodeMode,
-                                    style: TextStyle(
-                                      color: _currentMode == CameraMode.barcode 
-                                          ? Colors.white 
-                                          : Colors.white70,
-                                      fontSize: 14,
-                                      fontWeight: _currentMode == CameraMode.barcode 
-                                          ? FontWeight.bold 
-                                          : FontWeight.normal,
-                                    ),
+                                  AnimatedSize(
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut,
+                                    child: _currentMode == CameraMode.barcode
+                                        ? Row(
+                                            children: [
+                                              const SizedBox(width: 4),
+                                              AnimatedOpacity(
+                                                duration: const Duration(milliseconds: 300),
+                                                opacity: _currentMode == CameraMode.barcode ? 1.0 : 0.0,
+                                                child: Text(
+                                                  AppLocalizations.of(context)!.barcodeMode,
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          )
+                                        : const SizedBox.shrink(),
                                   ),
                                 ],
                               ),
@@ -274,7 +298,9 @@ class _CameraScreenState extends State<CameraScreen> {
                                 _currentMode = CameraMode.receipt;
                               });
                             },
-                            child: Container(
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 300),
+                              curve: Curves.easeInOut,
                               padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                               decoration: BoxDecoration(
                                 color: _currentMode == CameraMode.receipt 
@@ -292,18 +318,28 @@ class _CameraScreenState extends State<CameraScreen> {
                                         : Colors.white70,
                                     size: 18,
                                   ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    AppLocalizations.of(context)!.receiptMode,
-                                    style: TextStyle(
-                                      color: _currentMode == CameraMode.receipt 
-                                          ? Colors.white 
-                                          : Colors.white70,
-                                      fontSize: 14,
-                                      fontWeight: _currentMode == CameraMode.receipt 
-                                          ? FontWeight.bold 
-                                          : FontWeight.normal,
-                                    ),
+                                  AnimatedSize(
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeInOut,
+                                    child: _currentMode == CameraMode.receipt
+                                        ? Row(
+                                            children: [
+                                              const SizedBox(width: 4),
+                                              AnimatedOpacity(
+                                                duration: const Duration(milliseconds: 300),
+                                                opacity: _currentMode == CameraMode.receipt ? 1.0 : 0.0,
+                                                child: Text(
+                                                  AppLocalizations.of(context)!.receiptMode,
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          )
+                                        : const SizedBox.shrink(),
                                   ),
                                 ],
                               ),
