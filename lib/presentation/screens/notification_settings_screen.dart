@@ -201,11 +201,13 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
     
     ref.read(managerCharacterProvider.notifier).setCharacter(character);
     
-    // 初回設定の場合はメイン画面へ、設定変更の場合は前の画面へ
+    // 初回設定の場合はメイン画面へ、設定変更の場合は2つ前の画面へ戻る
     if (widget.isInitialSetup) {
       Navigator.pushReplacementNamed(context, '/main');
     } else {
-      Navigator.popUntil(context, (route) => route.isFirst);
+      // マネージャー選択画面とこの画面の2つを閉じて設定画面に戻る
+      Navigator.pop(context); // 通知設定画面を閉じる
+      Navigator.pop(context); // マネージャー選択画面を閉じる
     }
   }
 }
