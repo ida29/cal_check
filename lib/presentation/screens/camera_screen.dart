@@ -179,9 +179,10 @@ class _CameraScreenState extends State<CameraScreen> {
                       borderRadius: BorderRadius.circular(25),
                     ),
                     child: Row(
-                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Expanded(
+                        Flexible(
+                          flex: _currentMode == CameraMode.food ? 3 : 1,
                           child: GestureDetector(
                             onTap: () {
                               setState(() {
@@ -236,7 +237,8 @@ class _CameraScreenState extends State<CameraScreen> {
                             ),
                           ),
                         ),
-                        Expanded(
+                        Flexible(
+                          flex: _currentMode == CameraMode.barcode ? 3 : 1,
                           child: GestureDetector(
                             onTap: () {
                               setState(() {
@@ -291,7 +293,8 @@ class _CameraScreenState extends State<CameraScreen> {
                             ),
                           ),
                         ),
-                        Expanded(
+                        Flexible(
+                          flex: _currentMode == CameraMode.receipt ? 3 : 1,
                           child: GestureDetector(
                             onTap: () {
                               setState(() {

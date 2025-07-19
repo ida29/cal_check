@@ -134,7 +134,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         children: [
           // メインコンテンツ
           SafeArea(
-            child: Padding(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -155,7 +155,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   _buildFoodRecordButton(),
                   const SizedBox(height: 16),
                   _buildExerciseRecordButton(),
-                  const Spacer(),
+                  const SizedBox(height: 20), // 下部に余白を追加
                 ],
               ),
             ),
@@ -319,7 +319,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Container(
-        height: 280,
+        height: 185,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           gradient: const LinearGradient(
@@ -842,7 +842,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           color: Colors.transparent,
           child: InkWell(
             onTap: () {
-              Navigator.pushNamed(context, '/exercise');
+              Navigator.pushNamed(context, '/history');
             },
             borderRadius: BorderRadius.circular(20),
             hoverColor: Colors.transparent,

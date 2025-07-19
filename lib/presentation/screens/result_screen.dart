@@ -25,6 +25,8 @@ class _ResultScreenState extends State<ResultScreen> {
   String? _errorMessage;
   bool _isSaving = false;
   bool _isSaved = false;
+  DateTime _selectedDate = DateTime.now();
+  Map<String, int> _itemQuantities = {};
 
   final AICalorieService _aiService = AICalorieService();
   final BarcodeService _barcodeService = BarcodeService();
@@ -69,6 +71,10 @@ class _ResultScreenState extends State<ResultScreen> {
       _recognitionResult = result;
       _foodItems = List.from(result.detectedItems);
       _isAnalyzing = false;
+      // 初期個数を1に設定
+      _itemQuantities = {
+        for (var item in result.detectedItems) item.name: 1
+      };
     });
   }
 
@@ -100,6 +106,8 @@ class _ResultScreenState extends State<ResultScreen> {
       setState(() {
         _foodItems = [foodItem];
         _isAnalyzing = false;
+        // 初期個数を1に設定
+        _itemQuantities = {foodItem.name: 1};
       });
     } else {
       setState(() {
@@ -126,11 +134,75 @@ class _ResultScreenState extends State<ResultScreen> {
     setState(() {
       _foodItems = foodItems;
       _isAnalyzing = false;
+      // 初期個数を1に設定
+      _itemQuantities = {
+        for (var item in foodItems) item.name: 1
+      };
     });
   }
 
   double get _totalCalories {
-    return _aiService.getTotalCalories(_foodItems);
+    double total = 0;
+    for (var item in _foodItems) {
+      final quantity = _itemQuantities[item.name] ?? 1;
+      total += item.calories * quantity;
+    }
+    return total;
+  }
+
+  Widget _buildDateSelector() {
+    return Card(
+      elevation: 4,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          children: [
+            const Icon(Icons.calendar_today, color: Color(0xFFFF69B4)),
+            const SizedBox(width: 12),
+            Text(
+              '記録日時',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            GestureDetector(
+              onTap: _selectDate,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFF69B4).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFFFF69B4)),
+                ),
+                child: Text(
+                  '${_selectedDate.year}年${_selectedDate.month}月${_selectedDate.day}日',
+                  style: const TextStyle(
+                    color: Color(0xFFFF69B4),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _selectDate() async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime.now().subtract(const Duration(days: 30)),
+      lastDate: DateTime.now(),
+      locale: const Locale('ja', 'JP'),
+    );
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
   }
 
   @override
@@ -216,6 +288,8 @@ class _ResultScreenState extends State<ResultScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    _buildDateSelector(),
+                    const SizedBox(height: 16),
                     Card(
                       elevation: 4,
                       child: Padding(
@@ -350,10 +424,49 @@ class _ResultScreenState extends State<ResultScreen> {
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 Text(
-                  '${item.calories.toStringAsFixed(0)} cal',
+                  '${(item.calories * (_itemQuantities[item.name] ?? 1)).toStringAsFixed(0)} cal',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: Theme.of(context).primaryColor,
                       ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '個数',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Row(
+                  children: [
+                    IconButton(
+                      onPressed: () => _updateQuantity(item.name, -1),
+                      icon: const Icon(Icons.remove_circle_outline),
+                      color: const Color(0xFFFF69B4),
+                      constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                    ),
+                    Container(
+                      width: 50,
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Text(
+                        '${_itemQuantities[item.name] ?? 1}',
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => _updateQuantity(item.name, 1),
+                      icon: const Icon(Icons.add_circle_outline),
+                      color: const Color(0xFFFF69B4),
+                      constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -395,7 +508,64 @@ class _ResultScreenState extends State<ResultScreen> {
   void _removeItem(FoodItem item) {
     setState(() {
       _foodItems.remove(item);
+      _itemQuantities.remove(item.name);
     });
+  }
+
+  void _updateQuantity(String itemName, int change) {
+    setState(() {
+      final currentQuantity = _itemQuantities[itemName] ?? 1;
+      final newQuantity = (currentQuantity + change).clamp(1, 99);
+      _itemQuantities[itemName] = newQuantity;
+    });
+  }
+
+  void _showSaveSuccessModal() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.green.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.check_circle, color: Colors.green, size: 24),
+              ),
+              const SizedBox(width: 12),
+              const Text('記録完了'),
+            ],
+          ),
+          content: const Text('食事の記録が保存されました。\n追加で記録しますか？'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // ダイアログを閉じる
+                Navigator.of(context).pop(); // 結果画面を閉じる
+              },
+              child: const Text('記録を終了'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // ダイアログを閉じる
+                Navigator.of(context).pop(); // 結果画面を閉じる
+                Navigator.pushNamed(context, '/camera'); // カメラ画面に戻る
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFF69B4),
+                foregroundColor: Colors.white,
+              ),
+              child: const Text('追加で記録'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _addCustomItem() {
@@ -516,13 +686,8 @@ class _ResultScreenState extends State<ResultScreen> {
           _isSaved = true;
         });
         
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(AppLocalizations.of(context)!.mealSavedSuccessfully),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 2),
-          ),
-        );
+        // 保存成功後にモーダルを表示
+        _showSaveSuccessModal();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
