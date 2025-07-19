@@ -86,6 +86,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               _buildManagerCharacterSection(),
               const SizedBox(height: 16),
               _buildDailySummaryCard(),
+              const SizedBox(height: 20),
+              _buildMainActionButton(),
               const Spacer(),
             ],
           ),
@@ -99,17 +101,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             height: 56,
             width: 56,
             margin: const EdgeInsets.only(right: 12),
-            child: FloatingActionButton(
-              heroTag: "manual_input",
-              onPressed: () {
-                Navigator.pushNamed(context, '/manual-meal-entry');
-              },
-              backgroundColor: const Color(0xFF2196F3),
-              foregroundColor: Colors.white,
+            child: Material(
               elevation: 4,
-              child: const Icon(
-                Icons.edit_rounded,
-                size: 24,
+              shape: const CircleBorder(),
+              color: const Color(0xFF2196F3),
+              child: InkWell(
+                customBorder: const CircleBorder(),
+                onTap: () {
+                  Navigator.pushNamed(context, '/manual-meal-entry');
+                },
+                hoverColor: Colors.transparent,
+                splashColor: Colors.white.withOpacity(0.3),
+                child: const SizedBox(
+                  height: 56,
+                  width: 56,
+                  child: Icon(
+                    Icons.edit_rounded,
+                    size: 24,
+                    color: Colors.white,
+                  ),
+                ),
               ),
             ),
           ),
@@ -117,18 +128,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           Container(
             height: 70,
             width: 70,
-            child: FittedBox(
-              child: FloatingActionButton(
-                heroTag: "camera",
-                onPressed: () {
+            child: Material(
+              elevation: 8,
+              shape: const CircleBorder(),
+              color: const Color(0xFFFF69B4),
+              child: InkWell(
+                customBorder: const CircleBorder(),
+                onTap: () {
                   Navigator.pushNamed(context, '/camera');
                 },
-                backgroundColor: const Color(0xFFFF69B4),
-                foregroundColor: Colors.white,
-                elevation: 8,
-                child: const Icon(
-                  Icons.camera_alt_rounded,
-                  size: 32,
+                hoverColor: Colors.transparent,
+                splashColor: Colors.white.withOpacity(0.3),
+                child: const SizedBox(
+                  height: 70,
+                  width: 70,
+                  child: Icon(
+                    Icons.camera_alt_rounded,
+                    size: 32,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),
@@ -256,7 +274,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       return Card(
         elevation: 2,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: InkWell(
+        child: GestureDetector(
           onTap: () {
             Navigator.push(
               context,
@@ -266,7 +284,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             );
           },
-          borderRadius: BorderRadius.circular(16),
           child: Container(
             padding: const EdgeInsets.all(16),
             child: Row(
@@ -414,6 +431,48 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     } else {
       return 'よく頑張ってるにゃ〜！えらいにゃ〜！';
     }
+  }
+
+  Widget _buildMainActionButton() {
+    final l10n = AppLocalizations.of(context)!;
+    
+    return Container(
+      width: double.infinity,
+      height: 60,
+      child: ElevatedButton(
+        onPressed: () {
+          Navigator.pushNamed(context, '/camera');
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFFFF69B4),
+          foregroundColor: Colors.white,
+          elevation: 4,
+          shadowColor: Colors.black26,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ).copyWith(
+          overlayColor: MaterialStateProperty.all(Colors.white.withOpacity(0.1)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.camera_alt_rounded,
+              size: 28,
+            ),
+            const SizedBox(width: 12),
+            Text(
+              '写真で食事を記録',
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
 

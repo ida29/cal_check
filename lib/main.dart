@@ -43,7 +43,7 @@ class CalorieCheckerApp extends ConsumerWidget {
     
     return MaterialApp(
       title: 'Calorie Checker AI',
-      locale: locale,
+      locale: locale ?? const Locale('ja', 'JP'), // デフォルトを日本語に設定
       localizationsDelegates: const [
         AppLocalizations.delegate,
         GlobalMaterialLocalizations.delegate,
@@ -51,8 +51,8 @@ class CalorieCheckerApp extends ConsumerWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: const [
+        Locale('ja', 'JP'), // 日本語を最初に配置
         Locale('en', 'US'),
-        Locale('ja', 'JP'),
       ],
       theme: ThemeData(
         useMaterial3: true,

@@ -320,15 +320,21 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: const TextStyle(fontSize: 16)),
+            Text(label, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+            const SizedBox(height: 8),
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
-                  value,
-                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                Flexible(
+                  child: Text(
+                    value,
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
                 const SizedBox(width: 8),
                 Container(
@@ -508,28 +514,30 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
   
   Widget _buildPFCItem(String name, double actual, double recommended, String range, Color color) {
     final difference = actual - recommended;
-    final isOptimal = (actual >= double.parse(range.split('-')[0]) && 
-                      actual <= double.parse(range.split('-')[1]));
+    final rangeParts = range.replaceAll('%', '').split('-');
+    final isOptimal = (actual >= double.parse(rangeParts[0]) && 
+                      actual <= double.parse(rangeParts[1]));
     
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              children: [
-                Container(
-                  width: 12,
-                  height: 12,
-                  decoration: BoxDecoration(
-                    color: color,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(name, style: const TextStyle(fontSize: 14)),
-              ],
+            Container(
+              width: 12,
+              height: 12,
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                name, 
+                style: const TextStyle(fontSize: 14),
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
             Text(
               '${actual.toStringAsFixed(0)}%',
@@ -545,9 +553,12 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              '推奨: $range',
-              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+            Flexible(
+              child: Text(
+                '推奨: $range',
+                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
             if (!isOptimal)
               Text(
@@ -624,30 +635,41 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(nutrient, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-                  const SizedBox(height: 2),
-                  Text(benefit, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
-                ],
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    nutrient, 
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: color.withOpacity(0.3)),
+                  ),
+                  child: Text(
+                    status,
+                    style: TextStyle(fontSize: 12, color: color, fontWeight: FontWeight.w500),
+                  ),
+                ),
+              ],
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: color.withOpacity(0.3)),
-              ),
-              child: Text(
-                status,
-                style: TextStyle(fontSize: 12, color: color, fontWeight: FontWeight.w500),
-              ),
+            const SizedBox(height: 4),
+            Text(
+              benefit, 
+              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 2,
             ),
           ],
         ),
@@ -663,9 +685,13 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
               ),
             ),
             const SizedBox(width: 8),
-            Text(
-              '${percentage.toStringAsFixed(0)}%',
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: color),
+            SizedBox(
+              width: 45,
+              child: Text(
+                '${percentage.toStringAsFixed(0)}%',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: color),
+                textAlign: TextAlign.end,
+              ),
             ),
           ],
         ),

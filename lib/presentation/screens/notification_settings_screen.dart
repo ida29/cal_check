@@ -170,22 +170,22 @@ class _NotificationSettingsScreenState extends ConsumerState<NotificationSetting
       case NotificationLevel.gentle:
         return _LevelInfo(
           '控えめ', 
-          Icons.volume_down, 
-          Colors.green[400]!,
+          Icons.spa_outlined, 
+          const Color(0xFF66BB6A), // Soft green - 穏やかで落ち着いた印象
           '必要最小限の通知のみ'
         );
       case NotificationLevel.normal:
         return _LevelInfo(
           '標準', 
-          Icons.notifications, 
-          Colors.blue[400]!,
+          Icons.notifications_outlined, 
+          const Color(0xFF42A5F5), // Bright blue - バランスの取れた印象
           '適度な頻度で通知'
         );
       case NotificationLevel.persistent:
         return _LevelInfo(
           'しっかり', 
-          Icons.notification_important, 
-          Colors.orange[400]!,
+          Icons.flash_on_outlined, 
+          const Color(0xFFFF7043), // Warm orange - エネルギッシュで積極的な印象
           'こまめに通知でサポート'
         );
     }
