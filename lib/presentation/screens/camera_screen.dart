@@ -116,108 +116,6 @@ class _CameraScreenState extends State<CameraScreen> {
               child: CircularProgressIndicator(),
             ),
           Positioned(
-            top: 20,
-            left: 20,
-            right: 20,
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.7),
-                borderRadius: BorderRadius.circular(25),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _currentMode = CameraMode.food;
-                        });
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                        decoration: BoxDecoration(
-                          color: _currentMode == CameraMode.food 
-                              ? const Color(0xFFFF69B4)
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(25),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.restaurant,
-                              color: _currentMode == CameraMode.food 
-                                  ? Colors.white 
-                                  : Colors.white70,
-                              size: 18,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              AppLocalizations.of(context)!.foodMode,
-                              style: TextStyle(
-                                color: _currentMode == CameraMode.food 
-                                    ? Colors.white 
-                                    : Colors.white70,
-                                fontSize: 14,
-                                fontWeight: _currentMode == CameraMode.food 
-                                    ? FontWeight.bold 
-                                    : FontWeight.normal,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _currentMode = CameraMode.barcode;
-                        });
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                        decoration: BoxDecoration(
-                          color: _currentMode == CameraMode.barcode 
-                              ? const Color(0xFFFF69B4)
-                              : Colors.transparent,
-                          borderRadius: BorderRadius.circular(25),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.qr_code_scanner,
-                              color: _currentMode == CameraMode.barcode 
-                                  ? Colors.white 
-                                  : Colors.white70,
-                              size: 18,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              AppLocalizations.of(context)!.barcodeMode,
-                              style: TextStyle(
-                                color: _currentMode == CameraMode.barcode 
-                                    ? Colors.white 
-                                    : Colors.white70,
-                                fontSize: 14,
-                                fontWeight: _currentMode == CameraMode.barcode 
-                                    ? FontWeight.bold 
-                                    : FontWeight.normal,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Positioned(
             bottom: 0,
             left: 0,
             right: 0,
@@ -233,54 +131,159 @@ class _CameraScreenState extends State<CameraScreen> {
                   ],
                 ),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.photo_library),
-                    color: Colors.white,
-                    iconSize: 32,
-                    onPressed: _pickFromGallery,
-                  ),
-                  IconButton(
-                    icon: _isProcessing
-                        ? const SizedBox(
-                            width: 32,
-                            height: 32,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 3,
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Icon(Icons.camera_alt),
-                    color: Colors.white,
-                    iconSize: 48,
-                    onPressed: _isProcessing ? null : _takePicture,
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.info_outline),
-                    color: Colors.white,
-                    iconSize: 32,
-                    onPressed: () {
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          final l10n = AppLocalizations.of(context)!;
-                          return AlertDialog(
-                            title: Text(l10n.tipsForBestResults),
-                            content: Text(
-                              '${l10n.tip1}${l10n.tip2}${l10n.tip3}${l10n.tip4}${l10n.tip5}',
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: Text(l10n.gotIt),
+                  // Camera mode selection
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 20),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.6),
+                      borderRadius: BorderRadius.circular(25),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _currentMode = CameraMode.food;
+                              });
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                              decoration: BoxDecoration(
+                                color: _currentMode == CameraMode.food 
+                                    ? const Color(0xFFFF69B4)
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(25),
                               ),
-                            ],
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.restaurant,
+                                    color: _currentMode == CameraMode.food 
+                                        ? Colors.white 
+                                        : Colors.white70,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    AppLocalizations.of(context)!.foodMode,
+                                    style: TextStyle(
+                                      color: _currentMode == CameraMode.food 
+                                          ? Colors.white 
+                                          : Colors.white70,
+                                      fontSize: 16,
+                                      fontWeight: _currentMode == CameraMode.food 
+                                          ? FontWeight.bold 
+                                          : FontWeight.normal,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _currentMode = CameraMode.barcode;
+                              });
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                              decoration: BoxDecoration(
+                                color: _currentMode == CameraMode.barcode 
+                                    ? const Color(0xFFFF69B4)
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(25),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.qr_code_scanner,
+                                    color: _currentMode == CameraMode.barcode 
+                                        ? Colors.white 
+                                        : Colors.white70,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    AppLocalizations.of(context)!.barcodeMode,
+                                    style: TextStyle(
+                                      color: _currentMode == CameraMode.barcode 
+                                          ? Colors.white 
+                                          : Colors.white70,
+                                      fontSize: 16,
+                                      fontWeight: _currentMode == CameraMode.barcode 
+                                          ? FontWeight.bold 
+                                          : FontWeight.normal,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Camera controls
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.photo_library),
+                        color: Colors.white,
+                        iconSize: 32,
+                        onPressed: _pickFromGallery,
+                      ),
+                      IconButton(
+                        icon: _isProcessing
+                            ? const SizedBox(
+                                width: 32,
+                                height: 32,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 3,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Icon(Icons.camera_alt),
+                        color: Colors.white,
+                        iconSize: 48,
+                        onPressed: _isProcessing ? null : _takePicture,
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.info_outline),
+                        color: Colors.white,
+                        iconSize: 32,
+                        onPressed: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) {
+                              final l10n = AppLocalizations.of(context)!;
+                              return AlertDialog(
+                                title: Text(l10n.tipsForBestResults),
+                                content: Text(
+                                  '${l10n.tip1}${l10n.tip2}${l10n.tip3}${l10n.tip4}${l10n.tip5}',
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: Text(l10n.gotIt),
+                                  ),
+                                ],
+                              );
+                            },
                           );
                         },
-                      );
-                    },
+                      ),
+                    ],
                   ),
                 ],
               ),
