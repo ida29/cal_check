@@ -529,6 +529,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get barcodeMode => 'Barcode';
 
   @override
+  String get receiptMode => 'Receipt';
+
+  @override
+  String get receiptNotDetected => 'Receipt not detected. Please try again.';
+
+  @override
+  String get analyzingReceipt => 'Analyzing receipt...';
+
+  @override
+  String get receiptReadingFailed => 'Failed to read receipt.';
+
+  @override
+  String get receiptInfoRetrievalFailed =>
+      'Could not retrieve receipt information.';
+
+  @override
   String get exerciseTitle => 'Exercise';
 
   @override

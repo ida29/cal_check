@@ -525,6 +525,21 @@ class AppLocalizationsJa extends AppLocalizations {
   String get barcodeMode => 'バーコード';
 
   @override
+  String get receiptMode => 'レシート';
+
+  @override
+  String get receiptNotDetected => 'レシートが検出されませんでした。もう一度お試しください。';
+
+  @override
+  String get analyzingReceipt => 'レシートを解析中...';
+
+  @override
+  String get receiptReadingFailed => 'レシートの読み取りに失敗しました。';
+
+  @override
+  String get receiptInfoRetrievalFailed => 'レシート情報を取得できませんでした。';
+
+  @override
   String get exerciseTitle => '運動';
 
   @override

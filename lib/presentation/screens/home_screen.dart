@@ -475,14 +475,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           children: [
             Expanded(
               child: _buildActionCard(
-                icon: Icons.water_drop_rounded,
-                title: l10n.recordWater,
-                subtitle: l10n.recordWaterSubtitle,
-                color: const Color(0xFF00BCD4),
+                icon: Icons.monitor_weight_rounded,
+                title: '体重記録',
+                subtitle: '体重を記録',
+                color: const Color(0xFF9C27B0),
                 onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(l10n.waterRecordingComingSoon)),
-                  );
+                  Navigator.pushNamed(context, '/weight-tracking');
                 },
               ),
             ),

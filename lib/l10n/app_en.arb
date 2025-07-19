@@ -676,6 +676,26 @@
   "@barcodeMode": {
     "description": "Barcode camera mode"
   },
+  "receiptMode": "Receipt",
+  "@receiptMode": {
+    "description": "Receipt camera mode"
+  },
+  "receiptNotDetected": "Receipt not detected. Please try again.",
+  "@receiptNotDetected": {
+    "description": "Receipt not detected error message"
+  },
+  "analyzingReceipt": "Analyzing receipt...",
+  "@analyzingReceipt": {
+    "description": "Analyzing receipt text"
+  },
+  "receiptReadingFailed": "Failed to read receipt.",
+  "@receiptReadingFailed": {
+    "description": "Receipt reading failed error message"
+  },
+  "receiptInfoRetrievalFailed": "Could not retrieve receipt information.",
+  "@receiptInfoRetrievalFailed": {
+    "description": "Receipt information retrieval failed error message"
+  },
   "exerciseTitle": "Exercise",
   "@exerciseTitle": {
     "description": "Exercise tab title"

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:uuid/uuid.dart';
 import '../../l10n/app_localizations.dart';
+import '../../data/entities/exercise_record.dart';
+import '../../business/services/record_storage_service.dart';
 
 class ExerciseScreen extends StatefulWidget {
   const ExerciseScreen({Key? key}) : super(key: key);
@@ -13,9 +16,17 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
   final _nameController = TextEditingController();
   final _durationController = TextEditingController();
   final _caloriesController = TextEditingController();
+  final _setsController = TextEditingController();
+  final _repsController = TextEditingController();
+  final _distanceController = TextEditingController();
+  final _noteController = TextEditingController();
+  final _recordStorageService = RecordStorageService();
   
   String _selectedIntensity = 'moderate';
+  String _selectedType = ExerciseType.cardio;
   DateTime _selectedDate = DateTime.now();
+  TimeOfDay _selectedTime = TimeOfDay.now();
+  bool _isSaving = false;
   
   final List<Map<String, dynamic>> _commonExercises = [
     {'name': 'ウォーキング', 'icon': Icons.directions_walk, 'caloriesPerMinute': 5},
@@ -171,25 +182,169 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
             ),
             const SizedBox(height: 16),
             
-            // 日付選択
-            ListTile(
-              leading: const Icon(Icons.calendar_today, color: Color(0xFF4CAF50)),
-              title: const Text('日付'),
-              subtitle: Text(
-                '${_selectedDate.year}年${_selectedDate.month}月${_selectedDate.day}日',
-              ),
-              trailing: const Icon(Icons.arrow_forward_ios),
-              onTap: _selectDate,
-              shape: RoundedRectangleBorder(
+            // 運動タイプ選択
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey.shade300),
                 borderRadius: BorderRadius.circular(12),
-                side: BorderSide(color: Colors.grey.shade300),
               ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.category, color: Color(0xFF4CAF50)),
+                      const SizedBox(width: 8),
+                      Text(
+                        '運動タイプ',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _buildTypeChip(ExerciseType.cardio, '有酸素'),
+                      _buildTypeChip(ExerciseType.strength, '筋トレ'),
+                      _buildTypeChip(ExerciseType.flexibility, '柔軟'),
+                      _buildTypeChip(ExerciseType.sports, 'スポーツ'),
+                      _buildTypeChip(ExerciseType.other, 'その他'),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            
+            // 追加情報（筋トレの場合）
+            if (_selectedType == ExerciseType.strength) ...[
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _setsController,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      decoration: InputDecoration(
+                        labelText: 'セット数',
+                        prefixIcon: const Icon(Icons.repeat, color: Color(0xFF4CAF50)),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: TextField(
+                      controller: _repsController,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      decoration: InputDecoration(
+                        labelText: '回数',
+                        prefixIcon: const Icon(Icons.fitness_center, color: Color(0xFF4CAF50)),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+            ],
+            
+            // 距離（有酸素運動の場合）
+            if (_selectedType == ExerciseType.cardio) ...[
+              TextField(
+                controller: _distanceController,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+                ],
+                decoration: InputDecoration(
+                  labelText: '距離（km）',
+                  prefixIcon: const Icon(Icons.route, color: Color(0xFF4CAF50)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+            
+            // メモ
+            TextField(
+              controller: _noteController,
+              maxLines: 3,
+              decoration: InputDecoration(
+                labelText: 'メモ',
+                alignLabelWithHint: true,
+                prefixIcon: const Icon(Icons.note, color: Color(0xFF4CAF50)),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            
+            // 日付と時間選択
+            Row(
+              children: [
+                Expanded(
+                  child: ListTile(
+                    leading: const Icon(Icons.calendar_today, color: Color(0xFF4CAF50)),
+                    title: const Text('日付'),
+                    subtitle: Text(
+                      '${_selectedDate.year}/${_selectedDate.month}/${_selectedDate.day}',
+                    ),
+                    onTap: _selectDate,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(color: Colors.grey.shade300),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: ListTile(
+                    leading: const Icon(Icons.access_time, color: Color(0xFF4CAF50)),
+                    title: const Text('時刻'),
+                    subtitle: Text(_selectedTime.format(context)),
+                    onTap: _selectTime,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(color: Colors.grey.shade300),
+                    ),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 32),
             
             // 保存ボタン
             ElevatedButton(
-              onPressed: _saveExercise,
+              onPressed: _isSaving ? null : _saveExercise,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF4CAF50),
                 padding: const EdgeInsets.symmetric(vertical: 16),
@@ -197,10 +352,19 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
-              child: const Text(
-                '運動を記録',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
+              child: _isSaving
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Text(
+                      '運動を記録',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
             ),
           ],
         ),
@@ -357,7 +521,7 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
     }
   }
   
-  void _saveExercise() {
+  Future<void> _saveExercise() async {
     if (_nameController.text.isEmpty || _durationController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('運動名と時間を入力してください')),
@@ -365,21 +529,113 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
       return;
     }
     
-    // TODO: 実際の保存処理を実装
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${_nameController.text}を記録しました（${_caloriesController.text}カロリー消費）'),
-        backgroundColor: const Color(0xFF4CAF50),
+    setState(() {
+      _isSaving = true;
+    });
+    
+    try {
+      final recordedAt = DateTime(
+        _selectedDate.year,
+        _selectedDate.month,
+        _selectedDate.day,
+        _selectedTime.hour,
+        _selectedTime.minute,
+      );
+      
+      final record = ExerciseRecord(
+        id: const Uuid().v4(),
+        recordedAt: recordedAt,
+        exerciseName: _nameController.text,
+        exerciseType: _selectedType,
+        duration: int.parse(_durationController.text),
+        caloriesBurned: int.tryParse(_caloriesController.text) ?? 0,
+        intensity: _selectedIntensity,
+        distance: _distanceController.text.isNotEmpty
+            ? double.tryParse(_distanceController.text)
+            : null,
+        sets: _setsController.text.isNotEmpty
+            ? int.tryParse(_setsController.text)
+            : null,
+        reps: _repsController.text.isNotEmpty
+            ? int.tryParse(_repsController.text)
+            : null,
+        note: _noteController.text.isNotEmpty ? _noteController.text : null,
+        createdAt: DateTime.now(),
+      );
+      
+      await _recordStorageService.saveExerciseRecord(record);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${_nameController.text}を記録しました（${_caloriesController.text}カロリー消費）'),
+            backgroundColor: const Color(0xFF4CAF50),
+          ),
+        );
+        
+        // 入力をクリア
+        _nameController.clear();
+        _durationController.clear();
+        _caloriesController.clear();
+        _setsController.clear();
+        _repsController.clear();
+        _distanceController.clear();
+        _noteController.clear();
+        setState(() {
+          _selectedIntensity = 'moderate';
+          _selectedType = ExerciseType.cardio;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('エラーが発生しました: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
+    }
+  }
+  
+  Widget _buildTypeChip(String type, String label) {
+    final isSelected = _selectedType == type;
+    
+    return ChoiceChip(
+      label: Text(label),
+      selected: isSelected,
+      onSelected: (selected) {
+        if (selected) {
+          setState(() {
+            _selectedType = type;
+          });
+        }
+      },
+      selectedColor: const Color(0xFF4CAF50).withOpacity(0.3),
+      labelStyle: TextStyle(
+        color: isSelected ? const Color(0xFF4CAF50) : null,
+        fontWeight: isSelected ? FontWeight.bold : null,
       ),
     );
+  }
+  
+  Future<void> _selectTime() async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: _selectedTime,
+    );
     
-    // 入力をクリア
-    _nameController.clear();
-    _durationController.clear();
-    _caloriesController.clear();
-    setState(() {
-      _selectedIntensity = 'moderate';
-    });
+    if (picked != null) {
+      setState(() {
+        _selectedTime = picked;
+      });
+    }
   }
   
   @override
@@ -387,6 +643,10 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
     _nameController.dispose();
     _durationController.dispose();
     _caloriesController.dispose();
+    _setsController.dispose();
+    _repsController.dispose();
+    _distanceController.dispose();
+    _noteController.dispose();
     super.dispose();
   }
 }

@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:uuid/uuid.dart';
 import '../../l10n/app_localizations.dart';
 import '../../data/datasources/food_database.dart';
 import '../../data/entities/food_item.dart';
 import '../../data/entities/nutrition_info.dart';
+import '../../data/entities/meal_record.dart';
 import '../../business/services/local_photo_storage_service.dart';
+import '../../business/services/record_storage_service.dart';
 
 class ManualMealEntryScreen extends StatefulWidget {
   const ManualMealEntryScreen({Key? key}) : super(key: key);
@@ -17,6 +20,7 @@ class _ManualMealEntryScreenState extends State<ManualMealEntryScreen> {
   final _searchController = TextEditingController();
   final _quantityController = TextEditingController();
   final LocalPhotoStorageService _storageService = LocalPhotoStorageService();
+  final RecordStorageService _recordStorageService = RecordStorageService();
   
   List<Map<String, dynamic>> _searchResults = [];
   List<FoodItem> _selectedFoods = [];
@@ -540,6 +544,7 @@ class _ManualMealEntryScreenState extends State<ManualMealEntryScreen> {
       // 手動入力用のダミー画像パスを作成
       final dummyImagePath = 'manual_entry_${DateTime.now().millisecondsSinceEpoch}';
       
+      // 写真を保存（手動入力用のメタデータ）
       final savedPath = await _storageService.saveMealPhoto(
         originalPath: dummyImagePath,
         foodItems: _selectedFoods,
@@ -548,7 +553,20 @@ class _ManualMealEntryScreenState extends State<ManualMealEntryScreen> {
         isManualEntry: true,
       );
       
-      if (savedPath != null && mounted) {
+      // 食事記録を保存
+      final mealRecord = MealRecord(
+        id: const Uuid().v4(),
+        recordedAt: DateTime.now(),
+        mealType: _selectedMealType,
+        foodItems: _selectedFoods,
+        photoPath: savedPath,
+        isManualEntry: true,
+        createdAt: DateTime.now(),
+      );
+      
+      await _recordStorageService.saveMealRecord(mealRecord);
+      
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('食事を記録しました'),

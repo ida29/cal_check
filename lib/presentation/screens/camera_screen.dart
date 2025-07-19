@@ -10,7 +10,7 @@ class CameraScreen extends StatefulWidget {
   State<CameraScreen> createState() => _CameraScreenState();
 }
 
-enum CameraMode { food, barcode }
+enum CameraMode { food, barcode, receipt }
 
 class _CameraScreenState extends State<CameraScreen> {
   CameraController? _controller;
@@ -189,7 +189,7 @@ class _CameraScreenState extends State<CameraScreen> {
                               });
                             },
                             child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                               decoration: BoxDecoration(
                                 color: _currentMode == CameraMode.food 
                                     ? const Color(0xFFFF69B4)
@@ -204,16 +204,16 @@ class _CameraScreenState extends State<CameraScreen> {
                                     color: _currentMode == CameraMode.food 
                                         ? Colors.white 
                                         : Colors.white70,
-                                    size: 20,
+                                    size: 18,
                                   ),
-                                  const SizedBox(width: 8),
+                                  const SizedBox(width: 4),
                                   Text(
                                     AppLocalizations.of(context)!.foodMode,
                                     style: TextStyle(
                                       color: _currentMode == CameraMode.food 
                                           ? Colors.white 
                                           : Colors.white70,
-                                      fontSize: 16,
+                                      fontSize: 14,
                                       fontWeight: _currentMode == CameraMode.food 
                                           ? FontWeight.bold 
                                           : FontWeight.normal,
@@ -232,7 +232,7 @@ class _CameraScreenState extends State<CameraScreen> {
                               });
                             },
                             child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                               decoration: BoxDecoration(
                                 color: _currentMode == CameraMode.barcode 
                                     ? const Color(0xFFFF69B4)
@@ -247,17 +247,60 @@ class _CameraScreenState extends State<CameraScreen> {
                                     color: _currentMode == CameraMode.barcode 
                                         ? Colors.white 
                                         : Colors.white70,
-                                    size: 20,
+                                    size: 18,
                                   ),
-                                  const SizedBox(width: 8),
+                                  const SizedBox(width: 4),
                                   Text(
                                     AppLocalizations.of(context)!.barcodeMode,
                                     style: TextStyle(
                                       color: _currentMode == CameraMode.barcode 
                                           ? Colors.white 
                                           : Colors.white70,
-                                      fontSize: 16,
+                                      fontSize: 14,
                                       fontWeight: _currentMode == CameraMode.barcode 
+                                          ? FontWeight.bold 
+                                          : FontWeight.normal,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              setState(() {
+                                _currentMode = CameraMode.receipt;
+                              });
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                              decoration: BoxDecoration(
+                                color: _currentMode == CameraMode.receipt 
+                                    ? const Color(0xFFFF69B4)
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(25),
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.receipt_long,
+                                    color: _currentMode == CameraMode.receipt 
+                                        ? Colors.white 
+                                        : Colors.white70,
+                                    size: 18,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    AppLocalizations.of(context)!.receiptMode,
+                                    style: TextStyle(
+                                      color: _currentMode == CameraMode.receipt 
+                                          ? Colors.white 
+                                          : Colors.white70,
+                                      fontSize: 14,
+                                      fontWeight: _currentMode == CameraMode.receipt 
                                           ? FontWeight.bold 
                                           : FontWeight.normal,
                                     ),

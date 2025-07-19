@@ -1112,6 +1112,36 @@ abstract class AppLocalizations {
   /// **'Barcode'**
   String get barcodeMode;
 
+  /// Receipt camera mode
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt'**
+  String get receiptMode;
+
+  /// Receipt not detected error message
+  ///
+  /// In en, this message translates to:
+  /// **'Receipt not detected. Please try again.'**
+  String get receiptNotDetected;
+
+  /// Analyzing receipt text
+  ///
+  /// In en, this message translates to:
+  /// **'Analyzing receipt...'**
+  String get analyzingReceipt;
+
+  /// Receipt reading failed error message
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to read receipt.'**
+  String get receiptReadingFailed;
+
+  /// Receipt information retrieval failed error message
+  ///
+  /// In en, this message translates to:
+  /// **'Could not retrieve receipt information.'**
+  String get receiptInfoRetrievalFailed;
+
   /// Exercise tab title
   ///
   /// In en, this message translates to:

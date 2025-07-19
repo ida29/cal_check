@@ -3,6 +3,7 @@ import 'dart:io';
 import '../../l10n/app_localizations.dart';
 import '../../business/services/ai_calorie_service.dart';
 import '../../business/services/barcode_service.dart';
+import '../../business/services/receipt_service.dart';
 import '../../business/services/local_photo_storage_service.dart';
 import '../../business/models/recognition_result.dart';
 import '../../data/entities/food_item.dart';
@@ -27,6 +28,7 @@ class _ResultScreenState extends State<ResultScreen> {
 
   final AICalorieService _aiService = AICalorieService();
   final BarcodeService _barcodeService = BarcodeService();
+  final ReceiptService _receiptService = ReceiptService();
   final LocalPhotoStorageService _storageService = LocalPhotoStorageService();
 
   @override
@@ -47,6 +49,8 @@ class _ResultScreenState extends State<ResultScreen> {
 
       if (mode == 'barcode') {
         await _analyzeBarcodeImage();
+      } else if (mode == 'receipt') {
+        await _analyzeReceiptImage();
       } else {
         await _analyzeFoodImage();
       }
@@ -103,6 +107,26 @@ class _ResultScreenState extends State<ResultScreen> {
         _isAnalyzing = false;
       });
     }
+  }
+
+  Future<void> _analyzeReceiptImage() async {
+    final receiptData = await _receiptService.scanReceipt(imagePath);
+    
+    if (receiptData == null || receiptData.items.isEmpty) {
+      setState(() {
+        _errorMessage = AppLocalizations.of(context)!.receiptNotDetected;
+        _isAnalyzing = false;
+      });
+      return;
+    }
+
+    // Convert receipt items to food items
+    final foodItems = await _receiptService.convertReceiptItemsToFoodItems(receiptData.items);
+    
+    setState(() {
+      _foodItems = foodItems;
+      _isAnalyzing = false;
+    });
   }
 
   double get _totalCalories {
