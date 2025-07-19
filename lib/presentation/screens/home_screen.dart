@@ -40,12 +40,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       curve: Curves.easeOutBack,
     ));
     
-    // 3秒後ににゃんこを表示
-    Future.delayed(const Duration(seconds: 3), () {
+    // 2秒後ににゃんこを表示
+    Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
         final managerCharacter = ref.read(managerCharacterProvider);
-        if (managerCharacter?.type == CharacterType.cat) {
-          _showCatMessage = true;
+        print('Manager character: ${managerCharacter?.type}'); // デバッグ用
+        if (managerCharacter != null) { // テスト用：マネージャーが設定されていれば表示
+          setState(() {
+            _showCatMessage = true;
+          });
           _slideController.forward();
           
           // 4秒後に自動的に隠す
@@ -136,8 +139,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _buildManagerCharacterSection(),
-                  const SizedBox(height: 16),
                   _buildDailySummaryCard(),
                   const SizedBox(height: 8),
                   // スワイプヒント
@@ -166,21 +167,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   Widget _buildCatMessageOverlay() {
     final managerCharacter = ref.watch(managerCharacterProvider);
-    if (managerCharacter?.type != CharacterType.cat) {
+    if (managerCharacter == null) {
       return const SizedBox.shrink();
     }
 
-    final messages = [
-      'にゃーん！今日も食事記録頑張るにゃ〜！',
-      'おつかれさまにゃ〜！水分補給も忘れずににゃ！',
-      '運動もしてえらいにゃ〜！この調子にゃ！',
-      'バランス良く食べてるにゃ〜！素晴らしいにゃ！',
-    ];
+    final messages = managerCharacter.type == CharacterType.cat 
+        ? [
+            'にゃーん！今日も食事記録頑張るにゃ〜！',
+            'おつかれさまにゃ〜！水分補給も忘れずににゃ！',
+            '運動もしてえらいにゃ〜！この調子にゃ！',
+            'バランス良く食べてるにゃ〜！素晴らしいにゃ！',
+          ]
+        : [
+            'こんにちは！今日も食事記録頑張りましょう！',
+            'お疲れ様です！水分補給も忘れずに！',
+            '運動もして素晴らしいですね！',
+            'バランス良く食べていて素晴らしいです！',
+          ];
     
     final randomMessage = messages[DateTime.now().millisecond % messages.length];
 
     return Positioned(
-      top: MediaQuery.of(context).size.height * 0.35,
+      bottom: 120,
       right: 0,
       child: SlideTransition(
         position: _slideAnimation,
@@ -224,11 +232,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         ),
                         const SizedBox(width: 6),
                         Text(
-                          'にゃんこ',
+                          managerCharacter.name,
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
-                            color: Colors.orange[700],
+                            color: managerCharacter.type == CharacterType.cat 
+                                ? Colors.orange[700]
+                                : Colors.pink[700],
                           ),
                         ),
                       ],
@@ -267,21 +277,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   height: 65,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [Colors.orange[300]!, Colors.orange[400]!],
+                      colors: managerCharacter.type == CharacterType.cat
+                          ? [Colors.orange[300]!, Colors.orange[400]!]
+                          : [Colors.pink[300]!, Colors.pink[400]!],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.orange.withOpacity(0.3),
+                        color: (managerCharacter.type == CharacterType.cat 
+                            ? Colors.orange 
+                            : Colors.pink).withOpacity(0.3),
                         blurRadius: 10,
                         offset: const Offset(0, 3),
                       ),
                     ],
                   ),
-                  child: const Icon(
-                    Icons.pets,
+                  child: Icon(
+                    managerCharacter.type == CharacterType.cat 
+                        ? Icons.pets 
+                        : Icons.person,
                     size: 35,
                     color: Colors.white,
                   ),
@@ -716,96 +732,58 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       );
     }
     
-    return FutureBuilder<int>(
-      future: MealReminderService.getMissedMealCount(),
-      builder: (context, snapshot) {
-        final missedCount = snapshot.data ?? 0;
-        final message = missedCount > 0
-            ? ManagerCharacterMessages.getRandomMessage(
-                managerCharacter.type,
-                NotificationLevel.gentle,
-              )
-            : _getEncouragementMessage(managerCharacter.type);
-        
-        return Card(
-          elevation: 2,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    color: managerCharacter.type == CharacterType.human
-                        ? Colors.pink[100]
-                        : Colors.orange[100],
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    managerCharacter.type == CharacterType.human
-                        ? Icons.person
-                        : Icons.pets,
-                    size: 35,
-                    color: managerCharacter.type == CharacterType.human
-                        ? Colors.pink[300]
-                        : Colors.orange[300],
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text(
-                            managerCharacter.name,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          if (missedCount > 0) ...[
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 2,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.red[100],
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                '未記録: $missedCount',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.red[700],
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        message,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[700],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Container(
+              width: 60,
+              height: 60,
+              decoration: BoxDecoration(
+                color: managerCharacter.type == CharacterType.human
+                    ? Colors.pink[100]
+                    : Colors.orange[100],
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                managerCharacter.type == CharacterType.human
+                    ? Icons.person
+                    : Icons.pets,
+                size: 35,
+                color: managerCharacter.type == CharacterType.human
+                    ? Colors.pink[300]
+                    : Colors.orange[300],
+              ),
             ),
-          ),
-        );
-      },
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    managerCharacter.name,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'マネージャー',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
   
