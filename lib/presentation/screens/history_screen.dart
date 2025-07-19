@@ -41,9 +41,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
               });
             },
             itemBuilder: (context) => [
-              PopupMenuItem(value: 'day', child: Text('日別')),
-              PopupMenuItem(value: 'week', child: Text('週別')),
-              PopupMenuItem(value: 'month', child: Text('月別')),
+              PopupMenuItem(value: 'day', child: Text(AppLocalizations.of(context)!.dayView)),
+              PopupMenuItem(value: 'week', child: Text(AppLocalizations.of(context)!.weekView)),
+              PopupMenuItem(value: 'month', child: Text(AppLocalizations.of(context)!.monthView)),
             ],
           ),
           IconButton(
@@ -203,14 +203,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
           ),
           const SizedBox(height: 16),
           Text(
-            'No meals recorded',
+            AppLocalizations.of(context)!.noMealsRecorded,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               color: Colors.grey[600],
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Start taking photos of your meals!',
+            AppLocalizations.of(context)!.startTakingPhotos,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Colors.grey[500],
             ),
@@ -308,7 +308,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
               style: Theme.of(context).textTheme.titleSmall,
             ),
             Text(
-              '${meal.foodItems.length} items',
+              '${meal.foodItems.length} ${AppLocalizations.of(context)!.itemsCount}',
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ],
@@ -510,7 +510,7 @@ class _MealDetailDialog extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(Icons.broken_image, size: 48),
-                                Text('Image not found'),
+                                Text(AppLocalizations.of(context)!.imageNotFound),
                               ],
                             ),
                           );
@@ -558,7 +558,7 @@ class _MealDetailDialog extends StatelessWidget {
                     
                     // Nutrition breakdown
                     Text(
-                      'Nutrition Breakdown',
+                      AppLocalizations.of(context)!.nutritionBreakdown,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 8),
@@ -591,7 +591,7 @@ class _MealDetailDialog extends StatelessWidget {
                               const Divider(),
                               _buildNutritionRow(
                                 context,
-                                'Fiber',
+                                AppLocalizations.of(context)!.fiber,
                                 '${totalNutrition.fiber.toStringAsFixed(1)}g',
                                 Colors.green,
                               ),
@@ -600,7 +600,7 @@ class _MealDetailDialog extends StatelessWidget {
                               const Divider(),
                               _buildNutritionRow(
                                 context,
-                                'Sugar',
+                                AppLocalizations.of(context)!.sugar,
                                 '${totalNutrition.sugar.toStringAsFixed(1)}g',
                                 Colors.pink,
                               ),
@@ -654,7 +654,7 @@ class _MealDetailDialog extends StatelessWidget {
                     child: OutlinedButton.icon(
                       onPressed: () => _deleteMeal(context, meal),
                       icon: const Icon(Icons.delete, color: Colors.red),
-                      label: const Text('Delete', style: TextStyle(color: Colors.red)),
+                      label: Text(AppLocalizations.of(context)!.delete, style: TextStyle(color: Colors.red)),
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Colors.red),
                       ),
@@ -664,7 +664,7 @@ class _MealDetailDialog extends StatelessWidget {
                   Expanded(
                     child: ElevatedButton(
                       onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Close'),
+                      child: Text(AppLocalizations.of(context)!.close),
                     ),
                   ),
                 ],
@@ -729,12 +729,12 @@ class _MealDetailDialog extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Meal'),
-        content: const Text('Are you sure you want to delete this meal? This action cannot be undone.'),
+        title: Text(AppLocalizations.of(context)!.deleteMeal),
+        content: Text(AppLocalizations.of(context)!.deleteMealConfirmation),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           TextButton(
             onPressed: () async {
@@ -747,22 +747,22 @@ class _MealDetailDialog extends StatelessWidget {
               if (success) {
                 onMealDeleted?.call(); // Notify parent to reload data
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Meal deleted successfully'),
+                  SnackBar(
+                    content: Text(AppLocalizations.of(context)!.mealDeletedSuccessfully),
                     backgroundColor: Colors.green,
                   ),
                 );
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Failed to delete meal'),
+                  SnackBar(
+                    content: Text(AppLocalizations.of(context)!.failedToDeleteMeal),
                     backgroundColor: Colors.red,
                   ),
                 );
               }
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
+            child: Text(AppLocalizations.of(context)!.delete),
           ),
         ],
       ),

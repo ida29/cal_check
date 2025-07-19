@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../l10n/app_localizations.dart';
+import '../../business/providers/user_profile_provider.dart';
+import '../../business/providers/meal_history_provider.dart';
+import 'dart:math' as math;
 
-class StatisticsScreen extends StatefulWidget {
+class StatisticsScreen extends ConsumerStatefulWidget {
   const StatisticsScreen({Key? key}) : super(key: key);
 
   @override
-  State<StatisticsScreen> createState() => _StatisticsScreenState();
+  ConsumerState<StatisticsScreen> createState() => _StatisticsScreenState();
 }
 
-class _StatisticsScreenState extends State<StatisticsScreen> {
+class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
   int _selectedPeriod = 0;
 
   @override
@@ -27,11 +31,15 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             children: [
               _buildPeriodSelector(),
               const SizedBox(height: 20),
+              _buildHealthMetricsCard(),
+              const SizedBox(height: 20),
               _buildCalorieChart(),
               const SizedBox(height: 20),
-              _buildNutritionOverview(),
+              _buildPFCBalanceCard(),
               const SizedBox(height: 20),
-              _buildWeeklyGoals(),
+              _buildNutritionAssessment(),
+              const SizedBox(height: 20),
+              _buildWeightPrediction(),
             ],
           ),
         ),
@@ -185,7 +193,367 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     );
   }
 
-  Widget _buildNutritionOverview() {
+  Widget _buildHealthMetricsCard() {
+    final userProfile = ref.watch(userProfileProvider);
+    final l10n = AppLocalizations.of(context)!;
+    
+    // BMI計算
+    double? bmi;
+    String bmiCategory = '';
+    Color bmiColor = Colors.grey;
+    
+    if (userProfile != null && userProfile.height > 0 && userProfile.weight > 0) {
+      final heightInMeters = userProfile.height / 100;
+      bmi = userProfile.weight / (heightInMeters * heightInMeters);
+      
+      if (bmi < 18.5) {
+        bmiCategory = '低体重';
+        bmiColor = Colors.blue;
+      } else if (bmi < 25) {
+        bmiCategory = '標準体重';
+        bmiColor = Colors.green;
+      } else if (bmi < 30) {
+        bmiCategory = '肥満度1';
+        bmiColor = Colors.orange;
+      } else {
+        bmiCategory = '肥満度2以上';
+        bmiColor = Colors.red;
+      }
+    }
+    
+    // 基礎代謝率（BMR）計算 - ハリス・ベネディクト方程式（改定版）
+    double? bmr;
+    double? tdee;
+    if (userProfile != null && userProfile.age > 0 && userProfile.weight > 0 && userProfile.height > 0) {
+      if (userProfile.gender == 'male') {
+        bmr = (13.397 * userProfile.weight) + (4.799 * userProfile.height) - (5.677 * userProfile.age) + 88.362;
+      } else {
+        bmr = (9.247 * userProfile.weight) + (3.098 * userProfile.height) - (4.330 * userProfile.age) + 447.593;
+      }
+      
+      // 活動レベルに応じたTDEE計算
+      final activityMultipliers = {
+        'sedentary': 1.2,
+        'lightly_active': 1.375,
+        'moderately_active': 1.55,
+        'very_active': 1.725,
+        'extra_active': 1.9,
+      };
+      
+      tdee = bmr * (activityMultipliers[userProfile.activityLevel] ?? 1.55);
+    }
+    
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.health_and_safety, color: Color(0xFFFF69B4), size: 24),
+                const SizedBox(width: 8),
+                Text(
+                  '健康指標',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            if (bmi != null) ...[
+              _buildMetricRow(
+                'BMI',
+                bmi.toStringAsFixed(1),
+                bmiCategory,
+                bmiColor,
+                '標準範囲: 18.5-24.9',
+              ),
+              const SizedBox(height: 16),
+            ],
+            if (bmr != null) ...[
+              _buildMetricRow(
+                '基礎代謝率',
+                '${bmr.toStringAsFixed(0)} kcal/日',
+                '安静時消費カロリー',
+                Colors.blue,
+                null,
+              ),
+              const SizedBox(height: 16),
+            ],
+            if (tdee != null) ...[
+              _buildMetricRow(
+                '推定消費カロリー',
+                '${tdee.toStringAsFixed(0)} kcal/日',
+                '活動量を含む',
+                Colors.purple,
+                null,
+              ),
+            ],
+            if (userProfile == null)
+              Center(
+                child: Text(
+                  '設定画面でプロフィール情報を入力してください',
+                  style: TextStyle(color: Colors.grey[600]),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildMetricRow(String label, String value, String status, Color statusColor, String? reference) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(label, style: const TextStyle(fontSize: 16)),
+            Row(
+              children: [
+                Text(
+                  value,
+                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: statusColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: statusColor.withOpacity(0.3)),
+                  ),
+                  child: Text(
+                    status,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: statusColor,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        if (reference != null) ...[
+          const SizedBox(height: 4),
+          Text(
+            reference,
+            style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildPFCBalanceCard() {
+    final l10n = AppLocalizations.of(context)!;
+    final userProfile = ref.watch(userProfileProvider);
+    
+    // 推奨PFCバランス（厚生労働省の日本人の食事摂取基準より）
+    const recommendedProtein = 15.0; // 13-20%
+    const recommendedFat = 25.0; // 20-30%
+    const recommendedCarbs = 60.0; // 50-65%
+    
+    // TODO: 実際のデータから計算
+    const actualProtein = 18.0;
+    const actualFat = 28.0;
+    const actualCarbs = 54.0;
+    
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.pie_chart, color: Color(0xFFFF69B4), size: 24),
+                const SizedBox(width: 8),
+                Text(
+                  'PFCバランス',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: SizedBox(
+                    height: 180,
+                    child: PieChart(
+                      PieChartData(
+                        sections: [
+                          PieChartSectionData(
+                            color: Colors.orange,
+                            value: actualProtein,
+                            title: 'P\n${actualProtein.toStringAsFixed(0)}%',
+                            radius: 80,
+                            titleStyle: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          PieChartSectionData(
+                            color: Colors.blue,
+                            value: actualFat,
+                            title: 'F\n${actualFat.toStringAsFixed(0)}%',
+                            radius: 80,
+                            titleStyle: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          PieChartSectionData(
+                            color: Colors.green,
+                            value: actualCarbs,
+                            title: 'C\n${actualCarbs.toStringAsFixed(0)}%',
+                            radius: 80,
+                            titleStyle: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                        sectionsSpace: 2,
+                        centerSpaceRadius: 0,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 20),
+                Expanded(
+                  flex: 3,
+                  child: Column(
+                    children: [
+                      _buildPFCItem(
+                        'タンパク質',
+                        actualProtein,
+                        recommendedProtein,
+                        '13-20%',
+                        Colors.orange,
+                      ),
+                      const SizedBox(height: 12),
+                      _buildPFCItem(
+                        '脂質',
+                        actualFat,
+                        recommendedFat,
+                        '20-30%',
+                        Colors.blue,
+                      ),
+                      const SizedBox(height: 12),
+                      _buildPFCItem(
+                        '炭水化物',
+                        actualCarbs,
+                        recommendedCarbs,
+                        '50-65%',
+                        Colors.green,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.amber.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.amber.withOpacity(0.3)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, color: Colors.amber[700], size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '推奨値は厚生労働省「日本人の食事摂取基準」に基づいています',
+                      style: TextStyle(fontSize: 12, color: Colors.amber[900]),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildPFCItem(String name, double actual, double recommended, String range, Color color) {
+    final difference = actual - recommended;
+    final isOptimal = (actual >= double.parse(range.split('-')[0]) && 
+                      actual <= double.parse(range.split('-')[1]));
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 12,
+                  height: 12,
+                  decoration: BoxDecoration(
+                    color: color,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(name, style: const TextStyle(fontSize: 14)),
+              ],
+            ),
+            Text(
+              '${actual.toStringAsFixed(0)}%',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: isOptimal ? Colors.green : Colors.orange,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              '推奨: $range',
+              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+            ),
+            if (!isOptimal)
+              Text(
+                difference > 0 ? '+${difference.toStringAsFixed(0)}%' : '${difference.toStringAsFixed(0)}%',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: difference > 0 ? Colors.red : Colors.blue,
+                ),
+              ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNutritionAssessment() {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),

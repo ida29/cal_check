@@ -52,7 +52,7 @@ class _ResultScreenState extends State<ResultScreen> {
       }
     } catch (e) {
       setState(() {
-        _errorMessage = 'エラーが発生しました: $e';
+        _errorMessage = '${AppLocalizations.of(context)!.errorOccurred}: $e';
         _isAnalyzing = false;
       });
     }
@@ -73,7 +73,7 @@ class _ResultScreenState extends State<ResultScreen> {
     
     if (barcodes.isEmpty) {
       setState(() {
-        _errorMessage = 'バーコードが検出されませんでした。もう一度お試しください。';
+        _errorMessage = AppLocalizations.of(context)!.barcodeNotDetected;
         _isAnalyzing = false;
       });
       return;
@@ -84,7 +84,7 @@ class _ResultScreenState extends State<ResultScreen> {
     
     if (barcodeValue.isEmpty) {
       setState(() {
-        _errorMessage = 'バーコードの読み取りに失敗しました。';
+        _errorMessage = AppLocalizations.of(context)!.barcodeReadingFailed;
         _isAnalyzing = false;
       });
       return;
@@ -99,7 +99,7 @@ class _ResultScreenState extends State<ResultScreen> {
       });
     } else {
       setState(() {
-        _errorMessage = '商品情報を取得できませんでした。';
+        _errorMessage = AppLocalizations.of(context)!.productInfoRetrievalFailed;
         _isAnalyzing = false;
       });
     }
@@ -153,7 +153,7 @@ class _ResultScreenState extends State<ResultScreen> {
                       const CircularProgressIndicator(),
                       const SizedBox(height: 16),
                       Text(mode == 'barcode' 
-                        ? 'バーコードを解析中...' 
+                        ? AppLocalizations.of(context)!.analyzingBarcode 
                         : AppLocalizations.of(context)!.analyzingMeal),
                     ],
                   ),
@@ -171,7 +171,7 @@ class _ResultScreenState extends State<ResultScreen> {
                         const Icon(Icons.error, color: Colors.red, size: 48),
                         const SizedBox(height: 16),
                         Text(
-                          'Analysis Failed',
+                          AppLocalizations.of(context)!.analysisFailed,
                           style: Theme.of(context).textTheme.titleLarge,
                         ),
                         const SizedBox(height: 8),
@@ -179,7 +179,7 @@ class _ResultScreenState extends State<ResultScreen> {
                         const SizedBox(height: 16),
                         ElevatedButton(
                           onPressed: _analyzeImage,
-                          child: const Text('Retry'),
+                          child: Text(AppLocalizations.of(context)!.retry),
                         ),
                       ],
                     ),
@@ -238,7 +238,7 @@ class _ResultScreenState extends State<ResultScreen> {
                             )
                           : const Icon(Icons.save),
                         label: Text(_isSaving 
-                          ? 'Saving...' 
+                          ? AppLocalizations.of(context)!.saving 
                           : AppLocalizations.of(context)!.saveToMealHistory),
                         style: ElevatedButton.styleFrom(
                           minimumSize: const Size(double.infinity, 48),
@@ -393,7 +393,7 @@ class _ResultScreenState extends State<ResultScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Nutrition Summary',
+              AppLocalizations.of(context)!.nutritionSummary,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 12),
@@ -501,8 +501,8 @@ class _ResultScreenState extends State<ResultScreen> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to save meal. Please try again.'),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.failedToSaveMeal),
             backgroundColor: Colors.red,
           ),
         );

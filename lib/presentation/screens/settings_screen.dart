@@ -242,23 +242,23 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Personal Information'),
+        title: Text(l10n.personalInformation),
         content: const Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
-              decoration: InputDecoration(labelText: 'Name'),
+              decoration: InputDecoration(labelText: l10n.name),
             ),
             TextField(
-              decoration: InputDecoration(labelText: 'Age'),
+              decoration: InputDecoration(labelText: l10n.age),
               keyboardType: TextInputType.number,
             ),
             TextField(
-              decoration: InputDecoration(labelText: 'Height (cm)'),
+              decoration: InputDecoration(labelText: l10n.heightCm),
               keyboardType: TextInputType.number,
             ),
             TextField(
-              decoration: InputDecoration(labelText: 'Weight (kg)'),
+              decoration: InputDecoration(labelText: l10n.weight),
               keyboardType: TextInputType.number,
             ),
           ],
@@ -272,7 +272,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             onPressed: () {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Profile updated!')),
+                SnackBar(content: Text(l10n.profileUpdated)),
               );
             },
             child: Text(AppLocalizations.of(context)!.save),
@@ -286,11 +286,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Daily Calorie Goal'),
+        title: Text(l10n.dailyCalorieGoalTitle),
         content: const TextField(
           decoration: InputDecoration(
-            labelText: 'Calories per day',
-            suffixText: 'cal',
+            labelText: l10n.caloriesPerDay,
+            suffixText: l10n.calUnit,
           ),
           keyboardType: TextInputType.number,
         ),
@@ -303,7 +303,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             onPressed: () {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Calorie goal updated!')),
+                SnackBar(content: Text(l10n.calorieGoalUpdated)),
               );
             },
             child: Text(AppLocalizations.of(context)!.save),
@@ -317,19 +317,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Activity Level'),
+        title: Text(l10n.activityLevelTitle),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            'Sedentary',
-            'Lightly Active',
-            'Moderately Active',
-            'Very Active',
-            'Extra Active'
+            l10n.sedentary,
+            l10n.lightlyActive,
+            l10n.moderatelyActive,
+            l10n.veryActive,
+            l10n.extraActive
           ].map((level) => RadioListTile(
                 title: Text(level),
                 value: level,
-                groupValue: 'Moderately Active',
+                groupValue: l10n.moderatelyActive,
                 onChanged: (value) {},
               )).toList(),
         ),
@@ -342,7 +342,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             onPressed: () {
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Activity level updated!')),
+                SnackBar(content: Text(l10n.activityLevelUpdated)),
               );
             },
             child: Text(AppLocalizations.of(context)!.save),
@@ -377,8 +377,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _buildLanguageOption('English', 'en', currentLocale),
-            _buildLanguageOption('日本語', 'ja', currentLocale),
+            _buildLanguageOption(l10n.englishLanguage, 'en', currentLocale),
+            _buildLanguageOption(l10n.japaneseLanguage, 'ja', currentLocale),
           ],
         ),
         actions: [
@@ -422,18 +422,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Units'),
+        title: Text(l10n.unitsTitle),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             RadioListTile(
-              title: const Text('Metric (kg, cm)'),
+              title: Text(l10n.metricUnitsOption),
               value: 'metric',
               groupValue: 'metric',
               onChanged: (value) {},
             ),
             RadioListTile(
-              title: const Text('Imperial (lbs, ft)'),
+              title: Text(l10n.imperialUnits),
               value: 'imperial',
               groupValue: 'metric',
               onChanged: (value) {},

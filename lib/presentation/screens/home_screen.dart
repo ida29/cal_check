@@ -35,23 +35,49 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ),
       ),
-      floatingActionButton: Container(
-        height: 70,
-        width: 70,
-        child: FittedBox(
-          child: FloatingActionButton(
-            onPressed: () {
-              Navigator.pushNamed(context, '/camera');
-            },
-            backgroundColor: const Color(0xFFFF69B4),
-            foregroundColor: Colors.white,
-            elevation: 8,
-            child: const Icon(
-              Icons.camera_alt_rounded,
-              size: 32,
+      floatingActionButton: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          // 手動入力ボタン
+          Container(
+            height: 56,
+            width: 56,
+            margin: const EdgeInsets.only(right: 12),
+            child: FloatingActionButton(
+              heroTag: "manual_input",
+              onPressed: () {
+                Navigator.pushNamed(context, '/manual-meal-entry');
+              },
+              backgroundColor: const Color(0xFF2196F3),
+              foregroundColor: Colors.white,
+              elevation: 4,
+              child: const Icon(
+                Icons.edit_rounded,
+                size: 24,
+              ),
             ),
           ),
-        ),
+          // カメラボタン
+          Container(
+            height: 70,
+            width: 70,
+            child: FittedBox(
+              child: FloatingActionButton(
+                heroTag: "camera",
+                onPressed: () {
+                  Navigator.pushNamed(context, '/camera');
+                },
+                backgroundColor: const Color(0xFFFF69B4),
+                foregroundColor: Colors.white,
+                elevation: 8,
+                child: const Icon(
+                  Icons.camera_alt_rounded,
+                  size: 32,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -178,7 +204,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             const Icon(Icons.flash_on_rounded, color: Color(0xFFFF69B4), size: 24),
             const SizedBox(width: 8),
             Text(
-              'クイックアクション',
+              l10n.quickActions,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 color: const Color(0xFFFF69B4),
                 fontWeight: FontWeight.bold,
@@ -192,8 +218,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Expanded(
               child: _buildActionCard(
                 icon: Icons.fitness_center_rounded,
-                title: '運動を記録',
-                subtitle: '運動した内容を記録',
+                title: l10n.recordExercise,
+                subtitle: l10n.recordExerciseSubtitle,
                 color: const Color(0xFF4CAF50),
                 onTap: () {
                   Navigator.pushNamed(context, '/exercise');
@@ -204,8 +230,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Expanded(
               child: _buildActionCard(
                 icon: Icons.restaurant_menu_rounded,
-                title: '食事履歴',
-                subtitle: '今日の食事を確認',
+                title: l10n.mealHistoryAction,
+                subtitle: l10n.checkTodaysMeals,
                 color: const Color(0xFF2196F3),
                 onTap: () {
                   // 履歴画面へ移動（BottomNavigationを切り替える）
@@ -225,12 +251,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Expanded(
               child: _buildActionCard(
                 icon: Icons.water_drop_rounded,
-                title: '水分記録',
-                subtitle: '水分摂取を記録',
+                title: l10n.recordWater,
+                subtitle: l10n.recordWaterSubtitle,
                 color: const Color(0xFF00BCD4),
                 onTap: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('水分記録機能は準備中です')),
+                    SnackBar(content: Text(l10n.waterRecordingComingSoon)),
                   );
                 },
               ),
@@ -239,8 +265,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Expanded(
               child: _buildActionCard(
                 icon: Icons.insights_rounded,
-                title: '統計',
-                subtitle: '進捗を確認',
+                title: l10n.statisticsAction,
+                subtitle: l10n.checkProgress,
                 color: const Color(0xFFFF9800),
                 onTap: () {
                   // 統計画面へ移動

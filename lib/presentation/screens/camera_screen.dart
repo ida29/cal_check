@@ -114,7 +114,7 @@ class _CameraScreenState extends State<CameraScreen> {
       print('Error picking image: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('画像の選択に失敗しました')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.imageSelectionFailed)),
         );
       }
     } finally {
