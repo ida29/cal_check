@@ -52,7 +52,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
           ),
         ],
       ),
-      body: Column(
+      body: SafeArea(
+        child: Column(
         children: [
           Container(
             padding: const EdgeInsets.all(16),
@@ -120,6 +121,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ),
           ),
         ],
+        ),
       ),
     );
   }

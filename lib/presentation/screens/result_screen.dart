@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 import '../../l10n/app_localizations.dart';
 import '../../business/services/ai_calorie_service.dart';
+import '../../business/services/barcode_service.dart';
 import '../../business/services/local_photo_storage_service.dart';
 import '../../business/models/recognition_result.dart';
 import '../../data/entities/food_item.dart';
@@ -16,6 +17,7 @@ class ResultScreen extends StatefulWidget {
 
 class _ResultScreenState extends State<ResultScreen> {
   late String imagePath;
+  late String mode;
   bool _isAnalyzing = true;
   RecognitionResult? _recognitionResult;
   List<FoodItem> _foodItems = [];
@@ -24,6 +26,7 @@ class _ResultScreenState extends State<ResultScreen> {
   bool _isSaved = false;
 
   final AICalorieService _aiService = AICalorieService();
+  final BarcodeService _barcodeService = BarcodeService();
   final LocalPhotoStorageService _storageService = LocalPhotoStorageService();
 
   @override
@@ -31,6 +34,7 @@ class _ResultScreenState extends State<ResultScreen> {
     super.didChangeDependencies();
     final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     imagePath = args?['imagePath'] ?? '';
+    mode = args?['mode'] ?? 'food';
     _analyzeImage();
   }
 
@@ -41,21 +45,62 @@ class _ResultScreenState extends State<ResultScreen> {
         _errorMessage = null;
       });
 
-      final result = await _aiService.analyzeFood(imagePath);
-      
-      setState(() {
-        _recognitionResult = result;
-        _foodItems = List.from(result.detectedItems);
-        _isAnalyzing = false;
-        
-        if (result.errorMessage != null) {
-          _errorMessage = result.errorMessage;
-        }
-      });
+      if (mode == 'barcode') {
+        await _analyzeBarcodeImage();
+      } else {
+        await _analyzeFoodImage();
+      }
     } catch (e) {
       setState(() {
+        _errorMessage = 'エラーが発生しました: $e';
         _isAnalyzing = false;
-        _errorMessage = 'Failed to analyze image: $e';
+      });
+    }
+  }
+
+  Future<void> _analyzeFoodImage() async {
+    final result = await _aiService.analyzeFood(imagePath);
+    
+    setState(() {
+      _recognitionResult = result;
+      _foodItems = List.from(result.detectedItems);
+      _isAnalyzing = false;
+    });
+  }
+
+  Future<void> _analyzeBarcodeImage() async {
+    final barcodes = await _barcodeService.scanBarcode(imagePath);
+    
+    if (barcodes.isEmpty) {
+      setState(() {
+        _errorMessage = 'バーコードが検出されませんでした。もう一度お試しください。';
+        _isAnalyzing = false;
+      });
+      return;
+    }
+
+    final barcode = barcodes.first;
+    final barcodeValue = barcode.displayValue ?? '';
+    
+    if (barcodeValue.isEmpty) {
+      setState(() {
+        _errorMessage = 'バーコードの読み取りに失敗しました。';
+        _isAnalyzing = false;
+      });
+      return;
+    }
+
+    final foodItem = await _barcodeService.getProductInfo(barcodeValue);
+    
+    if (foodItem != null) {
+      setState(() {
+        _foodItems = [foodItem];
+        _isAnalyzing = false;
+      });
+    } else {
+      setState(() {
+        _errorMessage = '商品情報を取得できませんでした。';
+        _isAnalyzing = false;
       });
     }
   }
@@ -85,8 +130,9 @@ class _ResultScreenState extends State<ResultScreen> {
             const Icon(Icons.check, color: Colors.green),
         ],
       ),
-      body: SingleChildScrollView(
-        child: Column(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Container(
@@ -106,7 +152,9 @@ class _ResultScreenState extends State<ResultScreen> {
                     children: [
                       const CircularProgressIndicator(),
                       const SizedBox(height: 16),
-                      Text(AppLocalizations.of(context)!.analyzingMeal),
+                      Text(mode == 'barcode' 
+                        ? 'バーコードを解析中...' 
+                        : AppLocalizations.of(context)!.analyzingMeal),
                     ],
                   ),
                 ),
@@ -234,6 +282,7 @@ class _ResultScreenState extends State<ResultScreen> {
                 ),
               ),
           ],
+          ),
         ),
       ),
     );

@@ -12,7 +12,6 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _notificationsEnabled = true;
-  bool _darkModeEnabled = false;
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +23,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         title: Text(l10n.settingsTitle),
         elevation: 0,
       ),
-      body: ListView(
+      body: SafeArea(
+        child: ListView(
         children: [
           _buildUserProfileSection(),
           const Divider(),
@@ -38,6 +38,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           const Divider(),
           _buildAboutSection(),
         ],
+        ),
       ),
     );
   }

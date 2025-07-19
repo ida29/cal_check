@@ -18,7 +18,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.statisticsTitle),
       ),
-      body: SingleChildScrollView(
+      body: SafeArea(
+        child: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -33,6 +34,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
               _buildWeeklyGoals(),
             ],
           ),
+        ),
         ),
       ),
     );
