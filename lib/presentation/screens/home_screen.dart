@@ -36,13 +36,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.pushNamed(context, '/camera');
-        },
-        backgroundColor: const Color(0xFFFF69B4),
-        foregroundColor: Colors.white,
-        child: const Icon(Icons.camera_alt_rounded),
+      floatingActionButton: Container(
+        height: 70,
+        width: 70,
+        child: FittedBox(
+          child: FloatingActionButton(
+            onPressed: () {
+              Navigator.pushNamed(context, '/camera');
+            },
+            backgroundColor: const Color(0xFFFF69B4),
+            foregroundColor: Colors.white,
+            elevation: 8,
+            child: const Icon(
+              Icons.camera_alt_rounded,
+              size: 32,
+            ),
+          ),
+        ),
       ),
     );
   }
