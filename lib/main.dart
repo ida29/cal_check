@@ -8,9 +8,13 @@ import 'presentation/screens/main_navigation_screen.dart';
 import 'presentation/screens/camera_screen.dart';
 import 'presentation/screens/result_screen.dart';
 import 'presentation/screens/onboarding_screen.dart';
+import 'config/ai_config.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize AI configuration with environment variables
+  await AIConfig.initialize();
   
   runApp(
     const ProviderScope(

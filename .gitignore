@@ -48,3 +48,11 @@ ios/Flutter/flutter_export_environment.sh
 ios/Runner/GeneratedPluginRegistrant.m
 macos/Flutter/GeneratedPluginRegistrant.swift
 ios/Flutter/ephemeral/
+
+# Environment variables and API keys
+.env
+.env.local
+.env.production
+.env.development
+*.key
+api_keys.dart

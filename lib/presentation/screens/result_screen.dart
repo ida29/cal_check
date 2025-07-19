@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 import '../../l10n/app_localizations.dart';
+import '../../business/services/ai_calorie_service.dart';
+import '../../business/models/recognition_result.dart';
+import '../../data/entities/food_item.dart';
 
 class ResultScreen extends StatefulWidget {
   const ResultScreen({Key? key}) : super(key: key);
@@ -12,7 +15,11 @@ class ResultScreen extends StatefulWidget {
 class _ResultScreenState extends State<ResultScreen> {
   late String imagePath;
   bool _isAnalyzing = true;
-  List<Map<String, dynamic>> _detectedItems = [];
+  RecognitionResult? _recognitionResult;
+  List<FoodItem> _foodItems = [];
+  String? _errorMessage;
+
+  final AICalorieService _aiService = AICalorieService();
 
   @override
   void didChangeDependencies() {
@@ -23,38 +30,33 @@ class _ResultScreenState extends State<ResultScreen> {
   }
 
   Future<void> _analyzeImage() async {
-    await Future.delayed(const Duration(seconds: 2));
-    
-    setState(() {
-      _detectedItems = [
-        {
-          'name': 'Grilled Chicken Breast',
-          'quantity': 150,
-          'unit': 'g',
-          'calories': 248,
-          'confidence': 0.92,
-        },
-        {
-          'name': 'Steamed Broccoli',
-          'quantity': 100,
-          'unit': 'g',
-          'calories': 35,
-          'confidence': 0.88,
-        },
-        {
-          'name': 'Brown Rice',
-          'quantity': 180,
-          'unit': 'g',
-          'calories': 216,
-          'confidence': 0.85,
-        },
-      ];
-      _isAnalyzing = false;
-    });
+    try {
+      setState(() {
+        _isAnalyzing = true;
+        _errorMessage = null;
+      });
+
+      final result = await _aiService.analyzeFood(imagePath);
+      
+      setState(() {
+        _recognitionResult = result;
+        _foodItems = List.from(result.detectedItems);
+        _isAnalyzing = false;
+        
+        if (result.errorMessage != null) {
+          _errorMessage = result.errorMessage;
+        }
+      });
+    } catch (e) {
+      setState(() {
+        _isAnalyzing = false;
+        _errorMessage = 'Failed to analyze image: $e';
+      });
+    }
   }
 
   double get _totalCalories {
-    return _detectedItems.fold(0, (sum, item) => sum + (item['calories'] as num));
+    return _aiService.getTotalCalories(_foodItems);
   }
 
   @override
@@ -95,6 +97,33 @@ class _ResultScreenState extends State<ResultScreen> {
                   ),
                 ),
               )
+            else if (_errorMessage != null)
+              Container(
+                padding: const EdgeInsets.all(16),
+                child: Card(
+                  color: Colors.red.withOpacity(0.1),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        const Icon(Icons.error, color: Colors.red, size: 48),
+                        const SizedBox(height: 16),
+                        Text(
+                          'Analysis Failed',
+                          style: Theme.of(context).textTheme.titleLarge,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(_errorMessage!),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: _analyzeImage,
+                          child: const Text('Retry'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              )
             else
               Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -124,12 +153,14 @@ class _ResultScreenState extends State<ResultScreen> {
                       ),
                     ),
                     const SizedBox(height: 20),
+                    _buildNutritionSummary(),
+                    const SizedBox(height: 20),
                     Text(
                       AppLocalizations.of(context)!.detectedItems,
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: 12),
-                    ..._detectedItems.map((item) => _buildFoodItemCard(item)),
+                    ..._foodItems.map((item) => _buildFoodItemCard(item)),
                     const SizedBox(height: 20),
                     ElevatedButton.icon(
                       onPressed: _addCustomItem,
@@ -148,7 +179,7 @@ class _ResultScreenState extends State<ResultScreen> {
     );
   }
 
-  Widget _buildFoodItemCard(Map<String, dynamic> item) {
+  Widget _buildFoodItemCard(FoodItem item) {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       child: Padding(
@@ -161,16 +192,16 @@ class _ResultScreenState extends State<ResultScreen> {
               children: [
                 Expanded(
                   child: Text(
-                    item['name'],
+                    item.name,
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                 ),
                 Chip(
                   label: Text(
-                    '${(item['confidence'] * 100).toStringAsFixed(0)}%',
+                    '${(item.confidenceScore * 100).toStringAsFixed(0)}%',
                     style: const TextStyle(fontSize: 12),
                   ),
-                  backgroundColor: _getConfidenceColor(item['confidence']),
+                  backgroundColor: _getConfidenceColor(item.confidenceScore),
                 ),
               ],
             ),
@@ -179,11 +210,11 @@ class _ResultScreenState extends State<ResultScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '${item['quantity']} ${item['unit']}',
+                  '${item.quantity.toStringAsFixed(0)} ${item.unit}',
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
                 Text(
-                  '${item['calories']} cal',
+                  '${item.calories.toStringAsFixed(0)} cal',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         color: Theme.of(context).primaryColor,
                       ),
@@ -219,15 +250,15 @@ class _ResultScreenState extends State<ResultScreen> {
     return Colors.red.withOpacity(0.2);
   }
 
-  void _editItem(Map<String, dynamic> item) {
+  void _editItem(FoodItem item) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(AppLocalizations.of(context)!.editComingSoon)),
     );
   }
 
-  void _removeItem(Map<String, dynamic> item) {
+  void _removeItem(FoodItem item) {
     setState(() {
-      _detectedItems.remove(item);
+      _foodItems.remove(item);
     });
   }
 
@@ -235,6 +266,87 @@ class _ResultScreenState extends State<ResultScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(AppLocalizations.of(context)!.addCustomItemComingSoon)),
     );
+  }
+
+  Widget _buildNutritionSummary() {
+    if (_foodItems.isEmpty) return const SizedBox.shrink();
+    
+    final totalNutrition = _aiService.getTotalNutrition(_foodItems);
+    
+    return Card(
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Nutrition Summary',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildNutritionItem(
+                  AppLocalizations.of(context)!.protein,
+                  '${totalNutrition.protein.toStringAsFixed(1)}g',
+                  Colors.red,
+                ),
+                _buildNutritionItem(
+                  AppLocalizations.of(context)!.carbs,
+                  '${totalNutrition.carbohydrates.toStringAsFixed(1)}g',
+                  Colors.orange,
+                ),
+                _buildNutritionItem(
+                  AppLocalizations.of(context)!.fat,
+                  '${totalNutrition.fat.toStringAsFixed(1)}g',
+                  Colors.blue,
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNutritionItem(String label, String value, Color color) {
+    return Column(
+      children: [
+        Container(
+          width: 60,
+          height: 60,
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(30),
+            border: Border.all(color: color, width: 2),
+          ),
+          child: Center(
+            child: Text(
+              value,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: color,
+                fontSize: 12,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          label,
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+      ],
+    );
+  }
+
+  @override
+  void dispose() {
+    _aiService.dispose();
+    super.dispose();
   }
 
   void _saveMeal() {
