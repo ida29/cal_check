@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 import '../../l10n/app_localizations.dart';
 import '../../business/services/ai_calorie_service.dart';
+import '../../business/services/local_photo_storage_service.dart';
 import '../../business/models/recognition_result.dart';
 import '../../data/entities/food_item.dart';
 
@@ -18,8 +19,11 @@ class _ResultScreenState extends State<ResultScreen> {
   RecognitionResult? _recognitionResult;
   List<FoodItem> _foodItems = [];
   String? _errorMessage;
+  bool _isSaving = false;
+  bool _isSaved = false;
 
   final AICalorieService _aiService = AICalorieService();
+  final LocalPhotoStorageService _storageService = LocalPhotoStorageService();
 
   @override
   void didChangeDependencies() {
@@ -65,10 +69,19 @@ class _ResultScreenState extends State<ResultScreen> {
       appBar: AppBar(
         title: Text(AppLocalizations.of(context)!.analysisResults),
         actions: [
-          TextButton(
-            onPressed: _isAnalyzing ? null : _saveMeal,
-            child: Text(AppLocalizations.of(context)!.save),
-          ),
+          if (!_isAnalyzing && !_isSaved)
+            TextButton(
+              onPressed: _isSaving ? null : _saveMealToHistory,
+              child: _isSaving 
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Text(AppLocalizations.of(context)!.save),
+            ),
+          if (_isSaved)
+            const Icon(Icons.check, color: Colors.green),
         ],
       ),
       body: SingleChildScrollView(
@@ -162,12 +175,58 @@ class _ResultScreenState extends State<ResultScreen> {
                     const SizedBox(height: 12),
                     ..._foodItems.map((item) => _buildFoodItemCard(item)),
                     const SizedBox(height: 20),
+                    if (!_isSaved) ...[
+                      ElevatedButton.icon(
+                        onPressed: _isSaving ? null : _saveMealToHistory,
+                        icon: _isSaving 
+                          ? const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Icon(Icons.save),
+                        label: Text(_isSaving 
+                          ? 'Saving...' 
+                          : AppLocalizations.of(context)!.saveToMealHistory),
+                        style: ElevatedButton.styleFrom(
+                          minimumSize: const Size(double.infinity, 48),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
+                    if (_isSaved) ...[
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.green.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.green.withOpacity(0.3)),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.check_circle, color: Colors.green),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                AppLocalizations.of(context)!.mealSavedSuccessfully,
+                                style: const TextStyle(color: Colors.green),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                    ],
                     ElevatedButton.icon(
                       onPressed: _addCustomItem,
                       icon: const Icon(Icons.add),
                       label: Text(AppLocalizations.of(context)!.addItem),
                       style: ElevatedButton.styleFrom(
                         minimumSize: const Size(double.infinity, 48),
+                        backgroundColor: _isSaved ? Colors.grey : null,
                       ),
                     ),
                   ],
@@ -343,16 +402,76 @@ class _ResultScreenState extends State<ResultScreen> {
     );
   }
 
+  Future<void> _saveMealToHistory() async {
+    if (_foodItems.isEmpty || _isSaving || _isSaved) {
+      return;
+    }
+
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      // Determine meal type based on current time
+      final now = DateTime.now();
+      final hour = now.hour;
+      String mealType;
+      
+      if (hour < 11) {
+        mealType = 'breakfast';
+      } else if (hour < 15) {
+        mealType = 'lunch';
+      } else if (hour < 21) {
+        mealType = 'dinner';
+      } else {
+        mealType = 'snack';
+      }
+
+      final savedPath = await _storageService.saveMealPhoto(
+        originalPath: imagePath,
+        foodItems: _foodItems,
+        totalCalories: _totalCalories,
+        mealType: mealType,
+      );
+
+      if (savedPath != null) {
+        setState(() {
+          _isSaved = true;
+        });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.mealSavedSuccessfully),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to save meal. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error saving meal: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Failed to save meal. Please try again.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      setState(() {
+        _isSaving = false;
+      });
+    }
+  }
+
   @override
   void dispose() {
     _aiService.dispose();
     super.dispose();
-  }
-
-  void _saveMeal() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(AppLocalizations.of(context)!.mealSavedSuccessfully)),
-    );
-    Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
   }
 }
