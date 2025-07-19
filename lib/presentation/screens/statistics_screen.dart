@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../l10n/app_localizations.dart';
-import '../../business/providers/user_profile_provider.dart';
-import '../../business/providers/meal_history_provider.dart';
+import '../../business/providers/providers.dart';
 import 'dart:math' as math;
 
 class StatisticsScreen extends ConsumerStatefulWidget {
@@ -202,9 +201,10 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
     String bmiCategory = '';
     Color bmiColor = Colors.grey;
     
-    if (userProfile != null && userProfile.height > 0 && userProfile.weight > 0) {
-      final heightInMeters = userProfile.height / 100;
-      bmi = userProfile.weight / (heightInMeters * heightInMeters);
+    if (userProfile != null && userProfile.height != null && userProfile.height! > 0 && 
+        userProfile.weight != null && userProfile.weight! > 0) {
+      final heightInMeters = userProfile.height! / 100;
+      bmi = userProfile.weight! / (heightInMeters * heightInMeters);
       
       if (bmi < 18.5) {
         bmiCategory = '低体重';
@@ -224,11 +224,13 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
     // 基礎代謝率（BMR）計算 - ハリス・ベネディクト方程式（改定版）
     double? bmr;
     double? tdee;
-    if (userProfile != null && userProfile.age > 0 && userProfile.weight > 0 && userProfile.height > 0) {
+    if (userProfile != null && userProfile.age != null && userProfile.age! > 0 && 
+        userProfile.weight != null && userProfile.weight! > 0 && 
+        userProfile.height != null && userProfile.height! > 0) {
       if (userProfile.gender == 'male') {
-        bmr = (13.397 * userProfile.weight) + (4.799 * userProfile.height) - (5.677 * userProfile.age) + 88.362;
+        bmr = (13.397 * userProfile.weight!) + (4.799 * userProfile.height!) - (5.677 * userProfile.age!) + 88.362;
       } else {
-        bmr = (9.247 * userProfile.weight) + (3.098 * userProfile.height) - (4.330 * userProfile.age) + 447.593;
+        bmr = (9.247 * userProfile.weight!) + (3.098 * userProfile.height!) - (4.330 * userProfile.age!) + 447.593;
       }
       
       // 活動レベルに応じたTDEE計算
@@ -554,145 +556,274 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
   }
 
   Widget _buildNutritionAssessment() {
+    final l10n = AppLocalizations.of(context)!;
+    
+    // 栄養素の適正摂取量評価
     return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              AppLocalizations.of(context)!.nutritionBreakdown,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 20),
             Row(
               children: [
-                Expanded(
-                  flex: 2,
-                  child: SizedBox(
-                    height: 150,
-                    child: PieChart(
-                      PieChartData(
-                        sections: [
-                          PieChartSectionData(
-                            color: Colors.blue,
-                            value: 45,
-                            title: AppLocalizations.of(context)!.carbsPercentage,
-                            radius: 60,
-                            titleStyle: const TextStyle(fontSize: 12, color: Colors.white),
-                          ),
-                          PieChartSectionData(
-                            color: Colors.red,
-                            value: 30,
-                            title: AppLocalizations.of(context)!.fatPercentage,
-                            radius: 60,
-                            titleStyle: const TextStyle(fontSize: 12, color: Colors.white),
-                          ),
-                          PieChartSectionData(
-                            color: Colors.green,
-                            value: 25,
-                            title: AppLocalizations.of(context)!.proteinPercentage,
-                            radius: 60,
-                            titleStyle: const TextStyle(fontSize: 12, color: Colors.white),
-                          ),
-                        ],
-                        sectionsSpace: 2,
-                        centerSpaceRadius: 20,
-                      ),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  flex: 3,
-                  child: Column(
-                    children: [
-                      _buildNutritionItem(AppLocalizations.of(context)!.carbohydrates, '220g', '45%', Colors.blue),
-                      _buildNutritionItem(AppLocalizations.of(context)!.protein, '120g', '25%', Colors.green),
-                      _buildNutritionItem(AppLocalizations.of(context)!.fat, '65g', '30%', Colors.red),
-                    ],
+                const Icon(Icons.assignment_turned_in, color: Color(0xFFFF69B4), size: 24),
+                const SizedBox(width: 8),
+                Text(
+                  '栄養素摂取評価',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ],
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildNutritionItem(String name, String amount, String percentage, Color color) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Container(
-            width: 12,
-            height: 12,
-            decoration: BoxDecoration(
-              color: color,
-              shape: BoxShape.circle,
-            ),
-          ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(name, style: const TextStyle(fontSize: 14)),
-          ),
-          Text('$amount ($percentage)', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildWeeklyGoals() {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              AppLocalizations.of(context)!.weeklyGoalsProgress,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
             const SizedBox(height: 20),
-            _buildGoalProgress(AppLocalizations.of(context)!.calorieGoal, 0.88, '12,320 / 14,000 cal'),
-            const SizedBox(height: 16),
-            _buildGoalProgress(AppLocalizations.of(context)!.exerciseGoal, 0.60, '3 / 5 workouts'),
-            const SizedBox(height: 16),
-            _buildGoalProgress(AppLocalizations.of(context)!.waterIntake, 0.75, '15 / 20 glasses'),
+            // ビタミン・ミネラル評価
+            _buildNutrientAssessmentItem('ビタミンA', 75, '目の健康、免疫機能'),
+            const Divider(height: 24),
+            _buildNutrientAssessmentItem('ビタミンC', 120, '抗酸化作用、コラーゲン生成'),
+            const Divider(height: 24),
+            _buildNutrientAssessmentItem('ビタミンD', 45, '骨の健康、カルシウム吸収'),
+            const Divider(height: 24),
+            _buildNutrientAssessmentItem('カルシウム', 68, '骨・歯の形成、筋肉機能'),
+            const Divider(height: 24),
+            _buildNutrientAssessmentItem('鉄分', 82, '酸素運搬、エネルギー代謝'),
+            const Divider(height: 24),
+            _buildNutrientAssessmentItem('食物繊維', 65, '腸内環境、血糖値調整'),
           ],
         ),
       ),
     );
   }
-
-  Widget _buildGoalProgress(String title, double progress, String subtitle) {
+  
+  Widget _buildNutrientAssessmentItem(String nutrient, double percentage, String benefit) {
+    Color color;
+    String status;
+    
+    if (percentage >= 100) {
+      color = Colors.green;
+      status = '充足';
+    } else if (percentage >= 70) {
+      color = Colors.amber;
+      status = 'やや不足';
+    } else {
+      color = Colors.red;
+      status = '不足';
+    }
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
-            Text('${(progress * 100).toInt()}%'),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(nutrient, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 2),
+                  Text(benefit, style: TextStyle(fontSize: 12, color: Colors.grey[600])),
+                ],
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: color.withOpacity(0.3)),
+              ),
+              child: Text(
+                status,
+                style: TextStyle(fontSize: 12, color: color, fontWeight: FontWeight.w500),
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 8),
-        LinearProgressIndicator(
-          value: progress,
-          backgroundColor: Colors.grey[300],
-          valueColor: AlwaysStoppedAnimation<Color>(
-            progress >= 0.8 ? Colors.green : Theme.of(context).primaryColor,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          subtitle,
-          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+        Row(
+          children: [
+            Expanded(
+              child: LinearProgressIndicator(
+                value: percentage / 100,
+                backgroundColor: Colors.grey[300],
+                valueColor: AlwaysStoppedAnimation<Color>(color),
+                minHeight: 6,
+              ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              '${percentage.toStringAsFixed(0)}%',
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: color),
+            ),
+          ],
         ),
       ],
     );
   }
+
+  Widget _buildWeightPrediction() {
+    final userProfile = ref.watch(userProfileProvider);
+    final l10n = AppLocalizations.of(context)!;
+    
+    // カロリー収支から体重変化を予測
+    const dailyCalorieIntake = 2100.0; // TODO: 実際のデータから取得
+    final tdee = userProfile != null ? _calculateTDEE(userProfile) : 2000.0;
+    final dailySurplusDeficit = dailyCalorieIntake - tdee;
+    final weeklyChange = (dailySurplusDeficit * 7) / 7700; // 1kg = 7700kcal
+    final monthlyChange = weeklyChange * 4;
+    
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.trending_up, color: Color(0xFFFF69B4), size: 24),
+                const SizedBox(width: 8),
+                Text(
+                  '体重変化予測',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: dailySurplusDeficit > 0 
+                  ? Colors.orange.withOpacity(0.1)
+                  : Colors.blue.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: dailySurplusDeficit > 0 
+                    ? Colors.orange.withOpacity(0.3)
+                    : Colors.blue.withOpacity(0.3),
+                ),
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    '現在のカロリー収支',
+                    style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '${dailySurplusDeficit > 0 ? "+" : ""}${dailySurplusDeficit.toStringAsFixed(0)} kcal/日',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: dailySurplusDeficit > 0 ? Colors.orange : Colors.blue,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    dailySurplusDeficit > 0 ? 'カロリー過剰' : 'カロリー不足',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: dailySurplusDeficit > 0 ? Colors.orange : Colors.blue,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            _buildPredictionRow(
+              '1週間後',
+              weeklyChange,
+              (userProfile?.weight ?? 60.0).toDouble(),
+            ),
+            const Divider(height: 24),
+            _buildPredictionRow(
+              '1ヶ月後',
+              monthlyChange,
+              (userProfile?.weight ?? 60.0).toDouble(),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, color: Colors.grey[700], size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '※ 体重1kgの変化には約7,700kcalが必要です',
+                      style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  Widget _buildPredictionRow(String period, double change, double currentWeight) {
+    final predictedWeight = currentWeight + change;
+    final changeColor = change > 0 ? Colors.orange : change < 0 ? Colors.blue : Colors.grey;
+    
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(period, style: const TextStyle(fontSize: 16)),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              '${predictedWeight.toStringAsFixed(1)} kg',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              '${change > 0 ? "+" : ""}${change.toStringAsFixed(1)} kg',
+              style: TextStyle(fontSize: 14, color: changeColor),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+  
+  double _calculateTDEE(dynamic userProfile) {
+    if (userProfile?.age == null || userProfile.age! <= 0 || 
+        userProfile?.weight == null || userProfile.weight! <= 0 || 
+        userProfile?.height == null || userProfile.height! <= 0) {
+      return 2000.0; // デフォルト値
+    }
+    
+    double bmr;
+    if (userProfile.gender == 'male') {
+      bmr = (13.397 * userProfile.weight!) + (4.799 * userProfile.height!) - (5.677 * userProfile.age!) + 88.362;
+    } else {
+      bmr = (9.247 * userProfile.weight!) + (3.098 * userProfile.height!) - (4.330 * userProfile.age!) + 447.593;
+    }
+    
+    final activityMultipliers = {
+      'sedentary': 1.2,
+      'lightly_active': 1.375,
+      'moderately_active': 1.55,
+      'very_active': 1.725,
+      'extra_active': 1.9,
+    };
+    
+    return bmr * (activityMultipliers[userProfile.activityLevel] ?? 1.55);
+  }
+
 
   Widget _buildStatItem(String label, String value) {
     return Column(

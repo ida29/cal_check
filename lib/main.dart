@@ -10,6 +10,8 @@ import 'presentation/screens/result_screen.dart';
 import 'presentation/screens/onboarding_screen.dart';
 import 'presentation/screens/splash_screen.dart';
 import 'presentation/screens/setup_guide_screen.dart';
+import 'presentation/screens/manual_meal_entry_screen.dart';
+import 'presentation/screens/exercise_screen.dart';
 import 'config/ai_config.dart';
 
 void main() async {
@@ -90,6 +92,8 @@ class CalorieCheckerApp extends ConsumerWidget {
         '/onboarding': (context) => const OnboardingScreen(),
         '/camera': (context) => const CameraScreen(),
         '/result': (context) => const ResultScreen(),
+        '/manual-meal-entry': (context) => const ManualMealEntryScreen(),
+        '/exercise': (context) => const ExerciseScreen(),
       },
     );
   }

@@ -45,23 +45,34 @@ class LocalPhotoStorageService {
     required List<FoodItem> foodItems,
     required double totalCalories,
     required String mealType,
+    bool isManualEntry = false,
   }) async {
     try {
       final photosDir = await _getPhotosDirectory();
-      final originalFile = File(originalPath);
-      
-      if (!await originalFile.exists()) {
-        throw Exception('Original photo file does not exist');
-      }
-
-      // Generate unique filename
       final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final extension = path.extension(originalPath);
-      final filename = 'meal_${timestamp}$extension';
-      final savedPath = path.join(photosDir.path, filename);
+      
+      String savedPath;
+      String filename;
+      
+      if (isManualEntry) {
+        // 手動入力の場合はダミーパスを使用
+        filename = 'manual_entry_$timestamp.json';
+        savedPath = path.join(photosDir.path, filename);
+      } else {
+        final originalFile = File(originalPath);
+        
+        if (!await originalFile.exists()) {
+          throw Exception('Original photo file does not exist');
+        }
 
-      // Copy the image file
-      await originalFile.copy(savedPath);
+        // Generate unique filename
+        final extension = path.extension(originalPath);
+        filename = 'meal_${timestamp}$extension';
+        savedPath = path.join(photosDir.path, filename);
+
+        // Copy the image file
+        await originalFile.copy(savedPath);
+      }
 
       // Create metadata
       final metadata = MealPhotoMetadata(
@@ -73,7 +84,7 @@ class LocalPhotoStorageService {
         totalCalories: totalCalories,
         mealType: mealType,
         createdAt: DateTime.now(),
-        fileSize: await originalFile.length(),
+        fileSize: isManualEntry ? 0 : await File(savedPath).length(),
       );
 
       // Save metadata
