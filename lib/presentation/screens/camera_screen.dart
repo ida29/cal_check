@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../l10n/app_localizations.dart';
 
 class CameraScreen extends StatefulWidget {
@@ -86,9 +87,43 @@ class _CameraScreenState extends State<CameraScreen> {
   }
 
   Future<void> _pickFromGallery() async {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(AppLocalizations.of(context)!.galleryComingSoon)),
-    );
+    if (_isProcessing) return;
+
+    setState(() {
+      _isProcessing = true;
+    });
+
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 85,
+      );
+
+      if (image != null && mounted) {
+        Navigator.pushNamed(
+          context,
+          '/result',
+          arguments: {
+            'imagePath': image.path,
+            'mode': _currentMode.name,
+          },
+        );
+      }
+    } catch (e) {
+      print('Error picking image: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('画像の選択に失敗しました')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isProcessing = false;
+        });
+      }
+    }
   }
 
   @override

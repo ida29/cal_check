@@ -34,8 +34,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           const Divider(),
           _buildAppPreferencesSection(l10n, currentLocale),
           const Divider(),
-          _buildDataSection(),
-          const Divider(),
           _buildAboutSection(),
         ],
         ),
@@ -165,17 +163,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
           ),
         ),
-        SwitchListTile(
-          secondary: const Icon(Icons.dark_mode),
-          title: Text(l10n.darkMode),
-          subtitle: Text(l10n.useDarkTheme),
-          value: _darkModeEnabled,
-          onChanged: (value) {
-            setState(() {
-              _darkModeEnabled = value;
-            });
-          },
-        ),
         ListTile(
           leading: Container(
             padding: const EdgeInsets.all(8),
@@ -205,44 +192,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  Widget _buildDataSection() {
-    final l10n = AppLocalizations.of(context)!;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Text(
-            l10n.dataManagement,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: Theme.of(context).primaryColor,
-                  fontWeight: FontWeight.bold,
-                ),
-          ),
-        ),
-        ListTile(
-          leading: const Icon(Icons.backup),
-          title: Text(l10n.exportData),
-          subtitle: Text(l10n.exportMealHistory),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(l10n.exportComingSoon)),
-            );
-          },
-        ),
-        ListTile(
-          leading: const Icon(Icons.delete_forever, color: Colors.red),
-          title: Text(l10n.clearAllData),
-          subtitle: Text(l10n.clearDataDescription),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () {
-            _showClearDataDialog();
-          },
-        ),
-      ],
-    );
-  }
 
   Widget _buildAboutSection() {
     final l10n = AppLocalizations.of(context)!;
@@ -505,31 +454,4 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  void _showClearDataDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Clear All Data'),
-        content: const Text(
-          'This will permanently delete all your meal history and settings. This action cannot be undone.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(AppLocalizations.of(context)!.cancel),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Data cleared successfully!')),
-              );
-            },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Clear Data'),
-          ),
-        ],
-      ),
-    );
-  }
 }

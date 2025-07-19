@@ -603,5 +603,165 @@
   "barcodeMode": "Barcode",
   "@barcodeMode": {
     "description": "Barcode camera mode"
+  },
+  "exerciseTitle": "Exercise",
+  "@exerciseTitle": {
+    "description": "Exercise tab title"
+  },
+  "todaysExercise": "Today's Exercise",
+  "@todaysExercise": {
+    "description": "Today's exercise section title"
+  },
+  "caloriesBurned": "Calories Burned",
+  "@caloriesBurned": {
+    "description": "Calories burned label"
+  },
+  "caloriesUnit": "kcal",
+  "@caloriesUnit": {
+    "description": "Calories unit"
+  },
+  "minutesUnit": "min",
+  "@minutesUnit": {
+    "description": "Minutes unit"
+  },
+  "loading": "Loading...",
+  "@loading": {
+    "description": "Loading text"
+  },
+  "error": "Error",
+  "@error": {
+    "description": "Error text"
+  },
+  "noExerciseRecords": "No exercise records",
+  "@noExerciseRecords": {
+    "description": "No exercise records message"
+  },
+  "addExerciseHint": "Tap the + button to record exercise",
+  "@addExerciseHint": {
+    "description": "Hint to add exercise"
+  },
+  "notes": "Notes",
+  "@notes": {
+    "description": "Notes label"
+  },
+  "confirmDeleteExercise": "Delete this exercise record?",
+  "@confirmDeleteExercise": {
+    "description": "Confirm delete exercise message"
+  },
+  "lowIntensity": "Low",
+  "@lowIntensity": {
+    "description": "Low intensity"
+  },
+  "moderateIntensity": "Moderate",
+  "@moderateIntensity": {
+    "description": "Moderate intensity"
+  },
+  "highIntensity": "High",
+  "@highIntensity": {
+    "description": "High intensity"
+  },
+  "addExercise": "Add Exercise",
+  "@addExercise": {
+    "description": "Add exercise screen title"
+  },
+  "editExercise": "Edit Exercise",
+  "@editExercise": {
+    "description": "Edit exercise screen title"
+  },
+  "exerciseName": "Exercise Name",
+  "@exerciseName": {
+    "description": "Exercise name field"
+  },
+  "pleaseEnterExerciseName": "Please enter exercise name",
+  "@pleaseEnterExerciseName": {
+    "description": "Exercise name validation"
+  },
+  "exerciseType": "Exercise Type",
+  "@exerciseType": {
+    "description": "Exercise type field"
+  },
+  "durationMinutes": "Duration (minutes)",
+  "@durationMinutes": {
+    "description": "Duration field"
+  },
+  "pleaseEnterDuration": "Please enter duration",
+  "@pleaseEnterDuration": {
+    "description": "Duration validation"
+  },
+  "pleaseEnterValidDuration": "Please enter valid duration",
+  "@pleaseEnterValidDuration": {
+    "description": "Valid duration validation"
+  },
+  "pleaseEnterCalories": "Please enter calories",
+  "@pleaseEnterCalories": {
+    "description": "Calories validation"
+  },
+  "pleaseEnterValidCalories": "Please enter valid calories",
+  "@pleaseEnterValidCalories": {
+    "description": "Valid calories validation"
+  },
+  "intensity": "Intensity",
+  "@intensity": {
+    "description": "Intensity field"
+  },
+  "strengthTrainingDetails": "Strength Training Details",
+  "@strengthTrainingDetails": {
+    "description": "Strength training section"
+  },
+  "sets": "Sets",
+  "@sets": {
+    "description": "Sets field"
+  },
+  "reps": "Reps",
+  "@reps": {
+    "description": "Reps field"
+  },
+  "weightKg": "Weight (kg)",
+  "@weightKg": {
+    "description": "Weight field"
+  },
+  "distanceKm": "Distance (km)",
+  "@distanceKm": {
+    "description": "Distance field"
+  },
+  "dateTime": "Date & Time",
+  "@dateTime": {
+    "description": "Date time field"
+  },
+  "notesOptional": "Notes (optional)",
+  "@notesOptional": {
+    "description": "Optional notes field"
+  },
+  "cardio": "Cardio",
+  "@cardio": {
+    "description": "Cardio exercise type"
+  },
+  "strength": "Strength Training",
+  "@strength": {
+    "description": "Strength exercise type"
+  },
+  "flexibility": "Flexibility",
+  "@flexibility": {
+    "description": "Flexibility exercise type"
+  },
+  "sports": "Sports",
+  "@sports": {
+    "description": "Sports exercise type"
+  },
+  "walking": "Walking",
+  "@walking": {
+    "description": "Walking exercise type"
+  },
+  "running": "Running",
+  "@running": {
+    "description": "Running exercise type"
+  },
+  "cycling": "Cycling",
+  "@cycling": {
+    "description": "Cycling exercise type"
+  },
+  "swimming": "Swimming",
+  "@swimming": {
+    "description": "Swimming exercise type"
   }
 }
