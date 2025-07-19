@@ -1003,6 +1003,558 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Barcode'**
   String get barcodeMode;
+
+  /// Exercise tab title
+  ///
+  /// In en, this message translates to:
+  /// **'Exercise'**
+  String get exerciseTitle;
+
+  /// Today's exercise section title
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s Exercise'**
+  String get todaysExercise;
+
+  /// Calories burned label
+  ///
+  /// In en, this message translates to:
+  /// **'Calories Burned'**
+  String get caloriesBurned;
+
+  /// Calories unit
+  ///
+  /// In en, this message translates to:
+  /// **'kcal'**
+  String get caloriesUnit;
+
+  /// Minutes unit
+  ///
+  /// In en, this message translates to:
+  /// **'min'**
+  String get minutesUnit;
+
+  /// Loading text
+  ///
+  /// In en, this message translates to:
+  /// **'Loading...'**
+  String get loading;
+
+  /// Error text
+  ///
+  /// In en, this message translates to:
+  /// **'Error'**
+  String get error;
+
+  /// No exercise records message
+  ///
+  /// In en, this message translates to:
+  /// **'No exercise records'**
+  String get noExerciseRecords;
+
+  /// Hint to add exercise
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the + button to record exercise'**
+  String get addExerciseHint;
+
+  /// Notes label
+  ///
+  /// In en, this message translates to:
+  /// **'Notes'**
+  String get notes;
+
+  /// Confirm delete exercise message
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this exercise record?'**
+  String get confirmDeleteExercise;
+
+  /// Low intensity
+  ///
+  /// In en, this message translates to:
+  /// **'Low'**
+  String get lowIntensity;
+
+  /// Moderate intensity
+  ///
+  /// In en, this message translates to:
+  /// **'Moderate'**
+  String get moderateIntensity;
+
+  /// High intensity
+  ///
+  /// In en, this message translates to:
+  /// **'High'**
+  String get highIntensity;
+
+  /// Add exercise screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Add Exercise'**
+  String get addExercise;
+
+  /// Edit exercise screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Exercise'**
+  String get editExercise;
+
+  /// Exercise name field
+  ///
+  /// In en, this message translates to:
+  /// **'Exercise Name'**
+  String get exerciseName;
+
+  /// Exercise name validation
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter exercise name'**
+  String get pleaseEnterExerciseName;
+
+  /// Exercise type field
+  ///
+  /// In en, this message translates to:
+  /// **'Exercise Type'**
+  String get exerciseType;
+
+  /// Duration field
+  ///
+  /// In en, this message translates to:
+  /// **'Duration (minutes)'**
+  String get durationMinutes;
+
+  /// Duration validation
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter duration'**
+  String get pleaseEnterDuration;
+
+  /// Valid duration validation
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter valid duration'**
+  String get pleaseEnterValidDuration;
+
+  /// Calories validation
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter calories'**
+  String get pleaseEnterCalories;
+
+  /// Valid calories validation
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter valid calories'**
+  String get pleaseEnterValidCalories;
+
+  /// Intensity field
+  ///
+  /// In en, this message translates to:
+  /// **'Intensity'**
+  String get intensity;
+
+  /// Strength training section
+  ///
+  /// In en, this message translates to:
+  /// **'Strength Training Details'**
+  String get strengthTrainingDetails;
+
+  /// Sets field
+  ///
+  /// In en, this message translates to:
+  /// **'Sets'**
+  String get sets;
+
+  /// Reps field
+  ///
+  /// In en, this message translates to:
+  /// **'Reps'**
+  String get reps;
+
+  /// Weight field
+  ///
+  /// In en, this message translates to:
+  /// **'Weight (kg)'**
+  String get weightKg;
+
+  /// Distance field
+  ///
+  /// In en, this message translates to:
+  /// **'Distance (km)'**
+  String get distanceKm;
+
+  /// Date time field
+  ///
+  /// In en, this message translates to:
+  /// **'Date & Time'**
+  String get dateTime;
+
+  /// Optional notes field
+  ///
+  /// In en, this message translates to:
+  /// **'Notes (optional)'**
+  String get notesOptional;
+
+  /// Cardio exercise type
+  ///
+  /// In en, this message translates to:
+  /// **'Cardio'**
+  String get cardio;
+
+  /// Strength exercise type
+  ///
+  /// In en, this message translates to:
+  /// **'Strength Training'**
+  String get strength;
+
+  /// Flexibility exercise type
+  ///
+  /// In en, this message translates to:
+  /// **'Flexibility'**
+  String get flexibility;
+
+  /// Sports exercise type
+  ///
+  /// In en, this message translates to:
+  /// **'Sports'**
+  String get sports;
+
+  /// Walking exercise type
+  ///
+  /// In en, this message translates to:
+  /// **'Walking'**
+  String get walking;
+
+  /// Running exercise type
+  ///
+  /// In en, this message translates to:
+  /// **'Running'**
+  String get running;
+
+  /// Cycling exercise type
+  ///
+  /// In en, this message translates to:
+  /// **'Cycling'**
+  String get cycling;
+
+  /// Swimming exercise type
+  ///
+  /// In en, this message translates to:
+  /// **'Swimming'**
+  String get swimming;
+
+  /// No description provided for @quickActions.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Actions'**
+  String get quickActions;
+
+  /// No description provided for @recordExercise.
+  ///
+  /// In en, this message translates to:
+  /// **'Record Exercise'**
+  String get recordExercise;
+
+  /// No description provided for @recordExerciseSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Record your exercise'**
+  String get recordExerciseSubtitle;
+
+  /// No description provided for @mealHistoryAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Meal History'**
+  String get mealHistoryAction;
+
+  /// No description provided for @checkTodaysMeals.
+  ///
+  /// In en, this message translates to:
+  /// **'Check today\'s meals'**
+  String get checkTodaysMeals;
+
+  /// No description provided for @recordWater.
+  ///
+  /// In en, this message translates to:
+  /// **'Water Intake'**
+  String get recordWater;
+
+  /// No description provided for @recordWaterSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Record water intake'**
+  String get recordWaterSubtitle;
+
+  /// No description provided for @waterRecordingComingSoon.
+  ///
+  /// In en, this message translates to:
+  /// **'Water recording feature is coming soon'**
+  String get waterRecordingComingSoon;
+
+  /// No description provided for @statisticsAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Statistics'**
+  String get statisticsAction;
+
+  /// No description provided for @checkProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'Check progress'**
+  String get checkProgress;
+
+  /// No description provided for @imageSelectionFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to select image'**
+  String get imageSelectionFailed;
+
+  /// No description provided for @heightCm.
+  ///
+  /// In en, this message translates to:
+  /// **'Height (cm)'**
+  String get heightCm;
+
+  /// No description provided for @profileUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile updated!'**
+  String get profileUpdated;
+
+  /// No description provided for @dailyCalorieGoalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Calorie Goal'**
+  String get dailyCalorieGoalTitle;
+
+  /// No description provided for @caloriesPerDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Calories per day'**
+  String get caloriesPerDay;
+
+  /// No description provided for @calUnit.
+  ///
+  /// In en, this message translates to:
+  /// **'cal'**
+  String get calUnit;
+
+  /// No description provided for @calorieGoalUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Calorie goal updated!'**
+  String get calorieGoalUpdated;
+
+  /// No description provided for @activityLevelTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity Level'**
+  String get activityLevelTitle;
+
+  /// No description provided for @sedentary.
+  ///
+  /// In en, this message translates to:
+  /// **'Sedentary'**
+  String get sedentary;
+
+  /// No description provided for @lightlyActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Lightly Active'**
+  String get lightlyActive;
+
+  /// No description provided for @veryActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Very Active'**
+  String get veryActive;
+
+  /// No description provided for @extraActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Extra Active'**
+  String get extraActive;
+
+  /// No description provided for @activityLevelUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Activity level updated!'**
+  String get activityLevelUpdated;
+
+  /// No description provided for @englishLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get englishLanguage;
+
+  /// No description provided for @japaneseLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'日本語'**
+  String get japaneseLanguage;
+
+  /// No description provided for @unitsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Units'**
+  String get unitsTitle;
+
+  /// No description provided for @metricUnitsOption.
+  ///
+  /// In en, this message translates to:
+  /// **'Metric (kg, cm)'**
+  String get metricUnitsOption;
+
+  /// No description provided for @imperialUnits.
+  ///
+  /// In en, this message translates to:
+  /// **'Imperial (lbs, ft)'**
+  String get imperialUnits;
+
+  /// No description provided for @dayView.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily'**
+  String get dayView;
+
+  /// No description provided for @weekView.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly'**
+  String get weekView;
+
+  /// No description provided for @monthView.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly'**
+  String get monthView;
+
+  /// No description provided for @noMealsRecorded.
+  ///
+  /// In en, this message translates to:
+  /// **'No meals recorded'**
+  String get noMealsRecorded;
+
+  /// No description provided for @startTakingPhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'Start taking photos of your meals!'**
+  String get startTakingPhotos;
+
+  /// No description provided for @itemsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'items'**
+  String get itemsCount;
+
+  /// No description provided for @imageNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Image not found'**
+  String get imageNotFound;
+
+  /// No description provided for @fiber.
+  ///
+  /// In en, this message translates to:
+  /// **'Fiber'**
+  String get fiber;
+
+  /// No description provided for @sugar.
+  ///
+  /// In en, this message translates to:
+  /// **'Sugar'**
+  String get sugar;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
+
+  /// No description provided for @deleteMeal.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Meal'**
+  String get deleteMeal;
+
+  /// No description provided for @deleteMealConfirmation.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this meal? This action cannot be undone.'**
+  String get deleteMealConfirmation;
+
+  /// No description provided for @mealDeletedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Meal deleted successfully'**
+  String get mealDeletedSuccessfully;
+
+  /// No description provided for @failedToDeleteMeal.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to delete meal'**
+  String get failedToDeleteMeal;
+
+  /// No description provided for @errorOccurred.
+  ///
+  /// In en, this message translates to:
+  /// **'An error occurred'**
+  String get errorOccurred;
+
+  /// No description provided for @barcodeNotDetected.
+  ///
+  /// In en, this message translates to:
+  /// **'Barcode not detected. Please try again.'**
+  String get barcodeNotDetected;
+
+  /// No description provided for @barcodeReadingFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to read barcode.'**
+  String get barcodeReadingFailed;
+
+  /// No description provided for @productInfoRetrievalFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not retrieve product information.'**
+  String get productInfoRetrievalFailed;
+
+  /// No description provided for @analyzingBarcode.
+  ///
+  /// In en, this message translates to:
+  /// **'Analyzing barcode...'**
+  String get analyzingBarcode;
+
+  /// No description provided for @analysisFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Analysis Failed'**
+  String get analysisFailed;
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
+
+  /// No description provided for @saving.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving...'**
+  String get saving;
+
+  /// No description provided for @nutritionSummary.
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition Summary'**
+  String get nutritionSummary;
+
+  /// No description provided for @failedToSaveMeal.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save meal. Please try again.'**
+  String get failedToSaveMeal;
 }
 
 class _AppLocalizationsDelegate

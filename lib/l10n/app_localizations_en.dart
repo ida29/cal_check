@@ -464,4 +464,283 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get barcodeMode => 'Barcode';
+
+  @override
+  String get exerciseTitle => 'Exercise';
+
+  @override
+  String get todaysExercise => 'Today\'s Exercise';
+
+  @override
+  String get caloriesBurned => 'Calories Burned';
+
+  @override
+  String get caloriesUnit => 'kcal';
+
+  @override
+  String get minutesUnit => 'min';
+
+  @override
+  String get loading => 'Loading...';
+
+  @override
+  String get error => 'Error';
+
+  @override
+  String get noExerciseRecords => 'No exercise records';
+
+  @override
+  String get addExerciseHint => 'Tap the + button to record exercise';
+
+  @override
+  String get notes => 'Notes';
+
+  @override
+  String get confirmDeleteExercise => 'Delete this exercise record?';
+
+  @override
+  String get lowIntensity => 'Low';
+
+  @override
+  String get moderateIntensity => 'Moderate';
+
+  @override
+  String get highIntensity => 'High';
+
+  @override
+  String get addExercise => 'Add Exercise';
+
+  @override
+  String get editExercise => 'Edit Exercise';
+
+  @override
+  String get exerciseName => 'Exercise Name';
+
+  @override
+  String get pleaseEnterExerciseName => 'Please enter exercise name';
+
+  @override
+  String get exerciseType => 'Exercise Type';
+
+  @override
+  String get durationMinutes => 'Duration (minutes)';
+
+  @override
+  String get pleaseEnterDuration => 'Please enter duration';
+
+  @override
+  String get pleaseEnterValidDuration => 'Please enter valid duration';
+
+  @override
+  String get pleaseEnterCalories => 'Please enter calories';
+
+  @override
+  String get pleaseEnterValidCalories => 'Please enter valid calories';
+
+  @override
+  String get intensity => 'Intensity';
+
+  @override
+  String get strengthTrainingDetails => 'Strength Training Details';
+
+  @override
+  String get sets => 'Sets';
+
+  @override
+  String get reps => 'Reps';
+
+  @override
+  String get weightKg => 'Weight (kg)';
+
+  @override
+  String get distanceKm => 'Distance (km)';
+
+  @override
+  String get dateTime => 'Date & Time';
+
+  @override
+  String get notesOptional => 'Notes (optional)';
+
+  @override
+  String get cardio => 'Cardio';
+
+  @override
+  String get strength => 'Strength Training';
+
+  @override
+  String get flexibility => 'Flexibility';
+
+  @override
+  String get sports => 'Sports';
+
+  @override
+  String get walking => 'Walking';
+
+  @override
+  String get running => 'Running';
+
+  @override
+  String get cycling => 'Cycling';
+
+  @override
+  String get swimming => 'Swimming';
+
+  @override
+  String get quickActions => 'Quick Actions';
+
+  @override
+  String get recordExercise => 'Record Exercise';
+
+  @override
+  String get recordExerciseSubtitle => 'Record your exercise';
+
+  @override
+  String get mealHistoryAction => 'Meal History';
+
+  @override
+  String get checkTodaysMeals => 'Check today\'s meals';
+
+  @override
+  String get recordWater => 'Water Intake';
+
+  @override
+  String get recordWaterSubtitle => 'Record water intake';
+
+  @override
+  String get waterRecordingComingSoon =>
+      'Water recording feature is coming soon';
+
+  @override
+  String get statisticsAction => 'Statistics';
+
+  @override
+  String get checkProgress => 'Check progress';
+
+  @override
+  String get imageSelectionFailed => 'Failed to select image';
+
+  @override
+  String get heightCm => 'Height (cm)';
+
+  @override
+  String get profileUpdated => 'Profile updated!';
+
+  @override
+  String get dailyCalorieGoalTitle => 'Daily Calorie Goal';
+
+  @override
+  String get caloriesPerDay => 'Calories per day';
+
+  @override
+  String get calUnit => 'cal';
+
+  @override
+  String get calorieGoalUpdated => 'Calorie goal updated!';
+
+  @override
+  String get activityLevelTitle => 'Activity Level';
+
+  @override
+  String get sedentary => 'Sedentary';
+
+  @override
+  String get lightlyActive => 'Lightly Active';
+
+  @override
+  String get veryActive => 'Very Active';
+
+  @override
+  String get extraActive => 'Extra Active';
+
+  @override
+  String get activityLevelUpdated => 'Activity level updated!';
+
+  @override
+  String get englishLanguage => 'English';
+
+  @override
+  String get japaneseLanguage => '日本語';
+
+  @override
+  String get unitsTitle => 'Units';
+
+  @override
+  String get metricUnitsOption => 'Metric (kg, cm)';
+
+  @override
+  String get imperialUnits => 'Imperial (lbs, ft)';
+
+  @override
+  String get dayView => 'Daily';
+
+  @override
+  String get weekView => 'Weekly';
+
+  @override
+  String get monthView => 'Monthly';
+
+  @override
+  String get noMealsRecorded => 'No meals recorded';
+
+  @override
+  String get startTakingPhotos => 'Start taking photos of your meals!';
+
+  @override
+  String get itemsCount => 'items';
+
+  @override
+  String get imageNotFound => 'Image not found';
+
+  @override
+  String get fiber => 'Fiber';
+
+  @override
+  String get sugar => 'Sugar';
+
+  @override
+  String get close => 'Close';
+
+  @override
+  String get deleteMeal => 'Delete Meal';
+
+  @override
+  String get deleteMealConfirmation =>
+      'Are you sure you want to delete this meal? This action cannot be undone.';
+
+  @override
+  String get mealDeletedSuccessfully => 'Meal deleted successfully';
+
+  @override
+  String get failedToDeleteMeal => 'Failed to delete meal';
+
+  @override
+  String get errorOccurred => 'An error occurred';
+
+  @override
+  String get barcodeNotDetected => 'Barcode not detected. Please try again.';
+
+  @override
+  String get barcodeReadingFailed => 'Failed to read barcode.';
+
+  @override
+  String get productInfoRetrievalFailed =>
+      'Could not retrieve product information.';
+
+  @override
+  String get analyzingBarcode => 'Analyzing barcode...';
+
+  @override
+  String get analysisFailed => 'Analysis Failed';
+
+  @override
+  String get retry => 'Retry';
+
+  @override
+  String get saving => 'Saving...';
+
+  @override
+  String get nutritionSummary => 'Nutrition Summary';
+
+  @override
+  String get failedToSaveMeal => 'Failed to save meal. Please try again.';
 }

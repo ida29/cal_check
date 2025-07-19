@@ -160,7 +160,8 @@ class LocalPhotoStorageService {
     final allPhotos = await getAllMealPhotos();
     
     return allPhotos.where((photo) {
-      return photo.createdAt.isAfter(startDate) && 
+      // Include photos where createdAt is >= startDate and < endDate
+      return !photo.createdAt.isBefore(startDate) && 
              photo.createdAt.isBefore(endDate);
     }).toList();
   }

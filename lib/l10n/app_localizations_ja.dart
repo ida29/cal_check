@@ -460,4 +460,280 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get barcodeMode => 'バーコード';
+
+  @override
+  String get exerciseTitle => '運動';
+
+  @override
+  String get todaysExercise => '今日の運動';
+
+  @override
+  String get caloriesBurned => '消費カロリー';
+
+  @override
+  String get caloriesUnit => 'kcal';
+
+  @override
+  String get minutesUnit => '分';
+
+  @override
+  String get loading => '読み込み中...';
+
+  @override
+  String get error => 'エラー';
+
+  @override
+  String get noExerciseRecords => '運動記録がありません';
+
+  @override
+  String get addExerciseHint => '右上の + ボタンから運動を記録しましょう';
+
+  @override
+  String get notes => 'メモ';
+
+  @override
+  String get confirmDeleteExercise => 'この運動記録を削除しますか？';
+
+  @override
+  String get lowIntensity => '軽度';
+
+  @override
+  String get moderateIntensity => '中程度';
+
+  @override
+  String get highIntensity => '高強度';
+
+  @override
+  String get addExercise => '運動記録を追加';
+
+  @override
+  String get editExercise => '運動記録を編集';
+
+  @override
+  String get exerciseName => '運動名';
+
+  @override
+  String get pleaseEnterExerciseName => '運動名を入力してください';
+
+  @override
+  String get exerciseType => '運動種類';
+
+  @override
+  String get durationMinutes => '時間（分）';
+
+  @override
+  String get pleaseEnterDuration => '時間を入力してください';
+
+  @override
+  String get pleaseEnterValidDuration => '正しい時間を入力してください';
+
+  @override
+  String get pleaseEnterCalories => 'カロリーを入力してください';
+
+  @override
+  String get pleaseEnterValidCalories => '正しいカロリーを入力してください';
+
+  @override
+  String get intensity => '強度';
+
+  @override
+  String get strengthTrainingDetails => '筋力トレーニング詳細';
+
+  @override
+  String get sets => 'セット数';
+
+  @override
+  String get reps => '回数';
+
+  @override
+  String get weightKg => '重量（kg）';
+
+  @override
+  String get distanceKm => '距離（km）';
+
+  @override
+  String get dateTime => '日時';
+
+  @override
+  String get notesOptional => 'メモ（任意）';
+
+  @override
+  String get cardio => '有酸素運動';
+
+  @override
+  String get strength => '筋力トレーニング';
+
+  @override
+  String get flexibility => 'ストレッチ・柔軟性';
+
+  @override
+  String get sports => 'スポーツ';
+
+  @override
+  String get walking => 'ウォーキング';
+
+  @override
+  String get running => 'ランニング';
+
+  @override
+  String get cycling => 'サイクリング';
+
+  @override
+  String get swimming => '水泳';
+
+  @override
+  String get quickActions => 'クイックアクション';
+
+  @override
+  String get recordExercise => '運動を記録';
+
+  @override
+  String get recordExerciseSubtitle => '運動した内容を記録';
+
+  @override
+  String get mealHistoryAction => '食事履歴';
+
+  @override
+  String get checkTodaysMeals => '今日の食事を確認';
+
+  @override
+  String get recordWater => '水分記録';
+
+  @override
+  String get recordWaterSubtitle => '水分摂取を記録';
+
+  @override
+  String get waterRecordingComingSoon => '水分記録機能は準備中です';
+
+  @override
+  String get statisticsAction => '統計';
+
+  @override
+  String get checkProgress => '進捗を確認';
+
+  @override
+  String get imageSelectionFailed => '画像の選択に失敗しました';
+
+  @override
+  String get heightCm => '身長 (cm)';
+
+  @override
+  String get profileUpdated => 'プロフィールを更新しました！';
+
+  @override
+  String get dailyCalorieGoalTitle => '1日のカロリー目標';
+
+  @override
+  String get caloriesPerDay => '1日あたりのカロリー';
+
+  @override
+  String get calUnit => 'cal';
+
+  @override
+  String get calorieGoalUpdated => 'カロリー目標を更新しました！';
+
+  @override
+  String get activityLevelTitle => '活動レベル';
+
+  @override
+  String get sedentary => '座り仕事中心';
+
+  @override
+  String get lightlyActive => 'やや活動的';
+
+  @override
+  String get veryActive => 'とても活動的';
+
+  @override
+  String get extraActive => '非常に活動的';
+
+  @override
+  String get activityLevelUpdated => '活動レベルを更新しました！';
+
+  @override
+  String get englishLanguage => 'English';
+
+  @override
+  String get japaneseLanguage => '日本語';
+
+  @override
+  String get unitsTitle => '単位';
+
+  @override
+  String get metricUnitsOption => 'メートル法 (kg, cm)';
+
+  @override
+  String get imperialUnits => 'ヤード・ポンド法 (lbs, ft)';
+
+  @override
+  String get dayView => '日別';
+
+  @override
+  String get weekView => '週別';
+
+  @override
+  String get monthView => '月別';
+
+  @override
+  String get noMealsRecorded => '記録された食事はありません';
+
+  @override
+  String get startTakingPhotos => '食事の写真を撮り始めましょう！';
+
+  @override
+  String get itemsCount => '品目';
+
+  @override
+  String get imageNotFound => '画像が見つかりません';
+
+  @override
+  String get fiber => '食物繊維';
+
+  @override
+  String get sugar => '糖質';
+
+  @override
+  String get close => '閉じる';
+
+  @override
+  String get deleteMeal => '食事を削除';
+
+  @override
+  String get deleteMealConfirmation => 'この食事を削除してもよろしいですか？この操作は取り消せません。';
+
+  @override
+  String get mealDeletedSuccessfully => '食事を削除しました';
+
+  @override
+  String get failedToDeleteMeal => '食事の削除に失敗しました';
+
+  @override
+  String get errorOccurred => 'エラーが発生しました';
+
+  @override
+  String get barcodeNotDetected => 'バーコードが検出されませんでした。もう一度お試しください。';
+
+  @override
+  String get barcodeReadingFailed => 'バーコードの読み取りに失敗しました。';
+
+  @override
+  String get productInfoRetrievalFailed => '商品情報を取得できませんでした。';
+
+  @override
+  String get analyzingBarcode => 'バーコードを解析中...';
+
+  @override
+  String get analysisFailed => '解析に失敗しました';
+
+  @override
+  String get retry => '再試行';
+
+  @override
+  String get saving => '保存中...';
+
+  @override
+  String get nutritionSummary => '栄養成分サマリー';
+
+  @override
+  String get failedToSaveMeal => '食事の保存に失敗しました。もう一度お試しください。';
 }

@@ -1,36 +1,39 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../business/providers/exercise_provider.dart';
-import '../../data/entities/exercise.dart';
+import 'package:flutter/services.dart';
 import '../../l10n/app_localizations.dart';
-import 'exercise_entry_screen.dart';
 
-class ExerciseScreen extends ConsumerWidget {
-  const ExerciseScreen({super.key});
+class ExerciseScreen extends StatefulWidget {
+  const ExerciseScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context)!;
-    final exercisesAsync = ref.watch(exercisesByDateProvider(DateTime.now()));
-    final totalCaloriesAsync = ref.watch(totalCaloriesBurnedProvider(DateTime.now()));
+  State<ExerciseScreen> createState() => _ExerciseScreenState();
+}
 
+class _ExerciseScreenState extends State<ExerciseScreen> {
+  final _nameController = TextEditingController();
+  final _durationController = TextEditingController();
+  final _caloriesController = TextEditingController();
+  
+  String _selectedIntensity = 'moderate';
+  DateTime _selectedDate = DateTime.now();
+  
+  final List<Map<String, dynamic>> _commonExercises = [
+    {'name': 'ウォーキング', 'icon': Icons.directions_walk, 'caloriesPerMinute': 5},
+    {'name': 'ランニング', 'icon': Icons.directions_run, 'caloriesPerMinute': 10},
+    {'name': 'サイクリング', 'icon': Icons.directions_bike, 'caloriesPerMinute': 8},
+    {'name': '水泳', 'icon': Icons.pool, 'caloriesPerMinute': 11},
+    {'name': 'ヨガ', 'icon': Icons.self_improvement, 'caloriesPerMinute': 3},
+    {'name': '筋トレ', 'icon': Icons.fitness_center, 'caloriesPerMinute': 6},
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.exerciseTitle),
-        backgroundColor: const Color(0xFFFFC1CC),
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const ExerciseEntryScreen(),
-                ),
-              );
-            },
-            icon: const Icon(Icons.add),
-          ),
-        ],
+        title: const Text('運動を記録'),
+        centerTitle: true,
       ),
       body: Column(
         children: [
