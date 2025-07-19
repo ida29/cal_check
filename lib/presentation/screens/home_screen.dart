@@ -31,6 +31,51 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         title: Text(l10n.appTitle),
         centerTitle: true,
         elevation: 0,
+        actions: [
+          Stack(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.notifications_outlined),
+                onPressed: () {
+                  _showNotificationPanel();
+                },
+              ),
+              Positioned(
+                right: 8,
+                top: 8,
+                child: FutureBuilder<int>(
+                  future: _getUnreadNotificationCount(),
+                  builder: (context, snapshot) {
+                    final count = snapshot.data ?? 0;
+                    if (count == 0) return const SizedBox.shrink();
+                    
+                    return Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                      constraints: const BoxConstraints(
+                        minWidth: 16,
+                        minHeight: 16,
+                      ),
+                      child: Text(
+                        count > 9 ? '9+' : count.toString(),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: SafeArea(
         child: Padding(
@@ -513,4 +558,255 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
+  Future<int> _getUnreadNotificationCount() async {
+    // TODO: 実際の未読通知数を取得する実装
+    // 今は仮の値を返す
+    final managerCharacter = ref.read(managerCharacterProvider);
+    if (managerCharacter == null) return 0;
+    
+    final missedMeals = await MealReminderService.getMissedMealCount();
+    return missedMeals;
+  }
+
+  void _showNotificationPanel() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => const NotificationPanel(),
+    );
+  }
+}
+
+class NotificationPanel extends ConsumerWidget {
+  const NotificationPanel({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final managerCharacter = ref.watch(managerCharacterProvider);
+    
+    return Container(
+      height: MediaQuery.of(context).size.height * 0.7,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 40,
+            height: 4,
+            margin: const EdgeInsets.only(top: 12, bottom: 20),
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '通知',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                TextButton(
+                  onPressed: () {
+                    // TODO: すべて既読にする
+                  },
+                  child: const Text('すべて既読'),
+                ),
+              ],
+            ),
+          ),
+          const Divider(),
+          Expanded(
+            child: FutureBuilder<List<NotificationItem>>(
+              future: _getNotifications(ref),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                
+                final notifications = snapshot.data ?? [];
+                
+                if (notifications.isEmpty) {
+                  return Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.notifications_off_outlined,
+                          size: 64,
+                          color: Colors.grey[400],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          '新しい通知はありません',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+                
+                return ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: notifications.length,
+                  itemBuilder: (context, index) {
+                    final notification = notifications[index];
+                    return _buildNotificationTile(context, notification, managerCharacter);
+                  },
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildNotificationTile(BuildContext context, NotificationItem notification, ManagerCharacter? manager) {
+    IconData icon;
+    Color iconColor;
+    
+    switch (notification.type) {
+      case NotificationType.mealReminder:
+        icon = Icons.restaurant;
+        iconColor = Colors.orange;
+        break;
+      case NotificationType.achievement:
+        icon = Icons.emoji_events;
+        iconColor = Colors.amber;
+        break;
+      case NotificationType.tip:
+        icon = Icons.lightbulb_outline;
+        iconColor = Colors.blue;
+        break;
+    }
+    
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: ListTile(
+        leading: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: iconColor.withOpacity(0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, color: iconColor),
+        ),
+        title: Text(
+          notification.title,
+          style: TextStyle(
+            fontWeight: notification.isRead ? FontWeight.normal : FontWeight.bold,
+          ),
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 4),
+            Text(notification.message),
+            const SizedBox(height: 4),
+            Text(
+              _formatTime(notification.timestamp),
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+        trailing: !notification.isRead
+            ? Container(
+                width: 8,
+                height: 8,
+                decoration: const BoxDecoration(
+                  color: Colors.red,
+                  shape: BoxShape.circle,
+                ),
+              )
+            : null,
+        onTap: () {
+          // TODO: 通知を既読にする
+        },
+      ),
+    );
+  }
+  
+  String _formatTime(DateTime time) {
+    final now = DateTime.now();
+    final difference = now.difference(time);
+    
+    if (difference.inMinutes < 60) {
+      return '${difference.inMinutes}分前';
+    } else if (difference.inHours < 24) {
+      return '${difference.inHours}時間前';
+    } else {
+      return '${difference.inDays}日前';
+    }
+  }
+  
+  Future<List<NotificationItem>> _getNotifications(WidgetRef ref) async {
+    final notifications = <NotificationItem>[];
+    final managerCharacter = ref.read(managerCharacterProvider);
+    
+    // 食事記録リマインダー
+    final missedMeals = await MealReminderService.getMissedMealCount();
+    if (missedMeals > 0) {
+      final message = managerCharacter != null
+          ? ManagerCharacterMessages.getRandomMessage(
+              managerCharacter.type,
+              managerCharacter.notificationLevel,
+            )
+          : '食事の記録を忘れていませんか？';
+          
+      notifications.add(NotificationItem(
+        id: 'meal_reminder',
+        type: NotificationType.mealReminder,
+        title: '食事記録のリマインダー',
+        message: message,
+        timestamp: DateTime.now().subtract(const Duration(minutes: 30)),
+        isRead: false,
+      ));
+    }
+    
+    // TODO: 他の通知を追加（実績、ヒントなど）
+    
+    return notifications;
+  }
+}
+
+class NotificationItem {
+  final String id;
+  final NotificationType type;
+  final String title;
+  final String message;
+  final DateTime timestamp;
+  final bool isRead;
+  
+  NotificationItem({
+    required this.id,
+    required this.type,
+    required this.title,
+    required this.message,
+    required this.timestamp,
+    required this.isRead,
+  });
+}
+
+enum NotificationType {
+  mealReminder,
+  achievement,
+  tip,
 }

@@ -240,9 +240,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           title: Text(l10n.privacyPolicy),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(l10n.privacyPolicyComingSoon)),
-            );
+            Navigator.pushNamed(context, '/privacy-policy');
           },
         ),
         ListTile(
