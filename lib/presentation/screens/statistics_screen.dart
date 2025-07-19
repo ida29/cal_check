@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import '../../l10n/app_localizations.dart';
 
 class StatisticsScreen extends StatefulWidget {
   const StatisticsScreen({Key? key}) : super(key: key);
@@ -15,7 +16,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Statistics'),
+        title: Text(AppLocalizations.of(context)!.statisticsTitle),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -46,13 +47,13 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
       child: Row(
         children: [
           Expanded(
-            child: _buildPeriodButton('Week', 0),
+            child: _buildPeriodButton(AppLocalizations.of(context)!.week, 0),
           ),
           Expanded(
-            child: _buildPeriodButton('Month', 1),
+            child: _buildPeriodButton(AppLocalizations.of(context)!.month, 1),
           ),
           Expanded(
-            child: _buildPeriodButton('Year', 2),
+            child: _buildPeriodButton(AppLocalizations.of(context)!.year, 2),
           ),
         ],
       ),
@@ -89,7 +90,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Calorie Intake Trend',
+              AppLocalizations.of(context)!.calorieIntakeTrend,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 20),
@@ -116,7 +117,15 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                         showTitles: true,
                         reservedSize: 30,
                         getTitlesWidget: (value, meta) {
-                          const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                          final days = [
+                            AppLocalizations.of(context)!.monday,
+                            AppLocalizations.of(context)!.tuesday,
+                            AppLocalizations.of(context)!.wednesday,
+                            AppLocalizations.of(context)!.thursday,
+                            AppLocalizations.of(context)!.friday,
+                            AppLocalizations.of(context)!.saturday,
+                            AppLocalizations.of(context)!.sunday,
+                          ];
                           if (value.toInt() < days.length) {
                             return Text(
                               days[value.toInt()],
@@ -163,9 +172,9 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildStatItem('Average', '1,960 cal'),
-                _buildStatItem('Lowest', '1,770 cal'),
-                _buildStatItem('Highest', '2,200 cal'),
+                _buildStatItem(AppLocalizations.of(context)!.average, '1,960 cal'),
+                _buildStatItem(AppLocalizations.of(context)!.lowest, '1,770 cal'),
+                _buildStatItem(AppLocalizations.of(context)!.highest, '2,200 cal'),
               ],
             ),
           ],
@@ -182,7 +191,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Nutrition Breakdown (Weekly Average)',
+              AppLocalizations.of(context)!.nutritionBreakdown,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 20),
@@ -198,21 +207,21 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                           PieChartSectionData(
                             color: Colors.blue,
                             value: 45,
-                            title: 'Carbs\n45%',
+                            title: AppLocalizations.of(context)!.carbsPercentage,
                             radius: 60,
                             titleStyle: const TextStyle(fontSize: 12, color: Colors.white),
                           ),
                           PieChartSectionData(
                             color: Colors.red,
                             value: 30,
-                            title: 'Fat\n30%',
+                            title: AppLocalizations.of(context)!.fatPercentage,
                             radius: 60,
                             titleStyle: const TextStyle(fontSize: 12, color: Colors.white),
                           ),
                           PieChartSectionData(
                             color: Colors.green,
                             value: 25,
-                            title: 'Protein\n25%',
+                            title: AppLocalizations.of(context)!.proteinPercentage,
                             radius: 60,
                             titleStyle: const TextStyle(fontSize: 12, color: Colors.white),
                           ),
@@ -227,9 +236,9 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                   flex: 3,
                   child: Column(
                     children: [
-                      _buildNutritionItem('Carbohydrates', '220g', '45%', Colors.blue),
-                      _buildNutritionItem('Protein', '120g', '25%', Colors.green),
-                      _buildNutritionItem('Fat', '65g', '30%', Colors.red),
+                      _buildNutritionItem(AppLocalizations.of(context)!.carbohydrates, '220g', '45%', Colors.blue),
+                      _buildNutritionItem(AppLocalizations.of(context)!.protein, '120g', '25%', Colors.green),
+                      _buildNutritionItem(AppLocalizations.of(context)!.fat, '65g', '30%', Colors.red),
                     ],
                   ),
                 ),
@@ -272,15 +281,15 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Weekly Goals Progress',
+              AppLocalizations.of(context)!.weeklyGoalsProgress,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 20),
-            _buildGoalProgress('Calorie Goal', 0.88, '12,320 / 14,000 cal'),
+            _buildGoalProgress(AppLocalizations.of(context)!.calorieGoal, 0.88, '12,320 / 14,000 cal'),
             const SizedBox(height: 16),
-            _buildGoalProgress('Exercise Goal', 0.60, '3 / 5 workouts'),
+            _buildGoalProgress(AppLocalizations.of(context)!.exerciseGoal, 0.60, '3 / 5 workouts'),
             const SizedBox(height: 16),
-            _buildGoalProgress('Water Intake', 0.75, '15 / 20 glasses'),
+            _buildGoalProgress(AppLocalizations.of(context)!.waterIntake, 0.75, '15 / 20 glasses'),
           ],
         ),
       ),

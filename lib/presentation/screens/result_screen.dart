@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
+import '../../l10n/app_localizations.dart';
 
 class ResultScreen extends StatefulWidget {
   const ResultScreen({Key? key}) : super(key: key);
@@ -60,11 +61,11 @@ class _ResultScreenState extends State<ResultScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Analysis Results'),
+        title: Text(AppLocalizations.of(context)!.analysisResults),
         actions: [
           TextButton(
             onPressed: _isAnalyzing ? null : _saveMeal,
-            child: const Text('Save'),
+            child: Text(AppLocalizations.of(context)!.save),
           ),
         ],
       ),
@@ -83,13 +84,13 @@ class _ResultScreenState extends State<ResultScreen> {
             if (_isAnalyzing)
               Container(
                 height: 200,
-                child: const Center(
+                child: Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      CircularProgressIndicator(),
-                      SizedBox(height: 16),
-                      Text('Analyzing your meal...'),
+                      const CircularProgressIndicator(),
+                      const SizedBox(height: 16),
+                      Text(AppLocalizations.of(context)!.analyzingMeal),
                     ],
                   ),
                 ),
@@ -107,7 +108,7 @@ class _ResultScreenState extends State<ResultScreen> {
                         child: Column(
                           children: [
                             Text(
-                              'Total Calories',
+                              AppLocalizations.of(context)!.totalCalories,
                               style: Theme.of(context).textTheme.titleMedium,
                             ),
                             const SizedBox(height: 8),
@@ -124,7 +125,7 @@ class _ResultScreenState extends State<ResultScreen> {
                     ),
                     const SizedBox(height: 20),
                     Text(
-                      'Detected Items',
+                      AppLocalizations.of(context)!.detectedItems,
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: 12),
@@ -133,7 +134,7 @@ class _ResultScreenState extends State<ResultScreen> {
                     ElevatedButton.icon(
                       onPressed: _addCustomItem,
                       icon: const Icon(Icons.add),
-                      label: const Text('Add Item'),
+                      label: Text(AppLocalizations.of(context)!.addItem),
                       style: ElevatedButton.styleFrom(
                         minimumSize: const Size(double.infinity, 48),
                       ),
@@ -195,14 +196,14 @@ class _ResultScreenState extends State<ResultScreen> {
               children: [
                 TextButton(
                   onPressed: () => _editItem(item),
-                  child: const Text('Edit'),
+                  child: Text(AppLocalizations.of(context)!.edit),
                 ),
                 TextButton(
                   onPressed: () => _removeItem(item),
                   style: TextButton.styleFrom(
                     foregroundColor: Colors.red,
                   ),
-                  child: const Text('Remove'),
+                  child: Text(AppLocalizations.of(context)!.remove),
                 ),
               ],
             ),
@@ -220,7 +221,7 @@ class _ResultScreenState extends State<ResultScreen> {
 
   void _editItem(Map<String, dynamic> item) {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Edit feature coming soon!')),
+      SnackBar(content: Text(AppLocalizations.of(context)!.editComingSoon)),
     );
   }
 
@@ -232,13 +233,13 @@ class _ResultScreenState extends State<ResultScreen> {
 
   void _addCustomItem() {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Add custom item feature coming soon!')),
+      SnackBar(content: Text(AppLocalizations.of(context)!.addCustomItemComingSoon)),
     );
   }
 
   void _saveMeal() {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Meal saved successfully!')),
+      SnackBar(content: Text(AppLocalizations.of(context)!.mealSavedSuccessfully)),
     );
     Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
   }
