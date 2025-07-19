@@ -93,66 +93,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ),
       ),
-      floatingActionButton: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          // 手動入力ボタン
-          Container(
-            height: 56,
-            width: 56,
-            margin: const EdgeInsets.only(right: 12),
-            child: Material(
-              elevation: 4,
-              shape: const CircleBorder(),
-              color: const Color(0xFF2196F3),
-              child: InkWell(
-                customBorder: const CircleBorder(),
-                onTap: () {
-                  Navigator.pushNamed(context, '/manual-meal-entry');
-                },
-                hoverColor: Colors.transparent,
-                splashColor: Colors.white.withOpacity(0.3),
-                child: const SizedBox(
-                  height: 56,
-                  width: 56,
-                  child: Icon(
-                    Icons.edit_rounded,
-                    size: 24,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          // カメラボタン
-          Container(
-            height: 70,
-            width: 70,
-            child: Material(
-              elevation: 8,
-              shape: const CircleBorder(),
-              color: const Color(0xFFFF69B4),
-              child: InkWell(
-                customBorder: const CircleBorder(),
-                onTap: () {
-                  Navigator.pushNamed(context, '/camera');
-                },
-                hoverColor: Colors.transparent,
-                splashColor: Colors.white.withOpacity(0.3),
-                child: const SizedBox(
-                  height: 70,
-                  width: 70,
-                  child: Icon(
-                    Icons.camera_alt_rounded,
-                    size: 32,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 
