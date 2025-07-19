@@ -134,28 +134,20 @@ class _CameraScreenState extends State<CameraScreen> {
                     iconSize: 32,
                     onPressed: _pickFromGallery,
                   ),
-                  GestureDetector(
-                    onTap: _isProcessing ? null : _takePicture,
-                    child: Container(
-                      width: 70,
-                      height: 70,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 3),
-                        color: _isProcessing ? Colors.grey : Colors.white,
-                      ),
-                      child: _isProcessing
-                          ? const Center(
-                              child: CircularProgressIndicator(
-                                strokeWidth: 3,
-                              ),
-                            )
-                          : const Icon(
-                              Icons.camera,
-                              size: 40,
-                              color: Colors.black,
+                  IconButton(
+                    icon: _isProcessing
+                        ? const SizedBox(
+                            width: 32,
+                            height: 32,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 3,
+                              color: Colors.white,
                             ),
-                    ),
+                          )
+                        : const Icon(Icons.camera_alt),
+                    color: Colors.white,
+                    iconSize: 48,
+                    onPressed: _isProcessing ? null : _takePicture,
                   ),
                   IconButton(
                     icon: const Icon(Icons.info_outline),
