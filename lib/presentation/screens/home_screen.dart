@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../l10n/app_localizations.dart';
+import '../../business/providers/manager_character_provider.dart';
+import '../../business/models/manager_character.dart';
+import '../../business/services/meal_reminder_service.dart';
+import 'manager_character_setup_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -10,6 +14,13 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
+
+  @override
+  void initState() {
+    super.initState();
+    // 食事リマインダータイマーを開始
+    ref.read(mealReminderTimerProvider);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,6 +38,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              _buildManagerCharacterSection(),
+              const SizedBox(height: 16),
               _buildDailySummaryCard(),
               const SizedBox(height: 24),
               _buildQuickActionsSection(),
@@ -191,6 +204,173 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
       ],
     );
+  }
+
+  Widget _buildManagerCharacterSection() {
+    final managerCharacter = ref.watch(managerCharacterProvider);
+    
+    if (managerCharacter == null) {
+      return Card(
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const ManagerCharacterSetupScreen(),
+                settings: const RouteSettings(arguments: 'initial_setup'),
+              ),
+            );
+          },
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[200],
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.add,
+                    size: 30,
+                    color: Colors.grey,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'マネージャーを設定しよう！',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '食事記録をサポートしてくれます',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.chevron_right, color: Colors.grey),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+    
+    return FutureBuilder<int>(
+      future: MealReminderService.getMissedMealCount(),
+      builder: (context, snapshot) {
+        final missedCount = snapshot.data ?? 0;
+        final message = missedCount > 0
+            ? ManagerCharacterMessages.getRandomMessage(
+                managerCharacter.type,
+                NotificationLevel.gentle,
+              )
+            : _getEncouragementMessage(managerCharacter.type);
+        
+        return Card(
+          elevation: 2,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: managerCharacter.type == CharacterType.human
+                        ? Colors.pink[100]
+                        : Colors.orange[100],
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    managerCharacter.type == CharacterType.human
+                        ? Icons.person
+                        : Icons.pets,
+                    size: 35,
+                    color: managerCharacter.type == CharacterType.human
+                        ? Colors.pink[300]
+                        : Colors.orange[300],
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            managerCharacter.name,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          if (missedCount > 0) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.red[100],
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                '未記録: $missedCount',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.red[700],
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        message,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+  
+  String _getEncouragementMessage(CharacterType type) {
+    if (type == CharacterType.human) {
+      return '順調に記録できていますね！その調子です！';
+    } else {
+      return 'よく頑張ってるにゃ〜！えらいにゃ〜！';
+    }
   }
 
   Widget _buildQuickActionsSection() {
