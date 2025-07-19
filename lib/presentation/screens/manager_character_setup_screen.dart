@@ -19,7 +19,7 @@ class _ManagerCharacterSetupScreenState extends ConsumerState<ManagerCharacterSe
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -75,34 +75,30 @@ class _ManagerCharacterSetupScreenState extends ConsumerState<ManagerCharacterSe
                 const SizedBox(height: 40),
                 _buildSampleMessage(),
               ],
-              const Spacer(),
-              Padding(
-                padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).padding.bottom + 16,
-                ),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton(
-                    onPressed: _selectedCharacter != null ? _onConfirm : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.pink[400],
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(28),
-                      ),
-                      disabledBackgroundColor: Colors.grey[300],
+              const SizedBox(height: 40),
+              SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: _selectedCharacter != null ? _onConfirm : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.pink[400],
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(28),
                     ),
-                    child: const Text(
-                      '決定',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
+                    disabledBackgroundColor: Colors.grey[300],
+                  ),
+                  child: const Text(
+                    '決定',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
                     ),
                   ),
                 ),
               ),
+              SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
             ],
           ),
         ),
