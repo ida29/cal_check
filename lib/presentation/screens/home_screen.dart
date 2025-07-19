@@ -28,10 +28,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _buildDailySummaryCard(),
-              const SizedBox(height: 20),
-              Expanded(
-                child: _buildRecentMeals(),
-              ),
+              const SizedBox(height: 24),
+              _buildQuickActionsSection(),
+              const Spacer(),
             ],
           ),
         ),
@@ -168,8 +167,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-
-  Widget _buildRecentMeals() {
+  Widget _buildQuickActionsSection() {
     final l10n = AppLocalizations.of(context)!;
     
     return Column(
@@ -177,10 +175,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       children: [
         Row(
           children: [
-            const Icon(Icons.history_rounded, color: Color(0xFFFF69B4), size: 24),
+            const Icon(Icons.flash_on_rounded, color: Color(0xFFFF69B4), size: 24),
             const SizedBox(width: 8),
             Text(
-              l10n.recentMeals,
+              'クイックアクション',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 color: const Color(0xFFFF69B4),
                 fontWeight: FontWeight.bold,
@@ -189,89 +187,121 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ],
         ),
         const SizedBox(height: 16),
-        Expanded(
-          child: ListView.builder(
-            itemCount: 3,
-            itemBuilder: (context, index) {
-              return _buildMealCard(index);
-            },
-          ),
+        Row(
+          children: [
+            Expanded(
+              child: _buildActionCard(
+                icon: Icons.fitness_center_rounded,
+                title: '運動を記録',
+                subtitle: '運動した内容を記録',
+                color: const Color(0xFF4CAF50),
+                onTap: () {
+                  Navigator.pushNamed(context, '/exercise');
+                },
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildActionCard(
+                icon: Icons.restaurant_menu_rounded,
+                title: '食事履歴',
+                subtitle: '今日の食事を確認',
+                color: const Color(0xFF2196F3),
+                onTap: () {
+                  // 履歴画面へ移動（BottomNavigationを切り替える）
+                  final scaffold = context.findAncestorStateOfType<State<Scaffold>>();
+                  if (scaffold != null && scaffold.mounted) {
+                    // MainNavigationScreenの_currentIndexを変更
+                    Navigator.of(context).pushReplacementNamed('/main', arguments: 1);
+                  }
+                },
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _buildActionCard(
+                icon: Icons.water_drop_rounded,
+                title: '水分記録',
+                subtitle: '水分摂取を記録',
+                color: const Color(0xFF00BCD4),
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('水分記録機能は準備中です')),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildActionCard(
+                icon: Icons.insights_rounded,
+                title: '統計',
+                subtitle: '進捗を確認',
+                color: const Color(0xFFFF9800),
+                onTap: () {
+                  // 統計画面へ移動
+                  Navigator.of(context).pushReplacementNamed('/main', arguments: 3);
+                },
+              ),
+            ),
+          ],
         ),
       ],
     );
   }
 
-  Widget _buildMealCard(int index) {
-    final l10n = AppLocalizations.of(context)!;
-    final meals = [l10n.breakfast, l10n.lunch, l10n.dinner];
-    final calories = ['320', '580', '345'];
-    final times = ['8:30 AM', '12:45 PM', '6:30 PM'];
-    final colors = [
-      const Color(0xFFFFB347), // オレンジ
-      const Color(0xFF98FB98), // ライトグリーン
-      const Color(0xFFDDA0DD), // プラム
-    ];
-
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      elevation: 3,
+  Widget _buildActionCard({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
       child: Container(
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           gradient: LinearGradient(
-            colors: [colors[index].withOpacity(0.1), colors[index].withOpacity(0.05)],
+            colors: [color.withOpacity(0.1), color.withOpacity(0.05)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
+          border: Border.all(color: color.withOpacity(0.3)),
         ),
-        child: ListTile(
-          contentPadding: const EdgeInsets.all(16),
-          leading: Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [colors[index].withOpacity(0.8), colors[index]],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(12),
               ),
-              borderRadius: BorderRadius.circular(25),
+              child: Icon(icon, color: color, size: 28),
             ),
-            child: const Icon(
-              Icons.restaurant_rounded,
-              color: Colors.white,
-              size: 24,
-            ),
-          ),
-          title: Text(
-            meals[index],
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: colors[index],
-            ),
-          ),
-          subtitle: Text(
-            times[index],
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Colors.grey[600],
-            ),
-          ),
-          trailing: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(
-              color: colors[index].withOpacity(0.2),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              '${calories[index]} cal',
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: colors[index],
+            const SizedBox(height: 12),
+            Text(
+              title,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
+                color: color,
               ),
             ),
-          ),
-          onTap: () {},
+            const SizedBox(height: 4),
+            Text(
+              subtitle,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
         ),
       ),
     );
