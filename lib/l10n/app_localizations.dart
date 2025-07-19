@@ -271,6 +271,726 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Snack'**
   String get snack;
+
+  /// Recent meals section title
+  ///
+  /// In en, this message translates to:
+  /// **'Recent Meals'**
+  String get recentMeals;
+
+  /// Daily goal progress text
+  ///
+  /// In en, this message translates to:
+  /// **'% of daily goal'**
+  String get dailyGoalProgress;
+
+  /// Error message for camera failure
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to take picture'**
+  String get failedTakePicture;
+
+  /// Gallery feature placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Gallery feature coming soon!'**
+  String get galleryComingSoon;
+
+  /// Camera screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Take a Photo'**
+  String get takePhoto;
+
+  /// Tips dialog title
+  ///
+  /// In en, this message translates to:
+  /// **'Tips for Best Results'**
+  String get tipsForBestResults;
+
+  /// Camera tip 1
+  ///
+  /// In en, this message translates to:
+  /// **'• Ensure good lighting\n'**
+  String get tip1;
+
+  /// Camera tip 2
+  ///
+  /// In en, this message translates to:
+  /// **'• Center the food in frame\n'**
+  String get tip2;
+
+  /// Camera tip 3
+  ///
+  /// In en, this message translates to:
+  /// **'• Avoid shadows\n'**
+  String get tip3;
+
+  /// Camera tip 4
+  ///
+  /// In en, this message translates to:
+  /// **'• Capture all items clearly\n'**
+  String get tip4;
+
+  /// Camera tip 5
+  ///
+  /// In en, this message translates to:
+  /// **'• Keep camera steady'**
+  String get tip5;
+
+  /// Understanding confirmation button
+  ///
+  /// In en, this message translates to:
+  /// **'Got it'**
+  String get gotIt;
+
+  /// User profile section
+  ///
+  /// In en, this message translates to:
+  /// **'User Profile'**
+  String get userProfile;
+
+  /// Personal info setting
+  ///
+  /// In en, this message translates to:
+  /// **'Personal Information'**
+  String get personalInformation;
+
+  /// Profile update description
+  ///
+  /// In en, this message translates to:
+  /// **'Update your profile details'**
+  String get updateProfileDetails;
+
+  /// Goals section title
+  ///
+  /// In en, this message translates to:
+  /// **'Goals & Targets'**
+  String get goalsTargets;
+
+  /// Calorie goal setting
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Calorie Goal'**
+  String get dailyCalorieGoal;
+
+  /// Default calorie amount
+  ///
+  /// In en, this message translates to:
+  /// **'2,000 calories'**
+  String get caloriesAmount;
+
+  /// Activity level setting
+  ///
+  /// In en, this message translates to:
+  /// **'Activity Level'**
+  String get activityLevel;
+
+  /// Activity level option
+  ///
+  /// In en, this message translates to:
+  /// **'Moderately Active'**
+  String get moderatelyActive;
+
+  /// Notifications section
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notifications;
+
+  /// Meal reminder setting
+  ///
+  /// In en, this message translates to:
+  /// **'Meal Reminders'**
+  String get mealReminders;
+
+  /// Meal reminder description
+  ///
+  /// In en, this message translates to:
+  /// **'Get notified for meal times'**
+  String get mealReminderDescription;
+
+  /// Reminder times setting
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder Times'**
+  String get reminderTimes;
+
+  /// Default reminder schedule
+  ///
+  /// In en, this message translates to:
+  /// **'Breakfast: 8:00 AM, Lunch: 12:00 PM, Dinner: 7:00 PM'**
+  String get defaultReminderTimes;
+
+  /// Reminder times placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder times feature coming soon!'**
+  String get reminderTimesComingSoon;
+
+  /// App preferences section
+  ///
+  /// In en, this message translates to:
+  /// **'App Preferences'**
+  String get appPreferences;
+
+  /// Dark mode setting
+  ///
+  /// In en, this message translates to:
+  /// **'Dark Mode'**
+  String get darkMode;
+
+  /// Dark theme description
+  ///
+  /// In en, this message translates to:
+  /// **'Use dark theme'**
+  String get useDarkTheme;
+
+  /// Units setting
+  ///
+  /// In en, this message translates to:
+  /// **'Units'**
+  String get units;
+
+  /// Metric units option
+  ///
+  /// In en, this message translates to:
+  /// **'Metric (kg, cm)'**
+  String get metricUnits;
+
+  /// Data management section
+  ///
+  /// In en, this message translates to:
+  /// **'Data Management'**
+  String get dataManagement;
+
+  /// Export data feature
+  ///
+  /// In en, this message translates to:
+  /// **'Export Data'**
+  String get exportData;
+
+  /// Export description
+  ///
+  /// In en, this message translates to:
+  /// **'Export your meal history'**
+  String get exportMealHistory;
+
+  /// Export placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Export feature coming soon!'**
+  String get exportComingSoon;
+
+  /// Clear data feature
+  ///
+  /// In en, this message translates to:
+  /// **'Clear All Data'**
+  String get clearAllData;
+
+  /// Clear data description
+  ///
+  /// In en, this message translates to:
+  /// **'Delete all meals and settings'**
+  String get clearDataDescription;
+
+  /// About section
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get about;
+
+  /// App version
+  ///
+  /// In en, this message translates to:
+  /// **'Version'**
+  String get version;
+
+  /// Version number
+  ///
+  /// In en, this message translates to:
+  /// **'1.0.0'**
+  String get versionNumber;
+
+  /// Privacy policy link
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get privacyPolicy;
+
+  /// Privacy policy placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy policy feature coming soon!'**
+  String get privacyPolicyComingSoon;
+
+  /// Help and support link
+  ///
+  /// In en, this message translates to:
+  /// **'Help & Support'**
+  String get helpSupport;
+
+  /// Help support placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Help & support feature coming soon!'**
+  String get helpSupportComingSoon;
+
+  /// Onboarding welcome title
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to Calorie Checker AI'**
+  String get welcomeTitle;
+
+  /// Onboarding welcome description
+  ///
+  /// In en, this message translates to:
+  /// **'Track your meals and achieve your health goals with AI-powered food recognition'**
+  String get welcomeDescription;
+
+  /// Feature title
+  ///
+  /// In en, this message translates to:
+  /// **'Photo Recognition'**
+  String get photoRecognition;
+
+  /// Feature description
+  ///
+  /// In en, this message translates to:
+  /// **'Instantly identify food and calories from photos'**
+  String get photoRecognitionDesc;
+
+  /// Feature title
+  ///
+  /// In en, this message translates to:
+  /// **'Smart Tracking'**
+  String get smartTracking;
+
+  /// Feature description
+  ///
+  /// In en, this message translates to:
+  /// **'Automatically track nutrition and meal history'**
+  String get smartTrackingDesc;
+
+  /// Feature title
+  ///
+  /// In en, this message translates to:
+  /// **'Progress Insights'**
+  String get progressInsights;
+
+  /// Feature description
+  ///
+  /// In en, this message translates to:
+  /// **'Get detailed analytics and goal tracking'**
+  String get progressInsightsDesc;
+
+  /// Personal info screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Personal Information'**
+  String get personalInformationTitle;
+
+  /// Get started button
+  ///
+  /// In en, this message translates to:
+  /// **'Get Started'**
+  String get getStarted;
+
+  /// Name field
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get name;
+
+  /// Name field placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your name'**
+  String get enterYourName;
+
+  /// Age field
+  ///
+  /// In en, this message translates to:
+  /// **'Age'**
+  String get age;
+
+  /// Age field placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your age'**
+  String get enterYourAge;
+
+  /// Gender field
+  ///
+  /// In en, this message translates to:
+  /// **'Gender'**
+  String get gender;
+
+  /// Gender dropdown placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Select your gender'**
+  String get selectGender;
+
+  /// Male option
+  ///
+  /// In en, this message translates to:
+  /// **'Male'**
+  String get male;
+
+  /// Female option
+  ///
+  /// In en, this message translates to:
+  /// **'Female'**
+  String get female;
+
+  /// Other gender option
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get other;
+
+  /// Height field
+  ///
+  /// In en, this message translates to:
+  /// **'Height (cm)'**
+  String get height;
+
+  /// Height field placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your height'**
+  String get enterYourHeight;
+
+  /// Weight field
+  ///
+  /// In en, this message translates to:
+  /// **'Weight (kg)'**
+  String get weight;
+
+  /// Weight field placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your weight'**
+  String get enterYourWeight;
+
+  /// Continue button
+  ///
+  /// In en, this message translates to:
+  /// **'Continue'**
+  String get continueButton;
+
+  /// Daily calories
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Calories'**
+  String get dailyCalories;
+
+  /// Total carbs
+  ///
+  /// In en, this message translates to:
+  /// **'Total Carbs'**
+  String get totalCarbs;
+
+  /// Total protein
+  ///
+  /// In en, this message translates to:
+  /// **'Total Protein'**
+  String get totalProtein;
+
+  /// Total fat
+  ///
+  /// In en, this message translates to:
+  /// **'Total Fat'**
+  String get totalFat;
+
+  /// Goal label
+  ///
+  /// In en, this message translates to:
+  /// **'Goal'**
+  String get goal;
+
+  /// Calorie intake
+  ///
+  /// In en, this message translates to:
+  /// **'Calorie Intake'**
+  String get calorieIntake;
+
+  /// Calorie intake progress
+  ///
+  /// In en, this message translates to:
+  /// **'Calorie Intake Progress'**
+  String get calorieIntakeProgress;
+
+  /// Macronutrient breakdown
+  ///
+  /// In en, this message translates to:
+  /// **'Macronutrient Breakdown'**
+  String get macronutrientBreakdown;
+
+  /// Weekly goals progress
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly Goals Progress'**
+  String get weeklyGoalsProgress;
+
+  /// Calorie goal
+  ///
+  /// In en, this message translates to:
+  /// **'Calorie Goal'**
+  String get calorieGoal;
+
+  /// Exercise goal
+  ///
+  /// In en, this message translates to:
+  /// **'Exercise Goal'**
+  String get exerciseGoal;
+
+  /// Water intake
+  ///
+  /// In en, this message translates to:
+  /// **'Water Intake'**
+  String get waterIntake;
+
+  /// Meal history
+  ///
+  /// In en, this message translates to:
+  /// **'Meal History'**
+  String get mealHistory;
+
+  /// Total calories
+  ///
+  /// In en, this message translates to:
+  /// **'Total Calories'**
+  String get totalCalories;
+
+  /// Calorie amount
+  ///
+  /// In en, this message translates to:
+  /// **'Calorie Amount'**
+  String get calorieAmount;
+
+  /// Today
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get today;
+
+  /// Yesterday
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get yesterday;
+
+  /// Home tab
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get home;
+
+  /// History tab
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get history;
+
+  /// Statistics tab
+  ///
+  /// In en, this message translates to:
+  /// **'Statistics'**
+  String get statistics;
+
+  /// Settings tab
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settings;
+
+  /// Analysis results screen title
+  ///
+  /// In en, this message translates to:
+  /// **'Analysis Results'**
+  String get analysisResults;
+
+  /// Analyzing meal text
+  ///
+  /// In en, this message translates to:
+  /// **'Analyzing your meal...'**
+  String get analyzingMeal;
+
+  /// Detected items section
+  ///
+  /// In en, this message translates to:
+  /// **'Detected Items'**
+  String get detectedItems;
+
+  /// Add item button
+  ///
+  /// In en, this message translates to:
+  /// **'Add Item'**
+  String get addItem;
+
+  /// Edit button
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get edit;
+
+  /// Save button
+  ///
+  /// In en, this message translates to:
+  /// **'Save to Meal History'**
+  String get saveToMealHistory;
+
+  /// Retake photo button
+  ///
+  /// In en, this message translates to:
+  /// **'Retake Photo'**
+  String get retakePhoto;
+
+  /// Average label
+  ///
+  /// In en, this message translates to:
+  /// **'Average'**
+  String get average;
+
+  /// Lowest label
+  ///
+  /// In en, this message translates to:
+  /// **'Lowest'**
+  String get lowest;
+
+  /// Highest label
+  ///
+  /// In en, this message translates to:
+  /// **'Highest'**
+  String get highest;
+
+  /// Nutrition breakdown section
+  ///
+  /// In en, this message translates to:
+  /// **'Nutrition Breakdown'**
+  String get nutritionBreakdown;
+
+  /// Carbs percentage
+  ///
+  /// In en, this message translates to:
+  /// **'Carbs %'**
+  String get carbsPercentage;
+
+  /// Fat percentage
+  ///
+  /// In en, this message translates to:
+  /// **'Fat %'**
+  String get fatPercentage;
+
+  /// Protein percentage
+  ///
+  /// In en, this message translates to:
+  /// **'Protein %'**
+  String get proteinPercentage;
+
+  /// Carbohydrates
+  ///
+  /// In en, this message translates to:
+  /// **'Carbohydrates'**
+  String get carbohydrates;
+
+  /// Remove button
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get remove;
+
+  /// Edit feature placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Edit feature coming soon!'**
+  String get editComingSoon;
+
+  /// Add custom item placeholder
+  ///
+  /// In en, this message translates to:
+  /// **'Add custom item feature coming soon!'**
+  String get addCustomItemComingSoon;
+
+  /// Meal saved message
+  ///
+  /// In en, this message translates to:
+  /// **'Meal saved successfully!'**
+  String get mealSavedSuccessfully;
+
+  /// Personalize experience text
+  ///
+  /// In en, this message translates to:
+  /// **'Personalize your experience'**
+  String get personalizeExperience;
+
+  /// Week button
+  ///
+  /// In en, this message translates to:
+  /// **'Week'**
+  String get week;
+
+  /// Month button
+  ///
+  /// In en, this message translates to:
+  /// **'Month'**
+  String get month;
+
+  /// Year button
+  ///
+  /// In en, this message translates to:
+  /// **'Year'**
+  String get year;
+
+  /// Calorie intake trend
+  ///
+  /// In en, this message translates to:
+  /// **'Calorie Intake Trend'**
+  String get calorieIntakeTrend;
+
+  /// Monday
+  ///
+  /// In en, this message translates to:
+  /// **'Mon'**
+  String get monday;
+
+  /// Tuesday
+  ///
+  /// In en, this message translates to:
+  /// **'Tue'**
+  String get tuesday;
+
+  /// Wednesday
+  ///
+  /// In en, this message translates to:
+  /// **'Wed'**
+  String get wednesday;
+
+  /// Thursday
+  ///
+  /// In en, this message translates to:
+  /// **'Thu'**
+  String get thursday;
+
+  /// Friday
+  ///
+  /// In en, this message translates to:
+  /// **'Fri'**
+  String get friday;
+
+  /// Saturday
+  ///
+  /// In en, this message translates to:
+  /// **'Sat'**
+  String get saturday;
+
+  /// Sunday
+  ///
+  /// In en, this message translates to:
+  /// **'Sun'**
+  String get sunday;
 }
 
 class _AppLocalizationsDelegate

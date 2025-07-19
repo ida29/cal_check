@@ -115,5 +115,485 @@
   "snack": "Snack",
   "@snack": {
     "description": "Snack meal"
+  },
+  "recentMeals": "Recent Meals",
+  "@recentMeals": {
+    "description": "Recent meals section title"
+  },
+  "dailyGoalProgress": "% of daily goal",
+  "@dailyGoalProgress": {
+    "description": "Daily goal progress text"
+  },
+  "failedTakePicture": "Failed to take picture",
+  "@failedTakePicture": {
+    "description": "Error message for camera failure"
+  },
+  "galleryComingSoon": "Gallery feature coming soon!",
+  "@galleryComingSoon": {
+    "description": "Gallery feature placeholder"
+  },
+  "takePhoto": "Take a Photo",
+  "@takePhoto": {
+    "description": "Camera screen title"
+  },
+  "tipsForBestResults": "Tips for Best Results",
+  "@tipsForBestResults": {
+    "description": "Tips dialog title"
+  },
+  "tip1": "• Ensure good lighting\n",
+  "@tip1": {
+    "description": "Camera tip 1"
+  },
+  "tip2": "• Center the food in frame\n",
+  "@tip2": {
+    "description": "Camera tip 2"
+  },
+  "tip3": "• Avoid shadows\n",
+  "@tip3": {
+    "description": "Camera tip 3"
+  },
+  "tip4": "• Capture all items clearly\n",
+  "@tip4": {
+    "description": "Camera tip 4"
+  },
+  "tip5": "• Keep camera steady",
+  "@tip5": {
+    "description": "Camera tip 5"
+  },
+  "gotIt": "Got it",
+  "@gotIt": {
+    "description": "Understanding confirmation button"
+  },
+  "userProfile": "User Profile",
+  "@userProfile": {
+    "description": "User profile section"
+  },
+  "personalInformation": "Personal Information",
+  "@personalInformation": {
+    "description": "Personal info setting"
+  },
+  "updateProfileDetails": "Update your profile details",
+  "@updateProfileDetails": {
+    "description": "Profile update description"
+  },
+  "goalsTargets": "Goals & Targets",
+  "@goalsTargets": {
+    "description": "Goals section title"
+  },
+  "dailyCalorieGoal": "Daily Calorie Goal",
+  "@dailyCalorieGoal": {
+    "description": "Calorie goal setting"
+  },
+  "caloriesAmount": "2,000 calories",
+  "@caloriesAmount": {
+    "description": "Default calorie amount"
+  },
+  "activityLevel": "Activity Level",
+  "@activityLevel": {
+    "description": "Activity level setting"
+  },
+  "moderatelyActive": "Moderately Active",
+  "@moderatelyActive": {
+    "description": "Activity level option"
+  },
+  "notifications": "Notifications",
+  "@notifications": {
+    "description": "Notifications section"
+  },
+  "mealReminders": "Meal Reminders",
+  "@mealReminders": {
+    "description": "Meal reminder setting"
+  },
+  "mealReminderDescription": "Get notified for meal times",
+  "@mealReminderDescription": {
+    "description": "Meal reminder description"
+  },
+  "reminderTimes": "Reminder Times",
+  "@reminderTimes": {
+    "description": "Reminder times setting"
+  },
+  "defaultReminderTimes": "Breakfast: 8:00 AM, Lunch: 12:00 PM, Dinner: 7:00 PM",
+  "@defaultReminderTimes": {
+    "description": "Default reminder schedule"
+  },
+  "reminderTimesComingSoon": "Reminder times feature coming soon!",
+  "@reminderTimesComingSoon": {
+    "description": "Reminder times placeholder"
+  },
+  "appPreferences": "App Preferences",
+  "@appPreferences": {
+    "description": "App preferences section"
+  },
+  "darkMode": "Dark Mode",
+  "@darkMode": {
+    "description": "Dark mode setting"
+  },
+  "useDarkTheme": "Use dark theme",
+  "@useDarkTheme": {
+    "description": "Dark theme description"
+  },
+  "units": "Units",
+  "@units": {
+    "description": "Units setting"
+  },
+  "metricUnits": "Metric (kg, cm)",
+  "@metricUnits": {
+    "description": "Metric units option"
+  },
+  "dataManagement": "Data Management",
+  "@dataManagement": {
+    "description": "Data management section"
+  },
+  "exportData": "Export Data",
+  "@exportData": {
+    "description": "Export data feature"
+  },
+  "exportMealHistory": "Export your meal history",
+  "@exportMealHistory": {
+    "description": "Export description"
+  },
+  "exportComingSoon": "Export feature coming soon!",
+  "@exportComingSoon": {
+    "description": "Export placeholder"
+  },
+  "clearAllData": "Clear All Data",
+  "@clearAllData": {
+    "description": "Clear data feature"
+  },
+  "clearDataDescription": "Delete all meals and settings",
+  "@clearDataDescription": {
+    "description": "Clear data description"
+  },
+  "about": "About",
+  "@about": {
+    "description": "About section"
+  },
+  "version": "Version",
+  "@version": {
+    "description": "App version"
+  },
+  "versionNumber": "1.0.0",
+  "@versionNumber": {
+    "description": "Version number"
+  },
+  "privacyPolicy": "Privacy Policy",
+  "@privacyPolicy": {
+    "description": "Privacy policy link"
+  },
+  "privacyPolicyComingSoon": "Privacy policy feature coming soon!",
+  "@privacyPolicyComingSoon": {
+    "description": "Privacy policy placeholder"
+  },
+  "helpSupport": "Help & Support",
+  "@helpSupport": {
+    "description": "Help and support link"
+  },
+  "helpSupportComingSoon": "Help & support feature coming soon!",
+  "@helpSupportComingSoon": {
+    "description": "Help support placeholder"
+  },
+  "welcomeTitle": "Welcome to Calorie Checker AI",
+  "@welcomeTitle": {
+    "description": "Onboarding welcome title"
+  },
+  "welcomeDescription": "Track your meals and achieve your health goals with AI-powered food recognition",
+  "@welcomeDescription": {
+    "description": "Onboarding welcome description"
+  },
+  "photoRecognition": "Photo Recognition",
+  "@photoRecognition": {
+    "description": "Feature title"
+  },
+  "photoRecognitionDesc": "Instantly identify food and calories from photos",
+  "@photoRecognitionDesc": {
+    "description": "Feature description"
+  },
+  "smartTracking": "Smart Tracking",
+  "@smartTracking": {
+    "description": "Feature title"
+  },
+  "smartTrackingDesc": "Automatically track nutrition and meal history",
+  "@smartTrackingDesc": {
+    "description": "Feature description"
+  },
+  "progressInsights": "Progress Insights",
+  "@progressInsights": {
+    "description": "Feature title"
+  },
+  "progressInsightsDesc": "Get detailed analytics and goal tracking",
+  "@progressInsightsDesc": {
+    "description": "Feature description"
+  },
+  "personalInformationTitle": "Personal Information",
+  "@personalInformationTitle": {
+    "description": "Personal info screen title"
+  },
+  "getStarted": "Get Started",
+  "@getStarted": {
+    "description": "Get started button"
+  },
+  "name": "Name",
+  "@name": {
+    "description": "Name field"
+  },
+  "enterYourName": "Enter your name",
+  "@enterYourName": {
+    "description": "Name field placeholder"
+  },
+  "age": "Age",
+  "@age": {
+    "description": "Age field"
+  },
+  "enterYourAge": "Enter your age",
+  "@enterYourAge": {
+    "description": "Age field placeholder"
+  },
+  "gender": "Gender",
+  "@gender": {
+    "description": "Gender field"
+  },
+  "selectGender": "Select your gender",
+  "@selectGender": {
+    "description": "Gender dropdown placeholder"
+  },
+  "male": "Male",
+  "@male": {
+    "description": "Male option"
+  },
+  "female": "Female",
+  "@female": {
+    "description": "Female option"
+  },
+  "other": "Other",
+  "@other": {
+    "description": "Other gender option"
+  },
+  "height": "Height (cm)",
+  "@height": {
+    "description": "Height field"
+  },
+  "enterYourHeight": "Enter your height",
+  "@enterYourHeight": {
+    "description": "Height field placeholder"
+  },
+  "weight": "Weight (kg)",
+  "@weight": {
+    "description": "Weight field"
+  },
+  "enterYourWeight": "Enter your weight",
+  "@enterYourWeight": {
+    "description": "Weight field placeholder"
+  },
+  "continueButton": "Continue",
+  "@continueButton": {
+    "description": "Continue button"
+  },
+  "dailyCalories": "Daily Calories",
+  "@dailyCalories": {
+    "description": "Daily calories"
+  },
+  "totalCarbs": "Total Carbs",
+  "@totalCarbs": {
+    "description": "Total carbs"
+  },
+  "totalProtein": "Total Protein",
+  "@totalProtein": {
+    "description": "Total protein"
+  },
+  "totalFat": "Total Fat",
+  "@totalFat": {
+    "description": "Total fat"
+  },
+  "goal": "Goal",
+  "@goal": {
+    "description": "Goal label"
+  },
+  "calorieIntake": "Calorie Intake",
+  "@calorieIntake": {
+    "description": "Calorie intake"
+  },
+  "calorieIntakeProgress": "Calorie Intake Progress",
+  "@calorieIntakeProgress": {
+    "description": "Calorie intake progress"
+  },
+  "macronutrientBreakdown": "Macronutrient Breakdown",
+  "@macronutrientBreakdown": {
+    "description": "Macronutrient breakdown"
+  },
+  "weeklyGoalsProgress": "Weekly Goals Progress",
+  "@weeklyGoalsProgress": {
+    "description": "Weekly goals progress"
+  },
+  "calorieGoal": "Calorie Goal",
+  "@calorieGoal": {
+    "description": "Calorie goal"
+  },
+  "exerciseGoal": "Exercise Goal",
+  "@exerciseGoal": {
+    "description": "Exercise goal"
+  },
+  "waterIntake": "Water Intake",
+  "@waterIntake": {
+    "description": "Water intake"
+  },
+  "mealHistory": "Meal History",
+  "@mealHistory": {
+    "description": "Meal history"
+  },
+  "totalCalories": "Total Calories",
+  "@totalCalories": {
+    "description": "Total calories"
+  },
+  "calorieAmount": "Calorie Amount",
+  "@calorieAmount": {
+    "description": "Calorie amount"
+  },
+  "today": "Today",
+  "@today": {
+    "description": "Today"
+  },
+  "yesterday": "Yesterday",
+  "@yesterday": {
+    "description": "Yesterday"
+  },
+  "home": "Home",
+  "@home": {
+    "description": "Home tab"
+  },
+  "history": "History",
+  "@history": {
+    "description": "History tab"
+  },
+  "statistics": "Statistics",
+  "@statistics": {
+    "description": "Statistics tab"
+  },
+  "settings": "Settings",
+  "@settings": {
+    "description": "Settings tab"
+  },
+  "analysisResults": "Analysis Results",
+  "@analysisResults": {
+    "description": "Analysis results screen title"
+  },
+  "analyzingMeal": "Analyzing your meal...",
+  "@analyzingMeal": {
+    "description": "Analyzing meal text"
+  },
+  "detectedItems": "Detected Items",
+  "@detectedItems": {
+    "description": "Detected items section"
+  },
+  "addItem": "Add Item",
+  "@addItem": {
+    "description": "Add item button"
+  },
+  "edit": "Edit",
+  "@edit": {
+    "description": "Edit button"
+  },
+  "saveToMealHistory": "Save to Meal History",
+  "@saveToMealHistory": {
+    "description": "Save button"
+  },
+  "retakePhoto": "Retake Photo",
+  "@retakePhoto": {
+    "description": "Retake photo button"
+  },
+  "average": "Average",
+  "@average": {
+    "description": "Average label"
+  },
+  "lowest": "Lowest",
+  "@lowest": {
+    "description": "Lowest label"
+  },
+  "highest": "Highest",
+  "@highest": {
+    "description": "Highest label"
+  },
+  "nutritionBreakdown": "Nutrition Breakdown",
+  "@nutritionBreakdown": {
+    "description": "Nutrition breakdown section"
+  },
+  "carbsPercentage": "Carbs %",
+  "@carbsPercentage": {
+    "description": "Carbs percentage"
+  },
+  "fatPercentage": "Fat %",
+  "@fatPercentage": {
+    "description": "Fat percentage"
+  },
+  "proteinPercentage": "Protein %",
+  "@proteinPercentage": {
+    "description": "Protein percentage"
+  },
+  "carbohydrates": "Carbohydrates",
+  "@carbohydrates": {
+    "description": "Carbohydrates"
+  },
+  "remove": "Remove",
+  "@remove": {
+    "description": "Remove button"
+  },
+  "editComingSoon": "Edit feature coming soon!",
+  "@editComingSoon": {
+    "description": "Edit feature placeholder"
+  },
+  "addCustomItemComingSoon": "Add custom item feature coming soon!",
+  "@addCustomItemComingSoon": {
+    "description": "Add custom item placeholder"
+  },
+  "mealSavedSuccessfully": "Meal saved successfully!",
+  "@mealSavedSuccessfully": {
+    "description": "Meal saved message"
+  },
+  "personalizeExperience": "Personalize your experience",
+  "@personalizeExperience": {
+    "description": "Personalize experience text"
+  },
+  "week": "Week",
+  "@week": {
+    "description": "Week button"
+  },
+  "month": "Month",
+  "@month": {
+    "description": "Month button"
+  },
+  "year": "Year",
+  "@year": {
+    "description": "Year button"
+  },
+  "calorieIntakeTrend": "Calorie Intake Trend",
+  "@calorieIntakeTrend": {
+    "description": "Calorie intake trend"
+  },
+  "monday": "Mon",
+  "@monday": {
+    "description": "Monday"
+  },
+  "tuesday": "Tue",
+  "@tuesday": {
+    "description": "Tuesday"
+  },
+  "wednesday": "Wed",
+  "@wednesday": {
+    "description": "Wednesday"
+  },
+  "thursday": "Thu",
+  "@thursday": {
+    "description": "Thursday"
+  },
+  "friday": "Fri",
+  "@friday": {
+    "description": "Friday"
+  },
+  "saturday": "Sat",
+  "@saturday": {
+    "description": "Saturday"
+  },
+  "sunday": "Sun",
+  "@sunday": {
+    "description": "Sunday"
   }
 }

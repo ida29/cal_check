@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
+import '../../l10n/app_localizations.dart';
 
 class CameraScreen extends StatefulWidget {
   const CameraScreen({Key? key}) : super(key: key);
@@ -69,7 +70,7 @@ class _CameraScreenState extends State<CameraScreen> {
     } catch (e) {
       print('Error taking picture: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to take picture')),
+        SnackBar(content: Text(AppLocalizations.of(context)!.failedTakePicture)),
       );
     } finally {
       setState(() {
@@ -80,7 +81,7 @@ class _CameraScreenState extends State<CameraScreen> {
 
   Future<void> _pickFromGallery() async {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Gallery feature coming soon!')),
+      SnackBar(content: Text(AppLocalizations.of(context)!.galleryComingSoon)),
     );
   }
 
@@ -90,7 +91,7 @@ class _CameraScreenState extends State<CameraScreen> {
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
-        title: const Text('Take a Photo'),
+        title: Text(AppLocalizations.of(context)!.takePhoto),
         actions: [
           IconButton(
             icon: const Icon(Icons.flash_off),
@@ -101,11 +102,8 @@ class _CameraScreenState extends State<CameraScreen> {
       body: Stack(
         children: [
           if (_isInitialized && _controller != null)
-            Center(
-              child: AspectRatio(
-                aspectRatio: _controller!.value.aspectRatio,
-                child: CameraPreview(_controller!),
-              ),
+            Positioned.fill(
+              child: CameraPreview(_controller!),
             )
           else
             const Center(
@@ -166,22 +164,21 @@ class _CameraScreenState extends State<CameraScreen> {
                     onPressed: () {
                       showDialog(
                         context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text('Tips for Best Results'),
-                          content: const Text(
-                            '• Ensure good lighting\n'
-                            '• Center the food in frame\n'
-                            '• Avoid shadows\n'
-                            '• Capture all items clearly\n'
-                            '• Keep camera steady',
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text('Got it'),
+                        builder: (context) {
+                          final l10n = AppLocalizations.of(context)!;
+                          return AlertDialog(
+                            title: Text(l10n.tipsForBestResults),
+                            content: Text(
+                              '${l10n.tip1}${l10n.tip2}${l10n.tip3}${l10n.tip4}${l10n.tip5}',
                             ),
-                          ],
-                        ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: Text(l10n.gotIt),
+                              ),
+                            ],
+                          );
+                        },
                       );
                     },
                   ),

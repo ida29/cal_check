@@ -43,13 +43,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Widget _buildUserProfileSection() {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: Text(
-            'User Profile',
+            l10n.userProfile,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: Theme.of(context).primaryColor,
                   fontWeight: FontWeight.bold,
@@ -60,8 +61,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           leading: const CircleAvatar(
             child: Icon(Icons.person),
           ),
-          title: const Text('Personal Information'),
-          subtitle: const Text('Update your profile details'),
+          title: Text(l10n.personalInformation),
+          subtitle: Text(l10n.updateProfileDetails),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
             _showPersonalInfoDialog();
@@ -72,13 +73,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Widget _buildGoalsSection() {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: Text(
-            'Goals & Targets',
+            l10n.goalsTargets,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: Theme.of(context).primaryColor,
                   fontWeight: FontWeight.bold,
@@ -87,8 +89,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
         ListTile(
           leading: const Icon(Icons.local_fire_department),
-          title: const Text('Daily Calorie Goal'),
-          subtitle: const Text('2,000 calories'),
+          title: Text(l10n.dailyCalorieGoal),
+          subtitle: Text(l10n.caloriesAmount),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
             _showCalorieGoalDialog();
@@ -96,8 +98,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
         ListTile(
           leading: const Icon(Icons.fitness_center),
-          title: const Text('Activity Level'),
-          subtitle: const Text('Moderately Active'),
+          title: Text(l10n.activityLevel),
+          subtitle: Text(l10n.moderatelyActive),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
             _showActivityLevelDialog();
@@ -108,13 +110,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Widget _buildNotificationSection() {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: Text(
-            'Notifications',
+            l10n.notifications,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: Theme.of(context).primaryColor,
                   fontWeight: FontWeight.bold,
@@ -123,8 +126,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
         SwitchListTile(
           secondary: const Icon(Icons.notifications),
-          title: const Text('Meal Reminders'),
-          subtitle: const Text('Get notified for meal times'),
+          title: Text(l10n.mealReminders),
+          subtitle: Text(l10n.mealReminderDescription),
           value: _notificationsEnabled,
           onChanged: (value) {
             setState(() {
@@ -134,12 +137,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
         ListTile(
           leading: const Icon(Icons.schedule),
-          title: const Text('Reminder Times'),
-          subtitle: const Text('Breakfast: 8:00 AM, Lunch: 12:00 PM, Dinner: 7:00 PM'),
+          title: Text(l10n.reminderTimes),
+          subtitle: Text(l10n.defaultReminderTimes),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Reminder times feature coming soon!')),
+              SnackBar(content: Text(l10n.reminderTimesComingSoon)),
             );
           },
         ),
@@ -154,7 +157,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: Text(
-            'App Preferences',
+            l10n.appPreferences,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: Theme.of(context).primaryColor,
                   fontWeight: FontWeight.bold,
@@ -163,8 +166,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
         SwitchListTile(
           secondary: const Icon(Icons.dark_mode),
-          title: const Text('Dark Mode'),
-          subtitle: const Text('Use dark theme'),
+          title: Text(l10n.darkMode),
+          subtitle: Text(l10n.useDarkTheme),
           value: _darkModeEnabled,
           onChanged: (value) {
             setState(() {
@@ -190,8 +193,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
         ListTile(
           leading: const Icon(Icons.straighten),
-          title: const Text('Units'),
-          subtitle: const Text('Metric (kg, cm)'),
+          title: Text(l10n.units),
+          subtitle: Text(l10n.metricUnits),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
             _showUnitsDialog();
@@ -202,13 +205,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Widget _buildDataSection() {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: Text(
-            'Data Management',
+            l10n.dataManagement,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: Theme.of(context).primaryColor,
                   fontWeight: FontWeight.bold,
@@ -217,19 +221,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
         ListTile(
           leading: const Icon(Icons.backup),
-          title: const Text('Export Data'),
-          subtitle: const Text('Export your meal history'),
+          title: Text(l10n.exportData),
+          subtitle: Text(l10n.exportMealHistory),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Export feature coming soon!')),
+              SnackBar(content: Text(l10n.exportComingSoon)),
             );
           },
         ),
         ListTile(
           leading: const Icon(Icons.delete_forever, color: Colors.red),
-          title: const Text('Clear All Data'),
-          subtitle: const Text('Delete all meals and settings'),
+          title: Text(l10n.clearAllData),
+          subtitle: Text(l10n.clearDataDescription),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
             _showClearDataDialog();
@@ -240,13 +244,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Widget _buildAboutSection() {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.all(16.0),
           child: Text(
-            'About',
+            l10n.about,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: Theme.of(context).primaryColor,
                   fontWeight: FontWeight.bold,
@@ -255,27 +260,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
         ListTile(
           leading: const Icon(Icons.info),
-          title: const Text('Version'),
-          subtitle: const Text('1.0.0'),
+          title: Text(l10n.version),
+          subtitle: Text(l10n.versionNumber),
           onTap: () {},
         ),
         ListTile(
           leading: const Icon(Icons.privacy_tip),
-          title: const Text('Privacy Policy'),
+          title: Text(l10n.privacyPolicy),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Privacy policy feature coming soon!')),
+              SnackBar(content: Text(l10n.privacyPolicyComingSoon)),
             );
           },
         ),
         ListTile(
           leading: const Icon(Icons.help),
-          title: const Text('Help & Support'),
+          title: Text(l10n.helpSupport),
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Help & support feature coming soon!')),
+              SnackBar(content: Text(l10n.helpSupportComingSoon)),
             );
           },
         ),
@@ -311,7 +316,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           TextButton(
             onPressed: () {
@@ -320,7 +325,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 const SnackBar(content: Text('Profile updated!')),
               );
             },
-            child: const Text('Save'),
+            child: Text(AppLocalizations.of(context)!.save),
           ),
         ],
       ),
@@ -342,7 +347,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           TextButton(
             onPressed: () {
@@ -351,7 +356,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 const SnackBar(content: Text('Calorie goal updated!')),
               );
             },
-            child: const Text('Save'),
+            child: Text(AppLocalizations.of(context)!.save),
           ),
         ],
       ),
@@ -381,7 +386,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           TextButton(
             onPressed: () {
@@ -390,7 +395,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 const SnackBar(content: Text('Activity level updated!')),
               );
             },
-            child: const Text('Save'),
+            child: Text(AppLocalizations.of(context)!.save),
           ),
         ],
       ),
@@ -488,11 +493,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Save'),
+            child: Text(AppLocalizations.of(context)!.save),
           ),
         ],
       ),
@@ -510,7 +515,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(AppLocalizations.of(context)!.cancel),
           ),
           TextButton(
             onPressed: () {
