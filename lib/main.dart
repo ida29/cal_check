@@ -4,12 +4,9 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'l10n/app_localizations.dart';
 import 'business/providers/locale_provider.dart';
-import 'presentation/screens/home_screen.dart';
+import 'presentation/screens/main_navigation_screen.dart';
 import 'presentation/screens/camera_screen.dart';
 import 'presentation/screens/result_screen.dart';
-import 'presentation/screens/history_screen.dart';
-import 'presentation/screens/statistics_screen.dart';
-import 'presentation/screens/settings_screen.dart';
 import 'presentation/screens/onboarding_screen.dart';
 
 void main() async {
@@ -81,13 +78,10 @@ class CalorieCheckerApp extends ConsumerWidget {
       ),
       initialRoute: '/',
       routes: {
-        '/': (context) => const HomeScreen(),
+        '/': (context) => const MainNavigationScreen(),
         '/onboarding': (context) => const OnboardingScreen(),
         '/camera': (context) => const CameraScreen(),
         '/result': (context) => const ResultScreen(),
-        '/history': (context) => const HistoryScreen(),
-        '/statistics': (context) => const StatisticsScreen(),
-        '/settings': (context) => const SettingsScreen(),
       },
     );
   }

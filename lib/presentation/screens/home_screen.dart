@@ -10,7 +10,6 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  int _selectedIndex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -30,44 +29,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             children: [
               _buildDailySummaryCard(),
               const SizedBox(height: 20),
-              _buildQuickActions(),
-              const SizedBox(height: 20),
               Expanded(
                 child: _buildRecentMeals(),
               ),
             ],
           ),
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: (index) {
-          setState(() {
-            _selectedIndex = index;
-          });
-          _navigateToScreen(index);
-        },
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: const Color(0xFFFF69B4),
-        unselectedItemColor: Colors.grey,
-        items: [
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.home_rounded),
-            label: l10n.homeTitle,
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.history_rounded),
-            label: l10n.historyTitle,
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.analytics_rounded),
-            label: l10n.statisticsTitle,
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.settings_rounded),
-            label: l10n.settingsTitle,
-          ),
-        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
@@ -148,7 +115,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      '62% of daily goal',
+                      '62${l10n.dailyGoalProgress}',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: const Color(0xFFFF69B4),
                         fontWeight: FontWeight.w600,
@@ -192,72 +159,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildQuickActions() {
-    return Row(
-      children: [
-        Expanded(
-          child: _buildActionButton(
-            icon: Icons.restaurant_menu_rounded,
-            label: 'Meal Ideas',
-            color: const Color(0xFFFFB347),
-            onTap: () {},
-          ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: _buildActionButton(
-            icon: Icons.water_drop_rounded,
-            label: 'Water Intake',
-            color: const Color(0xFF87CEEB),
-            onTap: () {},
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [color.withOpacity(0.8), color],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: color.withOpacity(0.3),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Icon(icon, size: 36, color: Colors.white),
-            const SizedBox(height: 12),
-            Text(
-              label,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   Widget _buildRecentMeals() {
     final l10n = AppLocalizations.of(context)!;
@@ -270,7 +171,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             const Icon(Icons.history_rounded, color: Color(0xFFFF69B4), size: 24),
             const SizedBox(width: 8),
             Text(
-              'Recent Meals',
+              l10n.recentMeals,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 color: const Color(0xFFFF69B4),
                 fontWeight: FontWeight.bold,
@@ -367,19 +268,4 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  void _navigateToScreen(int index) {
-    switch (index) {
-      case 0:
-        break;
-      case 1:
-        Navigator.pushNamed(context, '/history');
-        break;
-      case 2:
-        Navigator.pushNamed(context, '/statistics');
-        break;
-      case 3:
-        Navigator.pushNamed(context, '/settings');
-        break;
-    }
-  }
 }
