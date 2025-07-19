@@ -5,6 +5,7 @@ import '../../business/services/ai_calorie_service.dart';
 import '../../business/services/local_photo_storage_service.dart';
 import '../../business/models/recognition_result.dart';
 import '../../data/entities/food_item.dart';
+import '../widgets/food_name_display.dart';
 
 class ResultScreen extends StatefulWidget {
   const ResultScreen({Key? key}) : super(key: key);
@@ -250,9 +251,12 @@ class _ResultScreenState extends State<ResultScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                  child: Text(
-                    item.name,
+                  child: FoodNameDisplay(
+                    foodName: item.name,
                     style: Theme.of(context).textTheme.titleMedium,
+                    showOriginal: true,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 Chip(

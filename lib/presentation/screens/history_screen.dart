@@ -3,6 +3,7 @@ import 'dart:io';
 import '../../l10n/app_localizations.dart';
 import '../../business/services/local_photo_storage_service.dart';
 import '../../data/entities/food_item.dart';
+import '../widgets/food_name_display.dart';
 
 class HistoryScreen extends StatefulWidget {
   const HistoryScreen({Key? key}) : super(key: key);
@@ -322,9 +323,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ...meal.foodItems.map((item) => Text(
-            item.name,
+          ...meal.foodItems.map((item) => FoodNameDisplay(
+            foodName: item.name,
             style: Theme.of(context).textTheme.bodyMedium,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           )),
         ],
       ),
@@ -615,7 +618,11 @@ class _MealDetailDialog extends StatelessWidget {
                     ...meal.foodItems.map((item) => Card(
                       margin: const EdgeInsets.only(bottom: 8),
                       child: ListTile(
-                        title: Text(item.name),
+                        title: FoodNameDisplay(
+                          foodName: item.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                         subtitle: Text('${item.quantity.toStringAsFixed(0)} ${item.unit}'),
                         trailing: Text(
                           '${item.calories.toStringAsFixed(0)} cal',

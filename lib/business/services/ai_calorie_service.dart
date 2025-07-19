@@ -5,6 +5,7 @@ import '../../data/entities/food_item.dart';
 import '../../data/entities/nutrition_info.dart';
 import '../models/recognition_result.dart';
 import '../../config/ai_config.dart';
+import 'food_translation_service.dart';
 
 class AICalorieService {
   static final AICalorieService _instance = AICalorieService._internal();
@@ -12,6 +13,7 @@ class AICalorieService {
   AICalorieService._internal();
 
   final Dio _dio = Dio();
+  final FoodTranslationService _translationService = FoodTranslationService();
 
   Future<RecognitionResult> analyzeFood(String imagePath) async {
     try {
@@ -111,9 +113,12 @@ class AICalorieService {
         for (final foodData in jsonData['foods']) {
           final nutritionData = foodData['nutrition'] ?? {};
           
+          final originalName = foodData['name'] ?? 'Unknown Food';
+          final translatedName = _translationService.translateFoodName(originalName);
+          
           final foodItem = FoodItem(
             id: 'ai_${DateTime.now().millisecondsSinceEpoch}_${foodData['name'].hashCode}',
-            name: foodData['name'] ?? 'Unknown Food',
+            name: translatedName,
             quantity: (foodData['quantity'] ?? 100).toDouble(),
             unit: foodData['unit'] ?? 'g',
             calories: (foodData['calories'] ?? 100).toDouble(),
@@ -153,7 +158,7 @@ class AICalorieService {
     final mockFoodItems = [
       FoodItem(
         id: 'mock_${DateTime.now().millisecondsSinceEpoch}_1',
-        name: 'Grilled Chicken Breast',
+        name: _translationService.translateFoodName('Grilled Chicken Breast'),
         quantity: 150.0,
         unit: 'g',
         calories: 247.5,
@@ -168,7 +173,7 @@ class AICalorieService {
       ),
       FoodItem(
         id: 'mock_${DateTime.now().millisecondsSinceEpoch}_2',
-        name: 'Steamed Broccoli',
+        name: _translationService.translateFoodName('Steamed Broccoli'),
         quantity: 100.0,
         unit: 'g',
         calories: 34.0,
@@ -183,7 +188,7 @@ class AICalorieService {
       ),
       FoodItem(
         id: 'mock_${DateTime.now().millisecondsSinceEpoch}_3',
-        name: 'Brown Rice',
+        name: _translationService.translateFoodName('Brown Rice'),
         quantity: 80.0,
         unit: 'g',
         calories: 104.0,
