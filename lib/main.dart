@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'l10n/app_localizations.dart';
+import 'business/providers/locale_provider.dart';
 import 'presentation/screens/home_screen.dart';
 import 'presentation/screens/camera_screen.dart';
 import 'presentation/screens/result_screen.dart';
@@ -18,17 +22,62 @@ void main() async {
   );
 }
 
-class CalorieCheckerApp extends StatelessWidget {
+class CalorieCheckerApp extends ConsumerWidget {
   const CalorieCheckerApp({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final locale = ref.watch(localeProvider);
+    
     return MaterialApp(
       title: 'Calorie Checker AI',
+      locale: locale,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en', 'US'),
+        Locale('ja', 'JP'),
+      ],
       theme: ThemeData(
-        primarySwatch: Colors.green,
         useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFFFF69B4), // ピンク
+          brightness: Brightness.light,
+        ),
+        textTheme: GoogleFonts.notoSansTextTheme(),
+        appBarTheme: AppBarTheme(
+          backgroundColor: const Color(0xFFFF69B4),
+          foregroundColor: Colors.white,
+          titleTextStyle: GoogleFonts.notoSans(
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFFFF69B4),
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(25),
+            ),
+          ),
+        ),
+        cardTheme: CardThemeData(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          elevation: 3,
+        ),
+        floatingActionButtonTheme: const FloatingActionButtonThemeData(
+          backgroundColor: Color(0xFFFF69B4),
+          foregroundColor: Colors.white,
+        ),
       ),
       initialRoute: '/',
       routes: {
