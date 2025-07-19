@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../l10n/app_localizations.dart';
 import '../../business/providers/locale_provider.dart';
 import '../../business/providers/manager_character_provider.dart';
+import '../../business/models/manager_character.dart';
 import 'manager_character_setup_screen.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {

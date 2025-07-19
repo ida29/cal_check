@@ -117,4 +117,9 @@ class FoodDatabase {
   static List<Map<String, dynamic>> getFoodsByCategory(String category) {
     return foods.where((food) => food['category'] == category).toList();
   }
+
+  // Placeholder method for meal records - returns empty list since this is a static food database
+  static Future<List<Map<String, dynamic>>> getMealsByDateRange(DateTime start, DateTime end) async {
+    return [];
+  }
 }

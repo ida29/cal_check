@@ -15,7 +15,7 @@ class MealReminderService {
     
     // 今日の食事記録を取得
     final database = FoodDatabase();
-    final todayMeals = await database.getMealsByDateRange(today, today.add(const Duration(days: 1)));
+    final todayMeals = await FoodDatabase.getMealsByDateRange(today, today.add(const Duration(days: 1)));
     
     // 現在の時刻から判断して、何回分の食事を記録すべきか計算
     int expectedMeals = 0;
@@ -27,7 +27,7 @@ class MealReminderService {
     final recordedMeals = todayMeals.length;
     
     // 未記録の食事数
-    return (expectedMeals - recordedMeals).clamp(0, 3);
+    return (expectedMeals - recordedMeals).clamp(0, 3).toInt();
   }
   
   static Future<void> checkAndNotify(ManagerCharacter character) async {

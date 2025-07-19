@@ -205,18 +205,17 @@ class ReceiptService {
     
     for (final item in receiptItems) {
       // Translate Japanese food name to English for better nutrition lookup
-      final translatedName = await _translationService.translateFood(item.name);
+      final translatedName = _translationService.translateFoodName(item.name);
       
       // Create a basic FoodItem with estimated nutrition
       // In a real implementation, you might want to look up nutrition info from a database
       final foodItem = FoodItem(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         name: item.name,
-        brand: null,
-        barcode: null,
+        quantity: item.quantity?.toDouble() ?? 1.0,
+        unit: 'piece',
         calories: _estimateCalories(translatedName ?? item.name),
-        nutrition: _estimateNutrition(translatedName ?? item.name),
-        weight: 100, // Default weight in grams
+        nutritionInfo: _estimateNutrition(translatedName ?? item.name),
         imageUrl: null,
       );
       
@@ -267,15 +266,15 @@ class ReceiptService {
     
     // Basic nutrition estimation based on food categories
     if (_containsAny(lowerName, ['vegetable', 'salad', '野菜', 'サラダ'])) {
-      return NutritionInfo(protein: 1.0, carbs: 5.0, fat: 0.2, fiber: 2.0, sugar: 2.0);
+      return NutritionInfo(protein: 1.0, carbohydrates: 5.0, fat: 0.2, fiber: 2.0, sugar: 2.0);
     } else if (_containsAny(lowerName, ['meat', 'chicken', 'beef', '肉', '鶏', '牛'])) {
-      return NutritionInfo(protein: 20.0, carbs: 0.0, fat: 15.0, fiber: 0.0, sugar: 0.0);
+      return NutritionInfo(protein: 20.0, carbohydrates: 0.0, fat: 15.0, fiber: 0.0, sugar: 0.0);
     } else if (_containsAny(lowerName, ['rice', 'bread', 'pasta', 'ご飯', 'パン', 'パスタ'])) {
-      return NutritionInfo(protein: 3.0, carbs: 40.0, fat: 1.0, fiber: 2.0, sugar: 1.0);
+      return NutritionInfo(protein: 3.0, carbohydrates: 40.0, fat: 1.0, fiber: 2.0, sugar: 1.0);
     }
     
     // Default balanced nutrition
-    return NutritionInfo(protein: 5.0, carbs: 15.0, fat: 5.0, fiber: 1.0, sugar: 3.0);
+    return NutritionInfo(protein: 5.0, carbohydrates: 15.0, fat: 5.0, fiber: 1.0, sugar: 3.0);
   }
 
   bool _containsAny(String text, List<String> keywords) {

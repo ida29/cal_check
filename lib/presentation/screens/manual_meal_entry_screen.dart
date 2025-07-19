@@ -468,6 +468,33 @@ class _ManualMealEntryScreenState extends State<ManualMealEntryScreen> {
   double _getTotalCalories() {
     return _selectedFoods.fold(0.0, (sum, food) => sum + food.calories);
   }
+
+  NutritionInfo _getTotalNutrition() {
+    double totalProtein = 0.0;
+    double totalCarbs = 0.0;
+    double totalFat = 0.0;
+    double totalFiber = 0.0;
+    double totalSugar = 0.0;
+    double totalSodium = 0.0;
+
+    for (final food in _selectedFoods) {
+      totalProtein += food.nutritionInfo.protein;
+      totalCarbs += food.nutritionInfo.carbohydrates;
+      totalFat += food.nutritionInfo.fat;
+      totalFiber += food.nutritionInfo.fiber;
+      totalSugar += food.nutritionInfo.sugar;
+      totalSodium += food.nutritionInfo.sodium;
+    }
+
+    return NutritionInfo(
+      protein: totalProtein,
+      carbohydrates: totalCarbs,
+      fat: totalFat,
+      fiber: totalFiber,
+      sugar: totalSugar,
+      sodium: totalSodium,
+    );
+  }
   
   Color _getCategoryColor(String category) {
     switch (category) {
@@ -559,8 +586,9 @@ class _ManualMealEntryScreenState extends State<ManualMealEntryScreen> {
         recordedAt: DateTime.now(),
         mealType: _selectedMealType,
         foodItems: _selectedFoods,
+        totalCalories: _getTotalCalories(),
+        totalNutrition: _getTotalNutrition(),
         photoPath: savedPath,
-        isManualEntry: true,
         createdAt: DateTime.now(),
       );
       

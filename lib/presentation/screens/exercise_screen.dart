@@ -548,8 +548,7 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
         exerciseName: _nameController.text,
         exerciseType: _selectedType,
         duration: int.parse(_durationController.text),
-        caloriesBurned: int.tryParse(_caloriesController.text) ?? 0,
-        intensity: _selectedIntensity,
+        caloriesBurned: double.tryParse(_caloriesController.text)?.toDouble() ?? 0.0,
         distance: _distanceController.text.isNotEmpty
             ? double.tryParse(_distanceController.text)
             : null,
