@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../l10n/app_localizations.dart';
 import '../../business/providers/locale_provider.dart';
+import '../../business/providers/manager_character_provider.dart';
+import 'manager_character_setup_screen.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -110,6 +112,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   Widget _buildNotificationSection() {
     final l10n = AppLocalizations.of(context)!;
+    final managerCharacter = ref.watch(managerCharacterProvider);
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -123,27 +127,44 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
           ),
         ),
+        ListTile(
+          leading: Icon(
+            managerCharacter?.type == CharacterType.human ? Icons.person : Icons.pets,
+            color: managerCharacter?.type == CharacterType.human ? Colors.pink[300] : Colors.orange[300],
+          ),
+          title: const Text('マネージャー設定'),
+          subtitle: Text(
+            managerCharacter != null 
+              ? '${managerCharacter.name} (${_getNotificationLevelText(managerCharacter.notificationLevel)})'
+              : '未設定',
+          ),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const ManagerCharacterSetupScreen(),
+              ),
+            );
+          },
+        ),
         SwitchListTile(
           secondary: const Icon(Icons.notifications),
           title: Text(l10n.mealReminders),
           subtitle: Text(l10n.mealReminderDescription),
-          value: _notificationsEnabled,
-          onChanged: (value) {
-            setState(() {
-              _notificationsEnabled = value;
-            });
-          },
+          value: managerCharacter?.notificationsEnabled ?? false,
+          onChanged: managerCharacter != null ? (value) {
+            ref.read(managerCharacterProvider.notifier).toggleNotifications(value);
+          } : null,
         ),
         ListTile(
           leading: const Icon(Icons.schedule),
           title: Text(l10n.reminderTimes),
           subtitle: Text(l10n.defaultReminderTimes),
           trailing: const Icon(Icons.chevron_right),
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(l10n.reminderTimesComingSoon)),
-            );
-          },
+          onTap: managerCharacter != null ? () {
+            _showReminderTimesDialog();
+          } : null,
         ),
       ],
     );
@@ -239,11 +260,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   void _showPersonalInfoDialog() {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l10n.personalInformation),
-        content: const Column(
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
@@ -283,11 +305,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   void _showCalorieGoalDialog() {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l10n.dailyCalorieGoalTitle),
-        content: const TextField(
+        content: TextField(
           decoration: InputDecoration(
             labelText: l10n.caloriesPerDay,
             suffixText: l10n.calUnit,
@@ -314,6 +337,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   void _showActivityLevelDialog() {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -419,6 +443,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   void _showUnitsDialog() {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -450,6 +475,74 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             child: Text(AppLocalizations.of(context)!.save),
           ),
         ],
+      ),
+    );
+  }
+
+  String _getNotificationLevelText(NotificationLevel level) {
+    switch (level) {
+      case NotificationLevel.gentle:
+        return '優しい';
+      case NotificationLevel.normal:
+        return '普通';
+      case NotificationLevel.persistent:
+        return 'しつこい';
+    }
+  }
+
+  void _showReminderTimesDialog() {
+    final managerCharacter = ref.read(managerCharacterProvider);
+    if (managerCharacter == null) return;
+    
+    final selectedHours = List<int>.from(managerCharacter.reminderHours);
+    
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('リマインダー時間'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('通知を受け取る時間を選択してください'),
+              const SizedBox(height: 16),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: List.generate(24, (hour) {
+                  final isSelected = selectedHours.contains(hour);
+                  return FilterChip(
+                    label: Text('$hour:00'),
+                    selected: isSelected,
+                    onSelected: (selected) {
+                      setDialogState(() {
+                        if (selected) {
+                          selectedHours.add(hour);
+                        } else {
+                          selectedHours.remove(hour);
+                        }
+                        selectedHours.sort();
+                      });
+                    },
+                  );
+                }),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('キャンセル'),
+            ),
+            TextButton(
+              onPressed: () {
+                ref.read(managerCharacterProvider.notifier).updateReminderHours(selectedHours);
+                Navigator.pop(context);
+              },
+              child: const Text('保存'),
+            ),
+          ],
+        ),
       ),
     );
   }

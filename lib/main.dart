@@ -12,13 +12,18 @@ import 'presentation/screens/splash_screen.dart';
 import 'presentation/screens/setup_guide_screen.dart';
 import 'presentation/screens/manual_meal_entry_screen.dart';
 import 'presentation/screens/exercise_screen.dart';
+import 'presentation/screens/manager_character_setup_screen.dart';
 import 'config/ai_config.dart';
+import 'business/services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   // Initialize AI configuration with environment variables
   await AIConfig.initialize();
+  
+  // Initialize notification service
+  await NotificationService.initialize();
   
   runApp(
     const ProviderScope(
@@ -94,6 +99,7 @@ class CalorieCheckerApp extends ConsumerWidget {
         '/result': (context) => const ResultScreen(),
         '/manual-meal-entry': (context) => const ManualMealEntryScreen(),
         '/exercise': (context) => const ExerciseScreen(),
+        '/manager-setup': (context) => const ManagerCharacterSetupScreen(),
       },
     );
   }

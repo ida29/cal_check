@@ -123,7 +123,7 @@ class ExerciseRepositoryImpl implements ExerciseRepository {
   @override
   Future<double> getTotalCaloriesBurnedForDate(DateTime date) async {
     final exercises = await getExercisesByDate(date);
-    return exercises.fold(0.0, (sum, exercise) => sum + exercise.caloriesBurned);
+    return exercises.fold<double>(0.0, (sum, exercise) => sum + exercise.caloriesBurned);
   }
 
   @override

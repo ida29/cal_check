@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../l10n/app_localizations.dart';
 import '../../business/providers/providers.dart';
 import '../../data/entities/user.dart';
+import '../../business/services/setup_service.dart';
 import 'dart:math' as math;
 
 class StatisticsScreen extends ConsumerStatefulWidget {
@@ -16,7 +17,14 @@ class StatisticsScreen extends ConsumerStatefulWidget {
 class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
   int _selectedPeriod = 0;
   
-  dynamic get _userProfile => ref.watch(userProfileProvider);
+  UserProfile? get _userProfile {
+    final userProfileAsync = ref.watch(userProfileProvider);
+    return userProfileAsync.when(
+      data: (profile) => profile,
+      loading: () => null,
+      error: (_, __) => null,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -227,7 +235,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
     double? bmr;
     double? tdee;
     if (userProfile != null && userProfile.age > 0 && userProfile.weight > 0 && userProfile.height > 0) {
-      if (userProfile.gender == Gender.male) {
+      if (userProfile.gender == 'male') {
         bmr = (13.397 * userProfile.weight) + (4.799 * userProfile.height) - (5.677 * userProfile.age) + 88.362;
       } else {
         bmr = (9.247 * userProfile.weight) + (3.098 * userProfile.height) - (4.330 * userProfile.age) + 447.593;
@@ -799,13 +807,13 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
     );
   }
   
-  double _calculateTDEE(User? userProfile) {
+  double _calculateTDEE(UserProfile? userProfile) {
     if (userProfile == null || userProfile.age <= 0 || userProfile.weight <= 0 || userProfile.height <= 0) {
       return 2000.0; // デフォルト値
     }
     
     double bmr;
-    if (userProfile.gender == Gender.male) {
+    if (userProfile.gender == 'male') {
       bmr = (13.397 * userProfile.weight) + (4.799 * userProfile.height) - (5.677 * userProfile.age) + 88.362;
     } else {
       bmr = (9.247 * userProfile.weight) + (3.098 * userProfile.height) - (4.330 * userProfile.age) + 447.593;

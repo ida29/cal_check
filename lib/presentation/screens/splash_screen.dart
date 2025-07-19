@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../business/services/setup_service.dart';
+import '../../business/providers/manager_character_provider.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMixin {
+class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProviderStateMixin {
   late AnimationController _logoAnimationController;
   late AnimationController _progressAnimationController;
   late Animation<double> _logoScaleAnimation;
@@ -72,14 +74,18 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
 
       // Check if setup is complete
       final isSetupComplete = await _setupService.isSetupComplete();
+      final managerCharacter = ref.read(managerCharacterProvider);
 
       if (mounted) {
-        if (isSetupComplete) {
-          // Navigate to main app
-          Navigator.of(context).pushReplacementNamed('/main');
-        } else {
+        if (!isSetupComplete) {
           // Navigate to setup guide
           Navigator.of(context).pushReplacementNamed('/setup');
+        } else if (managerCharacter == null) {
+          // Navigate to manager character setup
+          Navigator.of(context).pushReplacementNamed('/manager-setup', arguments: 'initial_setup');
+        } else {
+          // Navigate to main app
+          Navigator.of(context).pushReplacementNamed('/main');
         }
       }
     } catch (e) {
