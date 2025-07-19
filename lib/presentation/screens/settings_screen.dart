@@ -481,11 +481,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   String _getNotificationLevelText(NotificationLevel level) {
     switch (level) {
       case NotificationLevel.gentle:
-        return '優しい';
+        return '控えめ';
       case NotificationLevel.normal:
-        return '普通';
+        return '標準';
       case NotificationLevel.persistent:
-        return 'しつこい';
+        return 'しっかり';
     }
   }
 
