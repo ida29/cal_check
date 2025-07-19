@@ -991,6 +991,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sun'**
   String get sunday;
+
+  /// Food camera mode
+  ///
+  /// In en, this message translates to:
+  /// **'Food'**
+  String get foodMode;
+
+  /// Barcode camera mode
+  ///
+  /// In en, this message translates to:
+  /// **'Barcode'**
+  String get barcodeMode;
 }
 
 class _AppLocalizationsDelegate

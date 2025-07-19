@@ -226,8 +226,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Widget _buildDayView() {
-    // Group meals by type
+    // Group photo meals by type
     final mealsByType = <String, List<MealPhotoMetadata>>{};
+    
+    // Add photo meals
     for (final meal in _mealPhotos) {
       mealsByType.putIfAbsent(meal.mealType, () => []).add(meal);
     }
@@ -244,19 +246,24 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Widget _buildListView() {
+    // Sort photo meals by timestamp
+    final sortedMeals = List<MealPhotoMetadata>.from(_mealPhotos);
+    sortedMeals.sort((a, b) => b.createdAt.compareTo(a.createdAt)); // Most recent first
+    
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: _mealPhotos.length,
+      itemCount: sortedMeals.length,
       itemBuilder: (context, index) {
-        final meal = _mealPhotos[index];
-        return _buildMealCard(meal);
+        return _buildMealCard(sortedMeals[index]);
       },
     );
   }
 
   Widget _buildMealTypeSection(String mealType, List<MealPhotoMetadata> meals) {
     final totalCalories = meals.fold<double>(0, (sum, meal) => sum + meal.totalCalories);
+    
     final firstMeal = meals.first;
+    final DateTime firstMealTime = firstMeal.createdAt;
     
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -271,7 +278,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ),
           ),
           title: Text(_getMealDisplayName(mealType)),
-          subtitle: Text(_formatTime(firstMeal.createdAt)),
+          subtitle: Text(_formatTime(firstMealTime)),
           trailing: Text(
             '${totalCalories.toStringAsFixed(0)} cal',
             style: Theme.of(context).textTheme.titleMedium,

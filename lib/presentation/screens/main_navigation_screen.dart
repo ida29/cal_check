@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 import 'home_screen.dart';
 import 'history_screen.dart';
+import 'exercise_screen.dart';
 import 'statistics_screen.dart';
 import 'settings_screen.dart';
 
@@ -18,6 +19,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   final List<Widget> _screens = [
     const HomeScreen(),
     const HistoryScreen(),
+    const ExerciseScreen(),
     const StatisticsScreen(),
     const SettingsScreen(),
   ];
@@ -49,6 +51,11 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             icon: const Icon(Icons.history_outlined),
             activeIcon: const Icon(Icons.history),
             label: l10n.history,
+          ),
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.fitness_center_outlined),
+            activeIcon: const Icon(Icons.fitness_center),
+            label: '運動',
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.bar_chart_outlined),

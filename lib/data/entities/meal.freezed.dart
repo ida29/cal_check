@@ -29,6 +29,7 @@ mixin _$Meal {
   NutritionInfo get totalNutrition => throw _privateConstructorUsedError;
   String? get notes => throw _privateConstructorUsedError;
   bool get isSynced => throw _privateConstructorUsedError;
+  bool get isManualEntry => throw _privateConstructorUsedError;
 
   /// Serializes this Meal to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -53,7 +54,8 @@ abstract class $MealCopyWith<$Res> {
       double totalCalories,
       NutritionInfo totalNutrition,
       String? notes,
-      bool isSynced});
+      bool isSynced,
+      bool isManualEntry});
 
   $NutritionInfoCopyWith<$Res> get totalNutrition;
 }
@@ -82,6 +84,7 @@ class _$MealCopyWithImpl<$Res, $Val extends Meal>
     Object? totalNutrition = null,
     Object? notes = freezed,
     Object? isSynced = null,
+    Object? isManualEntry = null,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -120,6 +123,10 @@ class _$MealCopyWithImpl<$Res, $Val extends Meal>
           ? _value.isSynced
           : isSynced // ignore: cast_nullable_to_non_nullable
               as bool,
+      isManualEntry: null == isManualEntry
+          ? _value.isManualEntry
+          : isManualEntry // ignore: cast_nullable_to_non_nullable
+              as bool,
     ) as $Val);
   }
 
@@ -150,7 +157,8 @@ abstract class _$$MealImplCopyWith<$Res> implements $MealCopyWith<$Res> {
       double totalCalories,
       NutritionInfo totalNutrition,
       String? notes,
-      bool isSynced});
+      bool isSynced,
+      bool isManualEntry});
 
   @override
   $NutritionInfoCopyWith<$Res> get totalNutrition;
@@ -177,6 +185,7 @@ class __$$MealImplCopyWithImpl<$Res>
     Object? totalNutrition = null,
     Object? notes = freezed,
     Object? isSynced = null,
+    Object? isManualEntry = null,
   }) {
     return _then(_$MealImpl(
       id: null == id
@@ -215,6 +224,10 @@ class __$$MealImplCopyWithImpl<$Res>
           ? _value.isSynced
           : isSynced // ignore: cast_nullable_to_non_nullable
               as bool,
+      isManualEntry: null == isManualEntry
+          ? _value.isManualEntry
+          : isManualEntry // ignore: cast_nullable_to_non_nullable
+              as bool,
     ));
   }
 }
@@ -231,7 +244,8 @@ class _$MealImpl implements _Meal {
       required this.totalCalories,
       required this.totalNutrition,
       this.notes,
-      this.isSynced = false})
+      this.isSynced = false,
+      this.isManualEntry = false})
       : _foodItems = foodItems;
 
   factory _$MealImpl.fromJson(Map<String, dynamic> json) =>
@@ -262,10 +276,13 @@ class _$MealImpl implements _Meal {
   @override
   @JsonKey()
   final bool isSynced;
+  @override
+  @JsonKey()
+  final bool isManualEntry;
 
   @override
   String toString() {
-    return 'Meal(id: $id, timestamp: $timestamp, mealType: $mealType, imagePath: $imagePath, foodItems: $foodItems, totalCalories: $totalCalories, totalNutrition: $totalNutrition, notes: $notes, isSynced: $isSynced)';
+    return 'Meal(id: $id, timestamp: $timestamp, mealType: $mealType, imagePath: $imagePath, foodItems: $foodItems, totalCalories: $totalCalories, totalNutrition: $totalNutrition, notes: $notes, isSynced: $isSynced, isManualEntry: $isManualEntry)';
   }
 
   @override
@@ -288,7 +305,9 @@ class _$MealImpl implements _Meal {
                 other.totalNutrition == totalNutrition) &&
             (identical(other.notes, notes) || other.notes == notes) &&
             (identical(other.isSynced, isSynced) ||
-                other.isSynced == isSynced));
+                other.isSynced == isSynced) &&
+            (identical(other.isManualEntry, isManualEntry) ||
+                other.isManualEntry == isManualEntry));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -303,7 +322,8 @@ class _$MealImpl implements _Meal {
       totalCalories,
       totalNutrition,
       notes,
-      isSynced);
+      isSynced,
+      isManualEntry);
 
   /// Create a copy of Meal
   /// with the given fields replaced by the non-null parameter values.
@@ -331,7 +351,8 @@ abstract class _Meal implements Meal {
       required final double totalCalories,
       required final NutritionInfo totalNutrition,
       final String? notes,
-      final bool isSynced}) = _$MealImpl;
+      final bool isSynced,
+      final bool isManualEntry}) = _$MealImpl;
 
   factory _Meal.fromJson(Map<String, dynamic> json) = _$MealImpl.fromJson;
 
@@ -353,6 +374,8 @@ abstract class _Meal implements Meal {
   String? get notes;
   @override
   bool get isSynced;
+  @override
+  bool get isManualEntry;
 
   /// Create a copy of Meal
   /// with the given fields replaced by the non-null parameter values.

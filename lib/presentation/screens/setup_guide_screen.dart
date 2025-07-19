@@ -85,41 +85,90 @@ class _SetupGuideScreenState extends State<SetupGuideScreen> with TickerProvider
       body: SafeArea(
         child: Column(
           children: [
-            // Enhanced progress indicator
+            // Enhanced header with back button, progress, and close button
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Top row with back button, question number, and close button
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        'Question ${_getEffectiveCurrentPage() + 1} of ${_getEffectiveTotalPages()}',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: Theme.of(context).primaryColor,
+                      // Back button (left arrow icon)
+                      if (_currentPage > 0)
+                        SizedBox(
+                          width: 44,
+                          height: 44,
+                          child: IconButton(
+                            onPressed: _previousPage,
+                            icon: const Icon(Icons.arrow_back_ios),
+                            iconSize: 20,
+                            padding: EdgeInsets.zero,
+                            style: IconButton.styleFrom(
+                              backgroundColor: Colors.grey[100],
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        )
+                      else
+                        const SizedBox(width: 44, height: 44),
+                      
+                      // Centered question number
+                      Expanded(
+                        child: Text(
+                          'Question ${_getEffectiveCurrentPage() + 1} of ${_getEffectiveTotalPages()}',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: Theme.of(context).primaryColor,
+                          ),
+                          textAlign: TextAlign.center,
                         ),
                       ),
-                      Text(
-                        '${((_getEffectiveCurrentPage() + 1) / _getEffectiveTotalPages() * 100).round()}%',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: Colors.grey[600],
+                      
+                      // Close button (X icon)
+                      SizedBox(
+                        width: 44,
+                        height: 44,
+                        child: IconButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          icon: const Icon(Icons.close),
+                          iconSize: 20,
+                          padding: EdgeInsets.zero,
+                          style: IconButton.styleFrom(
+                            backgroundColor: Colors.grey[100],
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  
+                  const SizedBox(height: 20),
+                  
+                  // Progress percentage
+                  Text(
+                    '${((_getEffectiveCurrentPage() + 1) / _getEffectiveTotalPages() * 100).round()}% Complete',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w500,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 12),
+                  
+                  // More prominent progress bar (8px height)
                   AnimatedBuilder(
                     animation: _progressAnimation,
                     builder: (context, child) {
                       return Container(
                         width: double.infinity,
-                        height: 6,
+                        height: 8,
                         decoration: BoxDecoration(
                           color: Colors.grey[200],
-                          borderRadius: BorderRadius.circular(3),
+                          borderRadius: BorderRadius.circular(4),
                         ),
                         child: FractionallySizedBox(
                           alignment: Alignment.centerLeft,
@@ -132,7 +181,7 @@ class _SetupGuideScreenState extends State<SetupGuideScreen> with TickerProvider
                                   Theme.of(context).primaryColor.withOpacity(0.8),
                                 ],
                               ),
-                              borderRadius: BorderRadius.circular(3),
+                              borderRadius: BorderRadius.circular(4),
                             ),
                           ),
                         ),
@@ -143,10 +192,11 @@ class _SetupGuideScreenState extends State<SetupGuideScreen> with TickerProvider
               ),
             ),
             
-            // Page content
+            // Page content with swipe physics
             Expanded(
               child: PageView(
                 controller: _pageController,
+                physics: const BouncingScrollPhysics(),
                 onPageChanged: (index) {
                   setState(() {
                     _currentPage = index;
@@ -168,33 +218,40 @@ class _SetupGuideScreenState extends State<SetupGuideScreen> with TickerProvider
               ),
             ),
             
-            // Navigation buttons
+            // Full-width Continue button at bottom
             Container(
               padding: const EdgeInsets.all(20),
-              child: Row(
-                children: [
-                  if (_currentPage > 0)
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: _previousPage,
-                        child: const Text('Back'),
-                      ),
-                    ),
-                  if (_currentPage > 0)
-                    const SizedBox(width: 16),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: _isLoading ? null : _nextPage,
-                      child: _isLoading
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : Text(_getNextButtonText()),
+              child: SizedBox(
+                width: double.infinity,
+                height: 56,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _nextPage,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).primaryColor,
+                    foregroundColor: Colors.white,
+                    elevation: 2,
+                    shadowColor: Theme.of(context).primaryColor.withOpacity(0.3),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
                     ),
                   ),
-                ],
+                  child: _isLoading
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(
+                        _getNextButtonText(),
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                ),
               ),
             ),
           ],
@@ -539,12 +596,14 @@ class _SetupGuideScreenState extends State<SetupGuideScreen> with TickerProvider
       onTap: () => setState(() => _selectedGender = value),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(20),
+        constraints: const BoxConstraints(minHeight: 60), // Increased touch target
+        padding: const EdgeInsets.all(24), // More padding for easier tapping
+        margin: const EdgeInsets.only(bottom: 8), // More spacing between elements
         decoration: BoxDecoration(
           color: isSelected 
             ? Theme.of(context).primaryColor.withOpacity(0.1)
             : Colors.grey[50],
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18), // Larger radius
           border: Border.all(
             color: isSelected 
               ? Theme.of(context).primaryColor 
@@ -555,24 +614,25 @@ class _SetupGuideScreenState extends State<SetupGuideScreen> with TickerProvider
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(14), // Larger icon container
               decoration: BoxDecoration(
                 color: isSelected 
                   ? Theme.of(context).primaryColor
                   : Colors.grey[400],
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(14),
               ),
               child: Icon(
                 icon,
                 color: Colors.white,
-                size: 24,
+                size: 28, // Larger icon
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 20), // More spacing
             Text(
               title,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                fontSize: 18, // Larger text
                 color: isSelected 
                   ? Theme.of(context).primaryColor 
                   : Colors.grey[700],
@@ -590,12 +650,14 @@ class _SetupGuideScreenState extends State<SetupGuideScreen> with TickerProvider
       onTap: () => setState(() => _selectedGoal = value),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(20),
+        constraints: const BoxConstraints(minHeight: 76), // Larger touch target
+        padding: const EdgeInsets.all(24), // More padding
+        margin: const EdgeInsets.only(bottom: 12), // More spacing between elements
         decoration: BoxDecoration(
           color: isSelected 
             ? color.withOpacity(0.1)
             : Colors.grey[50],
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18), // Larger radius
           border: Border.all(
             color: isSelected 
               ? color
@@ -606,33 +668,35 @@ class _SetupGuideScreenState extends State<SetupGuideScreen> with TickerProvider
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(14), // Larger icon container
               decoration: BoxDecoration(
                 color: isSelected ? color : Colors.grey[400],
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(14),
               ),
               child: Icon(
                 icon,
                 color: Colors.white,
-                size: 24,
+                size: 28, // Larger icon
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 20), // More spacing
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     title,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontSize: 18, // Larger text
                       color: isSelected ? color : Colors.grey[700],
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6), // More spacing
                   Text(
                     description,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontSize: 15, // Slightly larger description text
                       color: Colors.grey[600],
                     ),
                   ),
@@ -651,12 +715,14 @@ class _SetupGuideScreenState extends State<SetupGuideScreen> with TickerProvider
       onTap: () => setState(() => _selectedTimeframe = value),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(16),
+        constraints: const BoxConstraints(minHeight: 60), // Larger touch target
+        padding: const EdgeInsets.all(20), // More padding
+        margin: const EdgeInsets.only(bottom: 8), // More spacing between elements
         decoration: BoxDecoration(
           color: isSelected 
             ? Theme.of(context).primaryColor.withOpacity(0.1)
             : Colors.grey[50],
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16), // Larger radius
           border: Border.all(
             color: isSelected 
               ? Theme.of(context).primaryColor 
@@ -671,9 +737,9 @@ class _SetupGuideScreenState extends State<SetupGuideScreen> with TickerProvider
               color: isSelected 
                 ? Theme.of(context).primaryColor 
                 : Colors.grey[600],
-              size: 20,
+              size: 24, // Larger icon
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 16), // More spacing
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -682,15 +748,17 @@ class _SetupGuideScreenState extends State<SetupGuideScreen> with TickerProvider
                     title,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontSize: 17, // Larger text
                       color: isSelected 
                         ? Theme.of(context).primaryColor 
                         : Colors.grey[700],
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 4), // More spacing
                   Text(
                     description,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontSize: 14, // Larger description text
                       color: Colors.grey[600],
                     ),
                   ),
@@ -709,12 +777,14 @@ class _SetupGuideScreenState extends State<SetupGuideScreen> with TickerProvider
       onTap: () => setState(() => _selectedActivityLevel = value),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(16),
+        constraints: const BoxConstraints(minHeight: 60), // Larger touch target
+        padding: const EdgeInsets.all(20), // More padding
+        margin: const EdgeInsets.only(bottom: 8), // More spacing between elements
         decoration: BoxDecoration(
           color: isSelected 
             ? Theme.of(context).primaryColor.withOpacity(0.1)
             : Colors.grey[50],
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16), // Larger radius
           border: Border.all(
             color: isSelected 
               ? Theme.of(context).primaryColor 
@@ -729,9 +799,9 @@ class _SetupGuideScreenState extends State<SetupGuideScreen> with TickerProvider
               color: isSelected 
                 ? Theme.of(context).primaryColor 
                 : Colors.grey[600],
-              size: 20,
+              size: 24, // Larger icon
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 16), // More spacing
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -740,15 +810,17 @@ class _SetupGuideScreenState extends State<SetupGuideScreen> with TickerProvider
                     title,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                      fontSize: 17, // Larger text
                       color: isSelected 
                         ? Theme.of(context).primaryColor 
                         : Colors.grey[700],
                     ),
                   ),
-                  const SizedBox(height: 2),
+                  const SizedBox(height: 4), // More spacing
                   Text(
                     description,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      fontSize: 14, // Larger description text
                       color: Colors.grey[600],
                     ),
                   ),

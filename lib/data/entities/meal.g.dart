@@ -19,6 +19,7 @@ _$MealImpl _$$MealImplFromJson(Map<String, dynamic> json) => _$MealImpl(
           json['totalNutrition'] as Map<String, dynamic>),
       notes: json['notes'] as String?,
       isSynced: json['isSynced'] as bool? ?? false,
+      isManualEntry: json['isManualEntry'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$$MealImplToJson(_$MealImpl instance) =>
@@ -32,6 +33,7 @@ Map<String, dynamic> _$$MealImplToJson(_$MealImpl instance) =>
       'totalNutrition': instance.totalNutrition,
       'notes': instance.notes,
       'isSynced': instance.isSynced,
+      'isManualEntry': instance.isManualEntry,
     };
 
 const _$MealTypeEnumMap = {

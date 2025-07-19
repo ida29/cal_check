@@ -14,6 +14,9 @@ class DailyStats with _$DailyStats {
     required int mealCount,
     required Map<String, double> mealTypeBreakdown, // breakfast, lunch, dinner, snack percentages
     @Default(0.0) double calorieGoalProgress, // percentage
+    @Default(0.0) double totalCaloriesBurned, // calories burned from exercise
+    @Default(0) int exerciseCount,
+    @Default(0) int totalExerciseMinutes,
   }) = _DailyStats;
 
   factory DailyStats.fromJson(Map<String, dynamic> json) =>

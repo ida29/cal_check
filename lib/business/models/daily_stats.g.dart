@@ -20,6 +20,11 @@ _$DailyStatsImpl _$$DailyStatsImplFromJson(Map<String, dynamic> json) =>
       ),
       calorieGoalProgress:
           (json['calorieGoalProgress'] as num?)?.toDouble() ?? 0.0,
+      totalCaloriesBurned:
+          (json['totalCaloriesBurned'] as num?)?.toDouble() ?? 0.0,
+      exerciseCount: (json['exerciseCount'] as num?)?.toInt() ?? 0,
+      totalExerciseMinutes:
+          (json['totalExerciseMinutes'] as num?)?.toInt() ?? 0,
     );
 
 Map<String, dynamic> _$$DailyStatsImplToJson(_$DailyStatsImpl instance) =>
@@ -31,4 +36,7 @@ Map<String, dynamic> _$$DailyStatsImplToJson(_$DailyStatsImpl instance) =>
       'mealCount': instance.mealCount,
       'mealTypeBreakdown': instance.mealTypeBreakdown,
       'calorieGoalProgress': instance.calorieGoalProgress,
+      'totalCaloriesBurned': instance.totalCaloriesBurned,
+      'exerciseCount': instance.exerciseCount,
+      'totalExerciseMinutes': instance.totalExerciseMinutes,
     };

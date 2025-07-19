@@ -27,7 +27,12 @@ mixin _$DailyStats {
   int get mealCount => throw _privateConstructorUsedError;
   Map<String, double> get mealTypeBreakdown =>
       throw _privateConstructorUsedError; // breakfast, lunch, dinner, snack percentages
-  double get calorieGoalProgress => throw _privateConstructorUsedError;
+  double get calorieGoalProgress =>
+      throw _privateConstructorUsedError; // percentage
+  double get totalCaloriesBurned =>
+      throw _privateConstructorUsedError; // calories burned from exercise
+  int get exerciseCount => throw _privateConstructorUsedError;
+  int get totalExerciseMinutes => throw _privateConstructorUsedError;
 
   /// Serializes this DailyStats to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -52,7 +57,10 @@ abstract class $DailyStatsCopyWith<$Res> {
       NutritionInfo totalNutrition,
       int mealCount,
       Map<String, double> mealTypeBreakdown,
-      double calorieGoalProgress});
+      double calorieGoalProgress,
+      double totalCaloriesBurned,
+      int exerciseCount,
+      int totalExerciseMinutes});
 
   $NutritionInfoCopyWith<$Res> get totalNutrition;
 }
@@ -79,6 +87,9 @@ class _$DailyStatsCopyWithImpl<$Res, $Val extends DailyStats>
     Object? mealCount = null,
     Object? mealTypeBreakdown = null,
     Object? calorieGoalProgress = null,
+    Object? totalCaloriesBurned = null,
+    Object? exerciseCount = null,
+    Object? totalExerciseMinutes = null,
   }) {
     return _then(_value.copyWith(
       date: null == date
@@ -109,6 +120,18 @@ class _$DailyStatsCopyWithImpl<$Res, $Val extends DailyStats>
           ? _value.calorieGoalProgress
           : calorieGoalProgress // ignore: cast_nullable_to_non_nullable
               as double,
+      totalCaloriesBurned: null == totalCaloriesBurned
+          ? _value.totalCaloriesBurned
+          : totalCaloriesBurned // ignore: cast_nullable_to_non_nullable
+              as double,
+      exerciseCount: null == exerciseCount
+          ? _value.exerciseCount
+          : exerciseCount // ignore: cast_nullable_to_non_nullable
+              as int,
+      totalExerciseMinutes: null == totalExerciseMinutes
+          ? _value.totalExerciseMinutes
+          : totalExerciseMinutes // ignore: cast_nullable_to_non_nullable
+              as int,
     ) as $Val);
   }
 
@@ -138,7 +161,10 @@ abstract class _$$DailyStatsImplCopyWith<$Res>
       NutritionInfo totalNutrition,
       int mealCount,
       Map<String, double> mealTypeBreakdown,
-      double calorieGoalProgress});
+      double calorieGoalProgress,
+      double totalCaloriesBurned,
+      int exerciseCount,
+      int totalExerciseMinutes});
 
   @override
   $NutritionInfoCopyWith<$Res> get totalNutrition;
@@ -164,6 +190,9 @@ class __$$DailyStatsImplCopyWithImpl<$Res>
     Object? mealCount = null,
     Object? mealTypeBreakdown = null,
     Object? calorieGoalProgress = null,
+    Object? totalCaloriesBurned = null,
+    Object? exerciseCount = null,
+    Object? totalExerciseMinutes = null,
   }) {
     return _then(_$DailyStatsImpl(
       date: null == date
@@ -194,6 +223,18 @@ class __$$DailyStatsImplCopyWithImpl<$Res>
           ? _value.calorieGoalProgress
           : calorieGoalProgress // ignore: cast_nullable_to_non_nullable
               as double,
+      totalCaloriesBurned: null == totalCaloriesBurned
+          ? _value.totalCaloriesBurned
+          : totalCaloriesBurned // ignore: cast_nullable_to_non_nullable
+              as double,
+      exerciseCount: null == exerciseCount
+          ? _value.exerciseCount
+          : exerciseCount // ignore: cast_nullable_to_non_nullable
+              as int,
+      totalExerciseMinutes: null == totalExerciseMinutes
+          ? _value.totalExerciseMinutes
+          : totalExerciseMinutes // ignore: cast_nullable_to_non_nullable
+              as int,
     ));
   }
 }
@@ -208,7 +249,10 @@ class _$DailyStatsImpl implements _DailyStats {
       required this.totalNutrition,
       required this.mealCount,
       required final Map<String, double> mealTypeBreakdown,
-      this.calorieGoalProgress = 0.0})
+      this.calorieGoalProgress = 0.0,
+      this.totalCaloriesBurned = 0.0,
+      this.exerciseCount = 0,
+      this.totalExerciseMinutes = 0})
       : _mealTypeBreakdown = mealTypeBreakdown;
 
   factory _$DailyStatsImpl.fromJson(Map<String, dynamic> json) =>
@@ -237,10 +281,21 @@ class _$DailyStatsImpl implements _DailyStats {
   @override
   @JsonKey()
   final double calorieGoalProgress;
+// percentage
+  @override
+  @JsonKey()
+  final double totalCaloriesBurned;
+// calories burned from exercise
+  @override
+  @JsonKey()
+  final int exerciseCount;
+  @override
+  @JsonKey()
+  final int totalExerciseMinutes;
 
   @override
   String toString() {
-    return 'DailyStats(date: $date, totalCalories: $totalCalories, targetCalories: $targetCalories, totalNutrition: $totalNutrition, mealCount: $mealCount, mealTypeBreakdown: $mealTypeBreakdown, calorieGoalProgress: $calorieGoalProgress)';
+    return 'DailyStats(date: $date, totalCalories: $totalCalories, targetCalories: $targetCalories, totalNutrition: $totalNutrition, mealCount: $mealCount, mealTypeBreakdown: $mealTypeBreakdown, calorieGoalProgress: $calorieGoalProgress, totalCaloriesBurned: $totalCaloriesBurned, exerciseCount: $exerciseCount, totalExerciseMinutes: $totalExerciseMinutes)';
   }
 
   @override
@@ -260,7 +315,13 @@ class _$DailyStatsImpl implements _DailyStats {
             const DeepCollectionEquality()
                 .equals(other._mealTypeBreakdown, _mealTypeBreakdown) &&
             (identical(other.calorieGoalProgress, calorieGoalProgress) ||
-                other.calorieGoalProgress == calorieGoalProgress));
+                other.calorieGoalProgress == calorieGoalProgress) &&
+            (identical(other.totalCaloriesBurned, totalCaloriesBurned) ||
+                other.totalCaloriesBurned == totalCaloriesBurned) &&
+            (identical(other.exerciseCount, exerciseCount) ||
+                other.exerciseCount == exerciseCount) &&
+            (identical(other.totalExerciseMinutes, totalExerciseMinutes) ||
+                other.totalExerciseMinutes == totalExerciseMinutes));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -273,7 +334,10 @@ class _$DailyStatsImpl implements _DailyStats {
       totalNutrition,
       mealCount,
       const DeepCollectionEquality().hash(_mealTypeBreakdown),
-      calorieGoalProgress);
+      calorieGoalProgress,
+      totalCaloriesBurned,
+      exerciseCount,
+      totalExerciseMinutes);
 
   /// Create a copy of DailyStats
   /// with the given fields replaced by the non-null parameter values.
@@ -299,7 +363,10 @@ abstract class _DailyStats implements DailyStats {
       required final NutritionInfo totalNutrition,
       required final int mealCount,
       required final Map<String, double> mealTypeBreakdown,
-      final double calorieGoalProgress}) = _$DailyStatsImpl;
+      final double calorieGoalProgress,
+      final double totalCaloriesBurned,
+      final int exerciseCount,
+      final int totalExerciseMinutes}) = _$DailyStatsImpl;
 
   factory _DailyStats.fromJson(Map<String, dynamic> json) =
       _$DailyStatsImpl.fromJson;
@@ -318,7 +385,13 @@ abstract class _DailyStats implements DailyStats {
   Map<String, double>
       get mealTypeBreakdown; // breakfast, lunch, dinner, snack percentages
   @override
-  double get calorieGoalProgress;
+  double get calorieGoalProgress; // percentage
+  @override
+  double get totalCaloriesBurned; // calories burned from exercise
+  @override
+  int get exerciseCount;
+  @override
+  int get totalExerciseMinutes;
 
   /// Create a copy of DailyStats
   /// with the given fields replaced by the non-null parameter values.

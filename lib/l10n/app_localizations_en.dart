@@ -458,4 +458,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sunday => 'Sun';
+
+  @override
+  String get foodMode => 'Food';
+
+  @override
+  String get barcodeMode => 'Barcode';
 }

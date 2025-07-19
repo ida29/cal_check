@@ -19,6 +19,9 @@ dependencies:
   sqflite: ^2.3.0
   path: ^1.8.3
   
+  # UUID Generation
+  uuid: ^4.2.1
+  
   # Camera & Image Processing
   camera: ^0.10.5+7
   image_picker: ^1.0.5

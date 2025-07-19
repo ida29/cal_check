@@ -19,6 +19,7 @@ class Meal with _$Meal {
     required NutritionInfo totalNutrition,
     String? notes,
     @Default(false) bool isSynced,
+    @Default(false) bool isManualEntry,
   }) = _Meal;
 
   factory Meal.fromJson(Map<String, dynamic> json) =>

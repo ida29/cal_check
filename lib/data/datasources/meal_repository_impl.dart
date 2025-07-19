@@ -171,6 +171,7 @@ class MealRepositoryImpl implements MealRepository {
       'totalNutrition': jsonDecode(mealMap['total_nutrition']),
       'notes': mealMap['notes'],
       'isSynced': mealMap['is_synced'] == 1,
+      'isManualEntry': mealMap['is_manual_entry'] == 1,
     });
   }
 
@@ -184,6 +185,7 @@ class MealRepositoryImpl implements MealRepository {
       'total_nutrition': jsonEncode(meal.totalNutrition.toJson()),
       'notes': meal.notes,
       'is_synced': meal.isSynced ? 1 : 0,
+      'is_manual_entry': meal.isManualEntry ? 1 : 0,
       'created_at': DateTime.now().toIso8601String(),
     };
   }

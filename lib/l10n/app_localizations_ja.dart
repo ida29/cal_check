@@ -454,4 +454,10 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get sunday => '日';
+
+  @override
+  String get foodMode => '食べ物';
+
+  @override
+  String get barcodeMode => 'バーコード';
 }

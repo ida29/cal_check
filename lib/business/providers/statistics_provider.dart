@@ -4,6 +4,7 @@ import '../models/daily_stats.dart';
 import '../models/weekly_stats.dart';
 import '../services/calorie_calculation_service.dart';
 import 'meal_provider.dart';
+import 'exercise_provider.dart';
 import 'user_provider.dart';
 
 final calorieCalculationServiceProvider = Provider<CalorieCalculationService>((ref) {
@@ -14,6 +15,7 @@ final dailyStatsProvider = StateNotifierProvider.family<DailyStatsNotifier, Asyn
   return DailyStatsNotifier(
     date,
     ref.watch(mealRepositoryProvider),
+    ref.watch(exerciseRepositoryProvider),
     ref.watch(calorieCalculationServiceProvider),
     ref.watch(userProvider),
   );
@@ -37,12 +39,14 @@ final todayStatsProvider = Provider<AsyncValue<DailyStats?>>((ref) {
 class DailyStatsNotifier extends StateNotifier<AsyncValue<DailyStats?>> {
   final DateTime _date;
   final dynamic _mealRepository;
+  final dynamic _exerciseRepository;
   final CalorieCalculationService _calculationService;
   final AsyncValue _userState;
 
   DailyStatsNotifier(
     this._date,
     this._mealRepository,
+    this._exerciseRepository,
     this._calculationService,
     this._userState,
   ) : super(const AsyncValue.loading()) {
@@ -52,12 +56,16 @@ class DailyStatsNotifier extends StateNotifier<AsyncValue<DailyStats?>> {
   Future<void> _loadDailyStats() async {
     try {
       final meals = await _mealRepository.getMealsByDate(_date);
+      final exercises = await _exerciseRepository.getExercisesByDate(_date);
       
       _userState.when(
         data: (user) {
           if (user != null) {
             final targetCalories = user.targetCalories;
             final dailyStatistics = _calculationService.calculateDailyStatistics(meals, targetCalories);
+            
+            final totalCaloriesBurned = exercises.fold(0.0, (sum, exercise) => sum + exercise.caloriesBurned);
+            final totalExerciseMinutes = exercises.fold(0, (sum, exercise) => sum + exercise.durationMinutes);
             
             final stats = DailyStats(
               date: _date,
@@ -67,6 +75,9 @@ class DailyStatsNotifier extends StateNotifier<AsyncValue<DailyStats?>> {
               mealCount: dailyStatistics['mealCount'],
               mealTypeBreakdown: Map<String, double>.from(dailyStatistics['mealTypeBreakdown']),
               calorieGoalProgress: dailyStatistics['calorieProgress'],
+              totalCaloriesBurned: totalCaloriesBurned,
+              exerciseCount: exercises.length,
+              totalExerciseMinutes: totalExerciseMinutes,
             );
             
             state = AsyncValue.data(stats);
