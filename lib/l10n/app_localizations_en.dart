@@ -220,7 +220,70 @@ class AppLocalizationsEn extends AppLocalizations {
   String get privacyPolicy => 'Privacy Policy';
 
   @override
-  String get privacyPolicyComingSoon => 'Privacy policy feature coming soon!';
+  String get privacyPolicyIntroTitle => 'Introduction';
+
+  @override
+  String get privacyPolicyIntroContent =>
+      'Calorie Checker AI is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your personal information when you use our mobile application.';
+
+  @override
+  String get privacyPolicyDataCollectionTitle => 'Data Collection';
+
+  @override
+  String get privacyPolicyDataCollectionContent =>
+      'We collect the following information:\n• Food photos you capture for analysis\n• Nutritional data from your meals\n• Personal profile information (age, height, weight, activity level)\n• Health goals and preferences\n• Exercise activities you log\n• Weight tracking history\n\nAll data is stored locally on your device. We do not upload or store your personal data on external servers.';
+
+  @override
+  String get privacyPolicyDataUsageTitle => 'Data Usage';
+
+  @override
+  String get privacyPolicyDataUsageContent =>
+      'Your data is used exclusively to:\n• Analyze food photos and provide nutritional information\n• Track your calorie intake and nutritional balance\n• Monitor your progress toward health goals\n• Provide personalized recommendations\n• Generate statistics and insights about your eating habits\n• Send meal reminders (if enabled)';
+
+  @override
+  String get privacyPolicyDataStorageTitle => 'Data Storage';
+
+  @override
+  String get privacyPolicyDataStorageContent =>
+      'All your personal data is stored locally on your device using secure storage methods. Food photos are temporarily processed for analysis and can be deleted at any time. We do not backup or sync your data to cloud services unless you explicitly enable such features.';
+
+  @override
+  String get privacyPolicyDataSharingTitle => 'Data Sharing';
+
+  @override
+  String get privacyPolicyDataSharingContent =>
+      'We do not sell, trade, or share your personal information with third parties. Food photos are processed using AI services, but no personal identifiable information is transmitted. Only the image data necessary for nutritional analysis is processed, and this is done securely.';
+
+  @override
+  String get privacyPolicyUserRightsTitle => 'Your Rights';
+
+  @override
+  String get privacyPolicyUserRightsContent =>
+      'You have the right to:\n• Access all your stored data\n• Export your data in common formats\n• Delete your data at any time\n• Opt-out of any data collection\n• Disable specific features that use your data\n\nTo exercise these rights, use the Data Management section in Settings.';
+
+  @override
+  String get privacyPolicySecurityTitle => 'Security';
+
+  @override
+  String get privacyPolicySecurityContent =>
+      'We implement industry-standard security measures to protect your data from unauthorized access. This includes encryption of sensitive data and secure storage practices. However, no method of electronic storage is 100% secure, and we cannot guarantee absolute security.';
+
+  @override
+  String get privacyPolicyChangesTitle => 'Changes to This Policy';
+
+  @override
+  String get privacyPolicyChangesContent =>
+      'We may update this Privacy Policy from time to time. Any changes will be reflected in the app, and we will notify you of significant changes. Your continued use of the app after changes indicates acceptance of the updated policy.';
+
+  @override
+  String get privacyPolicyContactTitle => 'Contact Us';
+
+  @override
+  String get privacyPolicyContactContent =>
+      'If you have questions or concerns about this Privacy Policy or our data practices, please contact us through the Help & Support section in the app or visit our website.';
+
+  @override
+  String get privacyPolicyLastUpdated => 'Last Updated: January 2025';
 
   @override
   String get helpSupport => 'Help & Support';
