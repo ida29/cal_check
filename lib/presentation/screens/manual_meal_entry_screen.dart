@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../../l10n/app_localizations.dart';
 import '../../data/datasources/food_database.dart';
 import '../../data/entities/food_item.dart';
 import '../../data/entities/nutrition_info.dart';
-import '../../data/entities/meal_record.dart';
 import '../../data/entities/meal.dart';
-import '../../business/services/local_photo_storage_service.dart';
-import '../../business/services/record_storage_service.dart';
 import '../../business/providers/meal_provider.dart';
 
 class ManualMealEntryScreen extends ConsumerStatefulWidget {
@@ -21,15 +17,14 @@ class ManualMealEntryScreen extends ConsumerStatefulWidget {
 
 class _ManualMealEntryScreenState extends ConsumerState<ManualMealEntryScreen> {
   final _searchController = TextEditingController();
-  final _quantityController = TextEditingController();
-  final LocalPhotoStorageService _storageService = LocalPhotoStorageService();
-  final RecordStorageService _recordStorageService = RecordStorageService();
   
   List<Map<String, dynamic>> _searchResults = [];
   List<FoodItem> _selectedFoods = [];
   String _selectedCategory = 'all';
-  String _selectedMealType = 'lunch';
+  DateTime _selectedDate = DateTime.now();
+  MealType _selectedMealType = MealType.lunch;
   bool _isSaving = false;
+  Map<String, double> _foodQuantities = {};
   
   final Map<String, String> _categoryNames = {
     'all': 'すべて',
@@ -58,13 +53,13 @@ class _ManualMealEntryScreenState extends ConsumerState<ManualMealEntryScreen> {
   void _determineDefaultMealType() {
     final hour = DateTime.now().hour;
     if (hour < 11) {
-      _selectedMealType = 'breakfast';
+      _selectedMealType = MealType.breakfast;
     } else if (hour < 15) {
-      _selectedMealType = 'lunch';
+      _selectedMealType = MealType.lunch;
     } else if (hour < 21) {
-      _selectedMealType = 'dinner';
+      _selectedMealType = MealType.dinner;
     } else {
-      _selectedMealType = 'snack';
+      _selectedMealType = MealType.snack;
     }
   }
 
@@ -82,24 +77,76 @@ class _ManualMealEntryScreenState extends ConsumerState<ManualMealEntryScreen> {
       appBar: AppBar(
         title: const Text('食事を手動で記録'),
         centerTitle: true,
+        backgroundColor: const Color(0xFFFF69B4),
+        foregroundColor: Colors.white,
       ),
       body: Column(
         children: [
+          // 日付選択バー
+          Container(
+            padding: const EdgeInsets.all(16),
+            color: const Color(0xFFFF69B4).withOpacity(0.05),
+            child: Row(
+              children: [
+                const Icon(Icons.calendar_today, color: Color(0xFFFF69B4)),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: InkWell(
+                    onTap: _selectDate,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: const Color(0xFFFF69B4)),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        '${_selectedDate.year}年${_selectedDate.month}月${_selectedDate.day}日',
+                        style: const TextStyle(
+                          color: Color(0xFFFF69B4),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                // 食事タイプ選択
+                DropdownButton<MealType>(
+                  value: _selectedMealType,
+                  onChanged: (MealType? newValue) {
+                    if (newValue != null) {
+                      setState(() {
+                        _selectedMealType = newValue;
+                      });
+                    }
+                  },
+                  items: MealType.values.map((type) {
+                    return DropdownMenuItem(
+                      value: type,
+                      child: Text(_getMealTypeLabel(type)),
+                    );
+                  }).toList(),
+                ),
+              ],
+            ),
+          ),
+          
           // 検索バー
           Container(
             padding: const EdgeInsets.all(16),
-            color: Theme.of(context).primaryColor.withOpacity(0.05),
             child: TextField(
               controller: _searchController,
               decoration: InputDecoration(
                 hintText: '食べ物を検索...',
-                prefixIcon: const Icon(Icons.search),
+                prefixIcon: const Icon(Icons.search, color: Color(0xFFFF69B4)),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
+                  borderSide: const BorderSide(color: Color(0xFFFF69B4)),
                 ),
-                filled: true,
-                fillColor: Colors.white,
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFFFF69B4), width: 2),
+                ),
               ),
               onChanged: _searchFood,
             ),
@@ -107,8 +154,7 @@ class _ManualMealEntryScreenState extends ConsumerState<ManualMealEntryScreen> {
           
           // カテゴリフィルター
           Container(
-            height: 50,
-            padding: const EdgeInsets.symmetric(vertical: 8),
+            height: 40,
             child: ListView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -126,11 +172,11 @@ class _ManualMealEntryScreenState extends ConsumerState<ManualMealEntryScreen> {
                       });
                     },
                     backgroundColor: isSelected 
-                      ? Theme.of(context).primaryColor.withOpacity(0.2)
+                      ? const Color(0xFFFF69B4).withOpacity(0.2)
                       : Colors.grey.shade200,
-                    selectedColor: Theme.of(context).primaryColor.withOpacity(0.3),
+                    selectedColor: const Color(0xFFFF69B4).withOpacity(0.3),
                     labelStyle: TextStyle(
-                      color: isSelected ? Theme.of(context).primaryColor : Colors.black87,
+                      color: isSelected ? const Color(0xFFFF69B4) : Colors.black87,
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
                   ),
@@ -142,7 +188,7 @@ class _ManualMealEntryScreenState extends ConsumerState<ManualMealEntryScreen> {
           // 食品リスト
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               itemCount: _searchResults.length,
               itemBuilder: (context, index) {
                 final food = _searchResults[index];
@@ -151,9 +197,15 @@ class _ManualMealEntryScreenState extends ConsumerState<ManualMealEntryScreen> {
             ),
           ),
           
-          // 選択した食品の表示
+          // 選択した食品の表示とボタン
           if (_selectedFoods.isNotEmpty)
             Container(
+              padding: EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: 16,
+                bottom: MediaQuery.of(context).padding.bottom + 16,
+              ),
               decoration: BoxDecoration(
                 color: Colors.white,
                 boxShadow: [
@@ -164,95 +216,70 @@ class _ManualMealEntryScreenState extends ConsumerState<ManualMealEntryScreen> {
                   ),
                 ],
               ),
-              child: SafeArea(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                '選択した食品 (${_selectedFoods.length}品)',
-                                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              Text(
-                                '合計: ${_getTotalCalories().toStringAsFixed(0)} kcal',
-                                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  color: Theme.of(context).primaryColor,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          // 食事タイプ選択
-                          Row(
-                            children: [
-                              _buildMealTypeChip('breakfast', '朝食', Icons.wb_sunny),
-                              const SizedBox(width: 8),
-                              _buildMealTypeChip('lunch', '昼食', Icons.wb_sunny_outlined),
-                              const SizedBox(width: 8),
-                              _buildMealTypeChip('dinner', '夕食', Icons.nights_stay),
-                              const SizedBox(width: 8),
-                              _buildMealTypeChip('snack', '間食', Icons.cookie),
-                            ],
-                          ),
-                        ],
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '選択中: ${_selectedFoods.length}品',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.fromLTRB(
-                        16, 
-                        0, 
-                        16, 
-                        MediaQuery.of(context).padding.bottom + 16
-                      ),
-                      child: ElevatedButton(
-                        onPressed: _isSaving ? null : _saveMeal,
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                      Text(
+                        '合計: ${_getTotalCalories().toStringAsFixed(0)} kcal',
+                        style: const TextStyle(
+                          color: Color(0xFFFF69B4),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
                         ),
-                        child: _isSaving
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Text(
-                              '食事を記録',
-                              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                            ),
                       ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _isSaving ? null : _saveMeal,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFF69B4),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: _isSaving
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Text(
+                            '食事を記録',
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
         ],
       ),
     );
   }
-  
+
   Widget _buildFoodCard(Map<String, dynamic> food) {
-    final isSelected = _selectedFoods.any((f) => f.name == food['name']);
+    final foodId = '${food['name']}_${food['category']}';
+    final isSelected = _selectedFoods.any((f) => f.id == foodId);
+    final quantity = _foodQuantities[foodId] ?? 1.0;
     
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       elevation: isSelected ? 3 : 1,
-      color: isSelected ? Theme.of(context).primaryColor.withOpacity(0.1) : null,
+      color: isSelected ? const Color(0xFFFF69B4).withOpacity(0.1) : null,
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: Container(
@@ -276,9 +303,9 @@ class _ManualMealEntryScreenState extends ConsumerState<ManualMealEntryScreen> {
         subtitle: Row(
           children: [
             Text(
-              '${food['calories']}kcal',
+              '${(food['calories'] * quantity).toStringAsFixed(0)}kcal',
               style: TextStyle(
-                color: Theme.of(context).primaryColor,
+                color: const Color(0xFFFF69B4),
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -291,74 +318,58 @@ class _ManualMealEntryScreenState extends ConsumerState<ManualMealEntryScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 // 数量調整
+                IconButton(
+                  icon: const Icon(Icons.remove_circle_outline, color: Color(0xFFFF69B4)),
+                  onPressed: () => _updateQuantity(foodId, -0.5),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                ),
                 Container(
-                  width: 100,
-                  child: Row(
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.remove_circle_outline),
-                        onPressed: () => _updateQuantity(food, -0.5),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
-                      Expanded(
-                        child: Text(
-                          _getQuantityText(food),
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.add_circle_outline),
-                        onPressed: () => _updateQuantity(food, 0.5),
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                      ),
-                    ],
+                  width: 50,
+                  child: Text(
+                    quantity == quantity.toInt() 
+                      ? '${quantity.toInt()}個'
+                      : '${quantity}個',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
                   ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.add_circle_outline, color: Color(0xFFFF69B4)),
+                  onPressed: () => _updateQuantity(foodId, 0.5),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                 ),
                 IconButton(
                   icon: const Icon(Icons.close, color: Colors.red),
                   onPressed: () => _toggleFood(food),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                 ),
               ],
             )
           : IconButton(
               icon: const Icon(Icons.add_circle_outline),
               onPressed: () => _toggleFood(food),
-              color: Theme.of(context).primaryColor,
+              color: const Color(0xFFFF69B4),
             ),
       ),
     );
   }
-  
-  Widget _buildMealTypeChip(String type, String label, IconData icon) {
-    final isSelected = _selectedMealType == type;
-    
-    return ChoiceChip(
-      label: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 16, color: isSelected ? Colors.white : null),
-          const SizedBox(width: 4),
-          Text(label),
-        ],
-      ),
-      selected: isSelected,
-      onSelected: (selected) {
-        if (selected) {
-          setState(() {
-            _selectedMealType = type;
-          });
-        }
-      },
-      selectedColor: Theme.of(context).primaryColor,
-      labelStyle: TextStyle(
-        color: isSelected ? Colors.white : null,
-      ),
-    );
+
+  String _getMealTypeLabel(MealType type) {
+    switch (type) {
+      case MealType.breakfast:
+        return '朝食';
+      case MealType.lunch:
+        return '昼食';
+      case MealType.dinner:
+        return '夕食';
+      case MealType.snack:
+        return '間食';
+    }
   }
-  
+
   void _searchFood(String query) {
     setState(() {
       if (query.isEmpty) {
@@ -373,7 +384,7 @@ class _ManualMealEntryScreenState extends ConsumerState<ManualMealEntryScreen> {
       }
     });
   }
-  
+
   void _filterByCategory() {
     setState(() {
       if (_selectedCategory == 'all') {
@@ -391,16 +402,20 @@ class _ManualMealEntryScreenState extends ConsumerState<ManualMealEntryScreen> {
       }
     });
   }
-  
+
   void _toggleFood(Map<String, dynamic> food) {
+    final foodId = '${food['name']}_${food['category']}';
+    
     setState(() {
-      final existingIndex = _selectedFoods.indexWhere((f) => f.name == food['name']);
+      final existingIndex = _selectedFoods.indexWhere((f) => f.id == foodId);
       
       if (existingIndex >= 0) {
         _selectedFoods.removeAt(existingIndex);
+        _foodQuantities.remove(foodId);
       } else {
+        _foodQuantities[foodId] = 1.0;
         _selectedFoods.add(FoodItem(
-          id: 'manual_${DateTime.now().millisecondsSinceEpoch}_${food['name'].hashCode}',
+          id: foodId,
           name: food['name'],
           quantity: 1.0,
           unit: food['unit'],
@@ -411,68 +426,41 @@ class _ManualMealEntryScreenState extends ConsumerState<ManualMealEntryScreen> {
             fat: food['fat'].toDouble(),
             fiber: 0.0,
             sugar: 0.0,
+            sodium: 0.0,
           ),
           confidenceScore: 1.0,
         ));
       }
     });
   }
-  
-  void _updateQuantity(Map<String, dynamic> food, double change) {
+
+  void _updateQuantity(String foodId, double change) {
     setState(() {
-      final index = _selectedFoods.indexWhere((f) => f.name == food['name']);
+      final currentQuantity = _foodQuantities[foodId] ?? 1.0;
+      final newQuantity = (currentQuantity + change).clamp(0.5, 10.0);
+      _foodQuantities[foodId] = newQuantity;
+      
+      // Update the food item with new quantity
+      final index = _selectedFoods.indexWhere((f) => f.id == foodId);
       if (index >= 0) {
-        final currentFood = _selectedFoods[index];
-        final newQuantity = (currentFood.quantity + change).clamp(0.5, 10.0);
-        
-        _selectedFoods[index] = FoodItem(
-          id: currentFood.id,
-          name: currentFood.name,
+        final food = _selectedFoods[index];
+        final baseCalories = food.calories / food.quantity;
+        _selectedFoods[index] = food.copyWith(
           quantity: newQuantity,
-          unit: currentFood.unit,
-          calories: food['calories'].toDouble() * newQuantity,
+          calories: baseCalories * newQuantity,
           nutritionInfo: NutritionInfo(
-            protein: food['protein'].toDouble() * newQuantity,
-            carbohydrates: food['carbs'].toDouble() * newQuantity,
-            fat: food['fat'].toDouble() * newQuantity,
-            fiber: 0.0,
-            sugar: 0.0,
+            protein: (food.nutritionInfo.protein / food.quantity) * newQuantity,
+            carbohydrates: (food.nutritionInfo.carbohydrates / food.quantity) * newQuantity,
+            fat: (food.nutritionInfo.fat / food.quantity) * newQuantity,
+            fiber: (food.nutritionInfo.fiber / food.quantity) * newQuantity,
+            sugar: (food.nutritionInfo.sugar / food.quantity) * newQuantity,
+            sodium: (food.nutritionInfo.sodium / food.quantity) * newQuantity,
           ),
-          confidenceScore: 1.0,
         );
       }
     });
   }
-  
-  String _getQuantityText(Map<String, dynamic> food) {
-    final foodItem = _selectedFoods.firstWhere(
-      (f) => f.name == food['name'],
-      orElse: () => FoodItem(
-        id: '',
-        name: '',
-        quantity: 1.0,
-        unit: '',
-        calories: 0,
-        nutritionInfo: const NutritionInfo(
-          protein: 0,
-          carbohydrates: 0,
-          fat: 0,
-          fiber: 0,
-          sugar: 0,
-        ),
-        confidenceScore: 0,
-      ),
-    );
-    
-    if (foodItem.quantity == 1.0) {
-      return '1個';
-    } else if (foodItem.quantity % 1 == 0) {
-      return '${foodItem.quantity.toInt()}個';
-    } else {
-      return '${foodItem.quantity}個';
-    }
-  }
-  
+
   double _getTotalCalories() {
     return _selectedFoods.fold(0.0, (sum, food) => sum + food.calories);
   }
@@ -503,7 +491,7 @@ class _ManualMealEntryScreenState extends ConsumerState<ManualMealEntryScreen> {
       sodium: totalSodium,
     );
   }
-  
+
   Color _getCategoryColor(String category) {
     switch (category) {
       case 'rice':
@@ -535,7 +523,7 @@ class _ManualMealEntryScreenState extends ConsumerState<ManualMealEntryScreen> {
         return Colors.grey;
     }
   }
-  
+
   IconData _getCategoryIcon(String category) {
     switch (category) {
       case 'rice':
@@ -567,7 +555,22 @@ class _ManualMealEntryScreenState extends ConsumerState<ManualMealEntryScreen> {
         return Icons.restaurant_menu;
     }
   }
-  
+
+  Future<void> _selectDate() async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate,
+      firstDate: DateTime.now().subtract(const Duration(days: 30)),
+      lastDate: DateTime.now(),
+      locale: const Locale('ja', 'JP'),
+    );
+    if (picked != null && picked != _selectedDate) {
+      setState(() {
+        _selectedDate = picked;
+      });
+    }
+  }
+
   Future<void> _saveMeal() async {
     if (_selectedFoods.isEmpty) return;
     
@@ -576,26 +579,18 @@ class _ManualMealEntryScreenState extends ConsumerState<ManualMealEntryScreen> {
     });
     
     try {
-      // 手動入力用のダミー画像パスを作成
-      final dummyImagePath = 'manual_entry_${DateTime.now().millisecondsSinceEpoch}';
-      
-      // 写真を保存（手動入力用のメタデータ）
-      final savedPath = await _storageService.saveMealPhoto(
-        originalPath: dummyImagePath,
-        foodItems: _selectedFoods,
-        totalCalories: _getTotalCalories(),
-        mealType: _selectedMealType,
-        isManualEntry: true,
-      );
-      
-      // Save to meal database
+      // Create meal with selected date and time
       final meal = Meal(
         id: const Uuid().v4(),
-        timestamp: DateTime.now(),
-        mealType: MealType.values.firstWhere(
-          (e) => e.toString().split('.').last == _selectedMealType,
+        timestamp: DateTime(
+          _selectedDate.year,
+          _selectedDate.month,
+          _selectedDate.day,
+          DateTime.now().hour,
+          DateTime.now().minute,
         ),
-        imagePath: savedPath ?? '',
+        mealType: _selectedMealType,
+        imagePath: '', // No image for manual entry
         foodItems: _selectedFoods,
         totalCalories: _getTotalCalories(),
         totalNutrition: _getTotalNutrition(),
@@ -604,28 +599,44 @@ class _ManualMealEntryScreenState extends ConsumerState<ManualMealEntryScreen> {
       
       await ref.read(mealsProvider.notifier).saveMeal(meal);
       
-      // Also save to record storage for backward compatibility
-      final mealRecord = MealRecord(
-        id: meal.id,
-        recordedAt: meal.timestamp,
-        mealType: _selectedMealType,
-        foodItems: _selectedFoods,
-        totalCalories: _getTotalCalories(),
-        totalNutrition: _getTotalNutrition(),
-        photoPath: savedPath,
-        createdAt: DateTime.now(),
-      );
-      
-      await _recordStorageService.saveMealRecord(mealRecord);
+      // Refresh the provider for the selected date
+      await ref.read(mealsByDateProvider(_selectedDate).notifier).refreshMeals();
       
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('食事を記録しました'),
-            backgroundColor: Colors.green,
-          ),
+        // Show success modal
+        await showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.check_circle, color: Colors.green, size: 24),
+                  ),
+                  const SizedBox(width: 12),
+                  const Text('記録完了'),
+                ],
+              ),
+              content: Text('${_getMealTypeLabel(_selectedMealType)}を記録しました'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close dialog
+                    Navigator.of(context).pop(); // Close screen
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            );
+          },
         );
-        Navigator.of(context).pop();
       }
     } catch (e) {
       if (mounted) {
@@ -644,11 +655,10 @@ class _ManualMealEntryScreenState extends ConsumerState<ManualMealEntryScreen> {
       }
     }
   }
-  
+
   @override
   void dispose() {
     _searchController.dispose();
-    _quantityController.dispose();
     super.dispose();
   }
 }

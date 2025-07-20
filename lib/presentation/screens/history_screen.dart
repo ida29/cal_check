@@ -36,6 +36,31 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   
   @override
   Widget build(BuildContext context) {
+    // プロバイダーを監視して自動更新
+    final mealsAsync = ref.watch(mealsByDateProvider(_selectedDate));
+    final exercisesAsync = ref.watch(exercisesByDateProvider(_selectedDate));
+    
+    // データが更新されたら画面を更新
+    mealsAsync.whenData((meals) {
+      if (_mealRecords.length != meals.length) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          setState(() {
+            _mealRecords = meals;
+          });
+        });
+      }
+    });
+    
+    exercisesAsync.whenData((exercises) {
+      if (_exerciseRecords.length != exercises.length) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          setState(() {
+            _exerciseRecords = exercises;
+          });
+        });
+      }
+    });
+    
     return DefaultTabController(
       length: 3,
       child: Scaffold(
@@ -172,10 +197,18 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
       }
 
       // Load meal records from database
-      final mealsData = await ref.read(mealsByDateProvider(_selectedDate).future);
+      final mealsAsync = ref.read(mealsByDateProvider(_selectedDate));
+      final mealsData = mealsAsync.maybeWhen(
+        data: (data) => data,
+        orElse: () => <Meal>[],
+      );
       
       // Load exercise records from database
-      final exercisesData = await ref.read(exercisesByDateProvider(_selectedDate).future);
+      final exercisesAsync = ref.read(exercisesByDateProvider(_selectedDate));
+      final exercisesData = exercisesAsync.maybeWhen(
+        data: (data) => data,
+        orElse: () => <Exercise>[],
+      );
 
       setState(() {
         _mealPhotos = photos;
@@ -496,7 +529,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
             '${totalCalories.toStringAsFixed(0)} cal',
             style: Theme.of(context).textTheme.titleMedium,
           ),
-          children: meals.map((meal) {
+          children: meals.map<Widget>((meal) {
             if (meal is MealPhotoMetadata) {
               return _buildMealPhotoTile(meal);
             } else if (meal is Meal) {
@@ -670,6 +703,167 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
         _loadMealData();
       });
     }
+  }
+
+  Widget _buildMealRecordCard(Meal meal) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: ListTile(
+        leading: _buildMealRecordThumbnail(meal),
+        title: Text(_getMealDisplayName(meal.mealType.toString().split('.').last)),
+        subtitle: Text(_formatDateTime(meal.timestamp)),
+        trailing: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              '${meal.totalCalories.toStringAsFixed(0)} cal',
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+            Text(
+              '${meal.foodItems.length} ${AppLocalizations.of(context)!.itemsCount}',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
+        ),
+        onTap: () => _showMealRecordDetails(meal),
+      ),
+    );
+  }
+
+  Widget _buildMealRecordTile(Meal meal) {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 32, vertical: 4),
+      leading: _buildMealRecordThumbnail(meal),
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ...meal.foodItems.map((item) => FoodNameDisplay(
+            foodName: item.name,
+            style: Theme.of(context).textTheme.bodyMedium,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          )),
+        ],
+      ),
+      trailing: Text(
+        '${meal.totalCalories.toStringAsFixed(0)} cal',
+        style: Theme.of(context).textTheme.titleSmall,
+      ),
+      onTap: () => _showMealRecordDetails(meal),
+    );
+  }
+
+  Widget _buildMealRecordThumbnail(Meal meal) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: meal.imagePath.isNotEmpty && File(meal.imagePath).existsSync()
+          ? Image.file(
+              File(meal.imagePath),
+              width: 50,
+              height: 50,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  width: 50,
+                  height: 50,
+                  color: Colors.grey[300],
+                  child: const Icon(Icons.restaurant),
+                );
+              },
+            )
+          : Container(
+              width: 50,
+              height: 50,
+              color: Colors.grey[300],
+              child: const Icon(Icons.restaurant),
+            ),
+    );
+  }
+
+  Widget _buildExerciseCard(Exercise exercise) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: Colors.orange.withOpacity(0.2),
+          child: Icon(
+            _getExerciseIcon(exercise.type),
+            color: Colors.orange,
+          ),
+        ),
+        title: Text(exercise.name),
+        subtitle: Text(
+          '${_formatDateTime(exercise.timestamp)} • ${exercise.durationMinutes}分',
+        ),
+        trailing: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              '-${exercise.caloriesBurned.toStringAsFixed(0)} cal',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                color: Colors.orange,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              _getExerciseIntensityText(exercise.intensity),
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
+        ),
+        onTap: () => _showExerciseDetails(exercise),
+      ),
+    );
+  }
+
+  IconData _getExerciseIcon(ExerciseType type) {
+    switch (type) {
+      case ExerciseType.walking:
+        return Icons.directions_walk;
+      case ExerciseType.running:
+        return Icons.directions_run;
+      case ExerciseType.cycling:
+        return Icons.directions_bike;
+      case ExerciseType.swimming:
+        return Icons.pool;
+      case ExerciseType.cardio:
+        return Icons.favorite;
+      case ExerciseType.strength:
+        return Icons.fitness_center;
+      case ExerciseType.flexibility:
+        return Icons.self_improvement;
+      case ExerciseType.sports:
+        return Icons.sports_basketball;
+      case ExerciseType.other:
+        return Icons.sports;
+    }
+  }
+
+  String _getExerciseIntensityText(ExerciseIntensity intensity) {
+    switch (intensity) {
+      case ExerciseIntensity.low:
+        return '低強度';
+      case ExerciseIntensity.moderate:
+        return '中強度';
+      case ExerciseIntensity.high:
+        return '高強度';
+    }
+  }
+
+  void _showMealRecordDetails(Meal meal) {
+    // TODO: Implement meal record details dialog
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('食事記録の詳細')),
+    );
+  }
+
+  void _showExerciseDetails(Exercise exercise) {
+    // TODO: Implement exercise details dialog
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('運動記録の詳細')),
+    );
   }
 }
 
@@ -952,6 +1146,12 @@ class _MealDetailDialog extends StatelessWidget {
     return '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
   }
 
+  String _formatDateTime(DateTime dateTime) {
+    final date = '${dateTime.year}/${dateTime.month.toString().padLeft(2, '0')}/${dateTime.day.toString().padLeft(2, '0')}';
+    final time = '${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
+    return '$date $time';
+  }
+
   void _deleteMeal(BuildContext context, MealPhotoMetadata meal) {
     showDialog(
       context: context,
@@ -996,158 +1196,6 @@ class _MealDetailDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildMealRecordCard(Meal meal) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: ListTile(
-        leading: _buildMealRecordThumbnail(meal),
-        title: Text(_getMealDisplayName(meal.mealType.toString().split('.').last)),
-        subtitle: Text(_formatDateTime(meal.timestamp)),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              '${meal.totalCalories.toStringAsFixed(0)} cal',
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
-            Text(
-              '${meal.foodItems.length} ${AppLocalizations.of(context)!.itemsCount}',
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ],
-        ),
-        onTap: () => _showMealRecordDetails(meal),
-      ),
-    );
-  }
-
-  Widget _buildMealRecordTile(Meal meal) {
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 32, vertical: 4),
-      leading: _buildMealRecordThumbnail(meal),
-      title: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ...meal.foodItems.map((item) => FoodNameDisplay(
-            foodName: item.name,
-            style: Theme.of(context).textTheme.bodyMedium,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          )),
-        ],
-      ),
-      trailing: Text(
-        '${meal.totalCalories.toStringAsFixed(0)} cal',
-        style: Theme.of(context).textTheme.titleSmall,
-      ),
-      onTap: () => _showMealRecordDetails(meal),
-    );
-  }
-
-  Widget _buildMealRecordThumbnail(Meal meal) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
-      child: meal.imagePath.isNotEmpty && File(meal.imagePath).existsSync()
-          ? Image.file(
-              File(meal.imagePath),
-              width: 50,
-              height: 50,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  width: 50,
-                  height: 50,
-                  color: Colors.grey[300],
-                  child: const Icon(Icons.restaurant),
-                );
-              },
-            )
-          : Container(
-              width: 50,
-              height: 50,
-              color: Colors.grey[300],
-              child: const Icon(Icons.restaurant),
-            ),
-    );
-  }
-
-  Widget _buildExerciseCard(Exercise exercise) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: Colors.orange.withOpacity(0.2),
-          child: Icon(
-            _getExerciseIcon(exercise.type),
-            color: Colors.orange,
-          ),
-        ),
-        title: Text(exercise.name),
-        subtitle: Text(
-          '${_formatDateTime(exercise.timestamp)} • ${exercise.durationMinutes}分',
-        ),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              '-${exercise.caloriesBurned.toStringAsFixed(0)} cal',
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: Colors.orange,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Text(
-              _getExerciseIntensityText(exercise.intensity),
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ],
-        ),
-        onTap: () => _showExerciseDetails(exercise),
-      ),
-    );
-  }
-
-  IconData _getExerciseIcon(ExerciseType type) {
-    switch (type) {
-      case ExerciseType.cardio:
-        return Icons.directions_run;
-      case ExerciseType.strength:
-        return Icons.fitness_center;
-      case ExerciseType.flexibility:
-        return Icons.self_improvement;
-      case ExerciseType.sports:
-        return Icons.sports_basketball;
-      case ExerciseType.other:
-        return Icons.sports;
-    }
-  }
-
-  String _getExerciseIntensityText(ExerciseIntensity intensity) {
-    switch (intensity) {
-      case ExerciseIntensity.low:
-        return '低強度';
-      case ExerciseIntensity.moderate:
-        return '中強度';
-      case ExerciseIntensity.high:
-        return '高強度';
-    }
-  }
-
-  void _showMealRecordDetails(Meal meal) {
-    // TODO: Implement meal record details dialog
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('食事記録の詳細')),
-    );
-  }
-
-  void _showExerciseDetails(Exercise exercise) {
-    // TODO: Implement exercise details dialog
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('運動記録の詳細')),
-    );
-  }
 }
 
 class _RecordItem {

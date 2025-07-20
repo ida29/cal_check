@@ -1,24 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../../l10n/app_localizations.dart';
-import '../../data/entities/exercise_record.dart';
-import '../../business/services/record_storage_service.dart';
+import '../../data/entities/exercise.dart';
+import '../../business/providers/exercise_provider.dart';
 
-class ExerciseScreen extends StatefulWidget {
+class ExerciseScreen extends ConsumerStatefulWidget {
   const ExerciseScreen({Key? key}) : super(key: key);
 
   @override
-  State<ExerciseScreen> createState() => _ExerciseScreenState();
+  ConsumerState<ExerciseScreen> createState() => _ExerciseScreenState();
 }
 
-class _ExerciseScreenState extends State<ExerciseScreen> {
+class _ExerciseScreenState extends ConsumerState<ExerciseScreen> {
   final _nameController = TextEditingController();
   final _durationController = TextEditingController();
   final _distanceController = TextEditingController();
   final _caloriesController = TextEditingController();
   final _noteController = TextEditingController();
-  final _recordStorageService = RecordStorageService();
   
   DateTime _selectedDate = DateTime.now();
   TimeOfDay _selectedTime = TimeOfDay.now();
@@ -454,21 +454,40 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
         _selectedTime.minute,
       );
       
-      final record = ExerciseRecord(
+      // 運動タイプを決定
+      ExerciseType exerciseType = ExerciseType.cardio;
+      final name = _nameController.text.toLowerCase();
+      if (name.contains('ウォーキング') || name.contains('歩')) {
+        exerciseType = ExerciseType.walking;
+      } else if (name.contains('ランニング') || name.contains('走')) {
+        exerciseType = ExerciseType.running;
+      } else if (name.contains('サイクリング') || name.contains('自転車')) {
+        exerciseType = ExerciseType.cycling;
+      } else if (name.contains('水泳') || name.contains('プール')) {
+        exerciseType = ExerciseType.swimming;
+      } else if (name.contains('筋トレ')) {
+        exerciseType = ExerciseType.strength;
+      } else if (name.contains('ヨガ')) {
+        exerciseType = ExerciseType.flexibility;
+      }
+      
+      final exercise = Exercise(
         id: const Uuid().v4(),
-        recordedAt: recordedAt,
-        exerciseName: _nameController.text,
-        exerciseType: 'cardio', // デフォルトタイプ
-        duration: _useDistance ? 0 : int.tryParse(_durationController.text) ?? 0,
-        caloriesBurned: double.tryParse(_caloriesController.text)?.toDouble() ?? 0.0,
+        timestamp: recordedAt,
+        type: exerciseType,
+        name: _nameController.text,
+        durationMinutes: _useDistance ? 0 : int.tryParse(_durationController.text) ?? 0,
+        caloriesBurned: double.tryParse(_caloriesController.text) ?? 0.0,
+        intensity: ExerciseIntensity.moderate, // デフォルト中強度
+        notes: _noteController.text.isNotEmpty ? _noteController.text : null,
         distance: _useDistance ? double.tryParse(_distanceController.text) : null,
-        sets: null,
-        reps: null,
-        note: _noteController.text.isNotEmpty ? _noteController.text : null,
-        createdAt: DateTime.now(),
+        isManualEntry: true,
       );
       
-      await _recordStorageService.saveExerciseRecord(record);
+      await ref.read(exercisesProvider.notifier).saveExercise(exercise);
+      
+      // 選択した日付のプロバイダーを更新
+      await ref.read(exercisesByDateProvider(_selectedDate).notifier).refreshExercises();
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -478,15 +497,12 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
           ),
         );
         
-        // 入力をクリア
-        _nameController.clear();
-        _durationController.clear();
-        _caloriesController.clear();
-        _distanceController.clear();
-        _noteController.clear();
-        setState(() {
-          _useDistance = false;
-        });
+        // 履歴画面へ遷移
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          '/main',
+          (route) => false,
+          arguments: {'initialIndex': 1}, // 履歴タブ（インデックス1）
+        );
       }
     } catch (e) {
       if (mounted) {

@@ -683,18 +683,18 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
       final adjustedFoodItems = _foodItems.map((item) {
         final quantity = _itemQuantities[item.name] ?? 1;
         return FoodItem(
+          id: item.id,
           name: item.name,
           quantity: item.quantity * quantity,
           unit: item.unit,
           calories: item.calories * quantity,
-          nutrition: NutritionInfo(
-            calories: item.nutrition.calories * quantity,
-            protein: item.nutrition.protein * quantity,
-            carbohydrates: item.nutrition.carbohydrates * quantity,
-            fat: item.nutrition.fat * quantity,
-            fiber: item.nutrition.fiber * quantity,
-            sugar: item.nutrition.sugar * quantity,
-            sodium: item.nutrition.sodium * quantity,
+          nutritionInfo: NutritionInfo(
+            protein: item.nutritionInfo.protein * quantity,
+            carbohydrates: item.nutritionInfo.carbohydrates * quantity,
+            fat: item.nutritionInfo.fat * quantity,
+            fiber: item.nutritionInfo.fiber * quantity,
+            sugar: item.nutritionInfo.sugar * quantity,
+            sodium: item.nutritionInfo.sodium * quantity,
           ),
           confidenceScore: item.confidenceScore,
         );
@@ -712,7 +712,6 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
         // Calculate total nutrition
         final totalNutrition = adjustedFoodItems.fold(
           const NutritionInfo(
-            calories: 0,
             protein: 0,
             carbohydrates: 0,
             fat: 0,
@@ -721,13 +720,12 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
             sodium: 0,
           ),
           (prev, item) => NutritionInfo(
-            calories: prev.calories + item.nutrition.calories,
-            protein: prev.protein + item.nutrition.protein,
-            carbohydrates: prev.carbohydrates + item.nutrition.carbohydrates,
-            fat: prev.fat + item.nutrition.fat,
-            fiber: prev.fiber + item.nutrition.fiber,
-            sugar: prev.sugar + item.nutrition.sugar,
-            sodium: prev.sodium + item.nutrition.sodium,
+            protein: prev.protein + item.nutritionInfo.protein,
+            carbohydrates: prev.carbohydrates + item.nutritionInfo.carbohydrates,
+            fat: prev.fat + item.nutritionInfo.fat,
+            fiber: prev.fiber + item.nutritionInfo.fiber,
+            sugar: prev.sugar + item.nutritionInfo.sugar,
+            sodium: prev.sodium + item.nutritionInfo.sodium,
           ),
         );
 
