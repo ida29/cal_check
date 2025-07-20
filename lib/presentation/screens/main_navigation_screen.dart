@@ -35,12 +35,26 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // ルート引数からインデックスを取得
-    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-    if (args != null && args['initialIndex'] != null) {
-      setState(() {
-        _currentIndex = args['initialIndex'] as int;
-      });
+    // ルート引数からインデックスを取得（安全な型チェック）
+    try {
+      final arguments = ModalRoute.of(context)?.settings.arguments;
+      if (arguments != null) {
+        if (arguments is Map && arguments['initialIndex'] != null) {
+          final index = arguments['initialIndex'];
+          if (index is int && index >= 0 && index < _screens.length) {
+            setState(() {
+              _currentIndex = index;
+            });
+          }
+        } else if (arguments is int && arguments >= 0 && arguments < _screens.length) {
+          setState(() {
+            _currentIndex = arguments;
+          });
+        }
+      }
+    } catch (e) {
+      // エラーが発生した場合は無視（デフォルトのインデックスを使用）
+      print('Error processing route arguments: $e');
     }
   }
 
