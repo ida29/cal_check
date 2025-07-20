@@ -1,22 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:io';
 import '../../l10n/app_localizations.dart';
 import '../../business/services/local_photo_storage_service.dart';
+import '../../business/providers/meal_provider.dart';
+import '../../business/providers/exercise_provider.dart';
 import '../../data/entities/food_item.dart';
+import '../../data/entities/meal.dart';
+import '../../data/entities/exercise.dart';
 import '../widgets/food_name_display.dart';
 
-class HistoryScreen extends StatefulWidget {
+class HistoryScreen extends ConsumerStatefulWidget {
   const HistoryScreen({Key? key}) : super(key: key);
 
   @override
-  State<HistoryScreen> createState() => _HistoryScreenState();
+  ConsumerState<HistoryScreen> createState() => _HistoryScreenState();
 }
 
-class _HistoryScreenState extends State<HistoryScreen> {
+class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   DateTime _selectedDate = DateTime.now();
   List<MealPhotoMetadata> _mealPhotos = [];
+  List<Meal> _mealRecords = [];
+  List<Exercise> _exerciseRecords = [];
   bool _isLoading = true;
   String _selectedPeriod = 'day'; // 'day', 'week', 'month'
+  String _selectedTab = 'all'; // 'all', 'meals', 'exercises'
   
   final LocalPhotoStorageService _storageService = LocalPhotoStorageService();
 
@@ -28,10 +36,24 @@ class _HistoryScreenState extends State<HistoryScreen> {
   
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.mealHistory),
-        actions: [
+    return DefaultTabController(
+      length: 3,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(AppLocalizations.of(context)!.mealHistory),
+          bottom: TabBar(
+            onTap: (index) {
+              setState(() {
+                _selectedTab = index == 0 ? 'all' : (index == 1 ? 'meals' : 'exercises');
+              });
+            },
+            tabs: [
+              Tab(text: '全て'),
+              Tab(text: '食事'),
+              Tab(text: '運動'),
+            ],
+          ),
+          actions: [
           PopupMenuButton<String>(
             icon: const Icon(Icons.filter_list),
             onSelected: (value) {
@@ -52,9 +74,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
           ),
         ],
       ),
-      body: SafeArea(
-        child: Column(
-        children: [
+        body: SafeArea(
+          child: Column(
+          children: [
           Container(
             padding: const EdgeInsets.all(16),
             color: Theme.of(context).primaryColor.withOpacity(0.1),
@@ -66,6 +88,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   onPressed: () {
                     setState(() {
                       _selectedDate = _selectedDate.subtract(const Duration(days: 1));
+                      _loadMealData();
                     });
                   },
                 ),
@@ -78,6 +101,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   onPressed: () {
                     setState(() {
                       _selectedDate = _selectedDate.add(const Duration(days: 1));
+                      _loadMealData();
                     });
                   },
                 ),
@@ -87,9 +111,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
           Expanded(
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
-                : _mealPhotos.isEmpty
-                    ? _buildEmptyState()
-                    : _buildMealHistory(),
+                : _buildContent(),
           ),
           Container(
             padding: const EdgeInsets.all(16),
@@ -123,7 +145,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
         ],
         ),
       ),
-    );
+    ));
   }
 
   Future<void> _loadMealData() async {
@@ -132,6 +154,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     });
 
     try {
+      // Load meal photos
       List<MealPhotoMetadata> photos;
       
       switch (_selectedPeriod) {
@@ -148,14 +171,24 @@ class _HistoryScreenState extends State<HistoryScreen> {
           photos = await _getMealPhotosForDay(_selectedDate);
       }
 
+      // Load meal records from database
+      final mealsData = await ref.read(mealsByDateProvider(_selectedDate).future);
+      
+      // Load exercise records from database
+      final exercisesData = await ref.read(exercisesByDateProvider(_selectedDate).future);
+
       setState(() {
         _mealPhotos = photos;
+        _mealRecords = mealsData;
+        _exerciseRecords = exercisesData;
         _isLoading = false;
       });
     } catch (e) {
       print('Error loading meal data: $e');
       setState(() {
         _mealPhotos = [];
+        _mealRecords = [];
+        _exerciseRecords = [];
         _isLoading = false;
       });
     }
@@ -191,6 +224,58 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
+  Widget _buildContent() {
+    if (_selectedTab == 'all') {
+      return _buildAllRecords();
+    } else if (_selectedTab == 'meals') {
+      return _buildMealsOnly();
+    } else {
+      return _buildExercisesOnly();
+    }
+  }
+
+  Widget _buildAllRecords() {
+    final hasAnyData = _mealPhotos.isNotEmpty || _mealRecords.isNotEmpty || _exerciseRecords.isNotEmpty;
+    
+    if (!hasAnyData) {
+      return _buildEmptyState();
+    }
+    
+    if (_selectedPeriod == 'day') {
+      return _buildDayViewAll();
+    } else {
+      return _buildListViewAll();
+    }
+  }
+
+  Widget _buildMealsOnly() {
+    final hasAnyData = _mealPhotos.isNotEmpty || _mealRecords.isNotEmpty;
+    
+    if (!hasAnyData) {
+      return _buildEmptyState();
+    }
+    
+    if (_selectedPeriod == 'day') {
+      return _buildDayView();
+    } else {
+      return _buildListView();
+    }
+  }
+
+  Widget _buildExercisesOnly() {
+    if (_exerciseRecords.isEmpty) {
+      return _buildEmptyStateExercise();
+    }
+    
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: _exerciseRecords.length,
+      itemBuilder: (context, index) {
+        return _buildExerciseCard(_exerciseRecords[index]);
+      },
+    );
+  }
+
   Widget _buildEmptyState() {
     return Center(
       child: Column(
@@ -220,6 +305,35 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
+  Widget _buildEmptyStateExercise() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.fitness_center,
+            size: 64,
+            color: Colors.grey[400],
+          ),
+          const SizedBox(height: 16),
+          Text(
+            '運動記録がありません',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: Colors.grey[600],
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '運動を記録してください',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Colors.grey[500],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildMealHistory() {
     if (_selectedPeriod == 'day') {
       return _buildDayView();
@@ -229,12 +343,18 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   Widget _buildDayView() {
-    // Group photo meals by type
-    final mealsByType = <String, List<MealPhotoMetadata>>{};
+    // Group all meals by type
+    final mealsByType = <String, List<dynamic>>{};
     
     // Add photo meals
     for (final meal in _mealPhotos) {
       mealsByType.putIfAbsent(meal.mealType, () => []).add(meal);
+    }
+    
+    // Add database meals
+    for (final meal in _mealRecords) {
+      final typeStr = meal.mealType.toString().split('.').last;
+      mealsByType.putIfAbsent(typeStr, () => []).add(meal);
     }
 
     final mealOrder = ['breakfast', 'lunch', 'dinner', 'snack'];
@@ -248,25 +368,115 @@ class _HistoryScreenState extends State<HistoryScreen> {
     );
   }
 
-  Widget _buildListView() {
-    // Sort photo meals by timestamp
-    final sortedMeals = List<MealPhotoMetadata>.from(_mealPhotos);
-    sortedMeals.sort((a, b) => b.createdAt.compareTo(a.createdAt)); // Most recent first
+  Widget _buildDayViewAll() {
+    // Combine all records with timestamps
+    final allRecords = <_RecordItem>[];
+    
+    // Add photo meals
+    for (final meal in _mealPhotos) {
+      allRecords.add(_RecordItem(
+        type: 'photo_meal',
+        timestamp: meal.createdAt,
+        data: meal,
+      ));
+    }
+    
+    // Add database meals
+    for (final meal in _mealRecords) {
+      allRecords.add(_RecordItem(
+        type: 'db_meal',
+        timestamp: meal.timestamp,
+        data: meal,
+      ));
+    }
+    
+    // Add exercises
+    for (final exercise in _exerciseRecords) {
+      allRecords.add(_RecordItem(
+        type: 'exercise',
+        timestamp: exercise.timestamp,
+        data: exercise,
+      ));
+    }
+    
+    // Sort by timestamp
+    allRecords.sort((a, b) => b.timestamp.compareTo(a.timestamp));
     
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: sortedMeals.length,
+      itemCount: allRecords.length,
       itemBuilder: (context, index) {
-        return _buildMealCard(sortedMeals[index]);
+        final record = allRecords[index];
+        switch (record.type) {
+          case 'photo_meal':
+            return _buildMealCard(record.data as MealPhotoMetadata);
+          case 'db_meal':
+            return _buildMealRecordCard(record.data as Meal);
+          case 'exercise':
+            return _buildExerciseCard(record.data as Exercise);
+          default:
+            return const SizedBox.shrink();
+        }
       },
     );
   }
 
-  Widget _buildMealTypeSection(String mealType, List<MealPhotoMetadata> meals) {
-    final totalCalories = meals.fold<double>(0, (sum, meal) => sum + meal.totalCalories);
+  Widget _buildListView() {
+    // Combine all meal records
+    final allMeals = <_RecordItem>[];
     
-    final firstMeal = meals.first;
-    final DateTime firstMealTime = firstMeal.createdAt;
+    // Add photo meals
+    for (final meal in _mealPhotos) {
+      allMeals.add(_RecordItem(
+        type: 'photo_meal',
+        timestamp: meal.createdAt,
+        data: meal,
+      ));
+    }
+    
+    // Add database meals
+    for (final meal in _mealRecords) {
+      allMeals.add(_RecordItem(
+        type: 'db_meal',
+        timestamp: meal.timestamp,
+        data: meal,
+      ));
+    }
+    
+    // Sort by timestamp
+    allMeals.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: allMeals.length,
+      itemBuilder: (context, index) {
+        final record = allMeals[index];
+        if (record.type == 'photo_meal') {
+          return _buildMealCard(record.data as MealPhotoMetadata);
+        } else {
+          return _buildMealRecordCard(record.data as Meal);
+        }
+      },
+    );
+  }
+
+  Widget _buildListViewAll() {
+    return _buildDayViewAll(); // Reuse the same logic
+  }
+
+  Widget _buildMealTypeSection(String mealType, List<dynamic> meals) {
+    double totalCalories = 0;
+    DateTime? firstMealTime;
+    
+    for (final meal in meals) {
+      if (meal is MealPhotoMetadata) {
+        totalCalories += meal.totalCalories;
+        firstMealTime ??= meal.createdAt;
+      } else if (meal is Meal) {
+        totalCalories += meal.totalCalories;
+        firstMealTime ??= meal.timestamp;
+      }
+    }
     
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
@@ -281,12 +491,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
             ),
           ),
           title: Text(_getMealDisplayName(mealType)),
-          subtitle: Text(_formatTime(firstMealTime)),
+          subtitle: Text(_formatTime(firstMealTime ?? DateTime.now())),
           trailing: Text(
             '${totalCalories.toStringAsFixed(0)} cal',
             style: Theme.of(context).textTheme.titleMedium,
           ),
-          children: meals.map((meal) => _buildMealPhotoTile(meal)).toList(),
+          children: meals.map((meal) {
+            if (meal is MealPhotoMetadata) {
+              return _buildMealPhotoTile(meal);
+            } else if (meal is Meal) {
+              return _buildMealRecordTile(meal);
+            }
+            return const SizedBox.shrink();
+          }).toList(),
         ),
       ),
     );
@@ -362,7 +579,16 @@ class _HistoryScreenState extends State<HistoryScreen> {
   }
 
   double _getTotalCalories() {
-    return _mealPhotos.fold<double>(0, (sum, meal) => sum + meal.totalCalories);
+    double photoCalories = _mealPhotos.fold<double>(0, (sum, meal) => sum + meal.totalCalories);
+    double mealCalories = _mealRecords.fold<double>(0, (sum, meal) => sum + meal.totalCalories);
+    double exerciseCalories = _exerciseRecords.fold<double>(0, (sum, exercise) => sum - exercise.caloriesBurned);
+    
+    if (_selectedTab == 'meals') {
+      return photoCalories + mealCalories;
+    } else if (_selectedTab == 'exercises') {
+      return exerciseCalories;
+    }
+    return photoCalories + mealCalories + exerciseCalories;
   }
 
   String _getMealDisplayName(String mealType) {
@@ -441,6 +667,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
     if (picked != null && picked != _selectedDate) {
       setState(() {
         _selectedDate = picked;
+        _loadMealData();
       });
     }
   }
@@ -768,4 +995,169 @@ class _MealDetailDialog extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildMealRecordCard(Meal meal) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: ListTile(
+        leading: _buildMealRecordThumbnail(meal),
+        title: Text(_getMealDisplayName(meal.mealType.toString().split('.').last)),
+        subtitle: Text(_formatDateTime(meal.timestamp)),
+        trailing: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              '${meal.totalCalories.toStringAsFixed(0)} cal',
+              style: Theme.of(context).textTheme.titleSmall,
+            ),
+            Text(
+              '${meal.foodItems.length} ${AppLocalizations.of(context)!.itemsCount}',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
+        ),
+        onTap: () => _showMealRecordDetails(meal),
+      ),
+    );
+  }
+
+  Widget _buildMealRecordTile(Meal meal) {
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 32, vertical: 4),
+      leading: _buildMealRecordThumbnail(meal),
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ...meal.foodItems.map((item) => FoodNameDisplay(
+            foodName: item.name,
+            style: Theme.of(context).textTheme.bodyMedium,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          )),
+        ],
+      ),
+      trailing: Text(
+        '${meal.totalCalories.toStringAsFixed(0)} cal',
+        style: Theme.of(context).textTheme.titleSmall,
+      ),
+      onTap: () => _showMealRecordDetails(meal),
+    );
+  }
+
+  Widget _buildMealRecordThumbnail(Meal meal) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: meal.imagePath.isNotEmpty && File(meal.imagePath).existsSync()
+          ? Image.file(
+              File(meal.imagePath),
+              width: 50,
+              height: 50,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  width: 50,
+                  height: 50,
+                  color: Colors.grey[300],
+                  child: const Icon(Icons.restaurant),
+                );
+              },
+            )
+          : Container(
+              width: 50,
+              height: 50,
+              color: Colors.grey[300],
+              child: const Icon(Icons.restaurant),
+            ),
+    );
+  }
+
+  Widget _buildExerciseCard(Exercise exercise) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: Colors.orange.withOpacity(0.2),
+          child: Icon(
+            _getExerciseIcon(exercise.type),
+            color: Colors.orange,
+          ),
+        ),
+        title: Text(exercise.name),
+        subtitle: Text(
+          '${_formatDateTime(exercise.timestamp)} • ${exercise.durationMinutes}分',
+        ),
+        trailing: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              '-${exercise.caloriesBurned.toStringAsFixed(0)} cal',
+              style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                color: Colors.orange,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              _getExerciseIntensityText(exercise.intensity),
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
+        ),
+        onTap: () => _showExerciseDetails(exercise),
+      ),
+    );
+  }
+
+  IconData _getExerciseIcon(ExerciseType type) {
+    switch (type) {
+      case ExerciseType.cardio:
+        return Icons.directions_run;
+      case ExerciseType.strength:
+        return Icons.fitness_center;
+      case ExerciseType.flexibility:
+        return Icons.self_improvement;
+      case ExerciseType.sports:
+        return Icons.sports_basketball;
+      case ExerciseType.other:
+        return Icons.sports;
+    }
+  }
+
+  String _getExerciseIntensityText(ExerciseIntensity intensity) {
+    switch (intensity) {
+      case ExerciseIntensity.low:
+        return '低強度';
+      case ExerciseIntensity.moderate:
+        return '中強度';
+      case ExerciseIntensity.high:
+        return '高強度';
+    }
+  }
+
+  void _showMealRecordDetails(Meal meal) {
+    // TODO: Implement meal record details dialog
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('食事記録の詳細')),
+    );
+  }
+
+  void _showExerciseDetails(Exercise exercise) {
+    // TODO: Implement exercise details dialog
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('運動記録の詳細')),
+    );
+  }
+}
+
+class _RecordItem {
+  final String type;
+  final DateTime timestamp;
+  final dynamic data;
+
+  _RecordItem({
+    required this.type,
+    required this.timestamp,
+    required this.data,
+  });
 }

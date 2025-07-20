@@ -46,6 +46,7 @@ class LocalPhotoStorageService {
     required double totalCalories,
     required String mealType,
     bool isManualEntry = false,
+    DateTime? createdAt,
   }) async {
     try {
       final photosDir = await _getPhotosDirectory();
@@ -83,7 +84,7 @@ class LocalPhotoStorageService {
         foodItems: foodItems,
         totalCalories: totalCalories,
         mealType: mealType,
-        createdAt: DateTime.now(),
+        createdAt: createdAt ?? DateTime.now(),
         fileSize: isManualEntry ? 0 : await File(savedPath).length(),
       );
 

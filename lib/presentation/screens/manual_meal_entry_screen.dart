@@ -1,22 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../../l10n/app_localizations.dart';
 import '../../data/datasources/food_database.dart';
 import '../../data/entities/food_item.dart';
 import '../../data/entities/nutrition_info.dart';
 import '../../data/entities/meal_record.dart';
+import '../../data/entities/meal.dart';
 import '../../business/services/local_photo_storage_service.dart';
 import '../../business/services/record_storage_service.dart';
+import '../../business/providers/meal_provider.dart';
 
-class ManualMealEntryScreen extends StatefulWidget {
+class ManualMealEntryScreen extends ConsumerStatefulWidget {
   const ManualMealEntryScreen({Key? key}) : super(key: key);
 
   @override
-  State<ManualMealEntryScreen> createState() => _ManualMealEntryScreenState();
+  ConsumerState<ManualMealEntryScreen> createState() => _ManualMealEntryScreenState();
 }
 
-class _ManualMealEntryScreenState extends State<ManualMealEntryScreen> {
+class _ManualMealEntryScreenState extends ConsumerState<ManualMealEntryScreen> {
   final _searchController = TextEditingController();
   final _quantityController = TextEditingController();
   final LocalPhotoStorageService _storageService = LocalPhotoStorageService();
@@ -585,10 +588,26 @@ class _ManualMealEntryScreenState extends State<ManualMealEntryScreen> {
         isManualEntry: true,
       );
       
-      // 食事記録を保存
-      final mealRecord = MealRecord(
+      // Save to meal database
+      final meal = Meal(
         id: const Uuid().v4(),
-        recordedAt: DateTime.now(),
+        timestamp: DateTime.now(),
+        mealType: MealType.values.firstWhere(
+          (e) => e.toString().split('.').last == _selectedMealType,
+        ),
+        imagePath: savedPath ?? '',
+        foodItems: _selectedFoods,
+        totalCalories: _getTotalCalories(),
+        totalNutrition: _getTotalNutrition(),
+        isManualEntry: true,
+      );
+      
+      await ref.read(mealsProvider.notifier).saveMeal(meal);
+      
+      // Also save to record storage for backward compatibility
+      final mealRecord = MealRecord(
+        id: meal.id,
+        recordedAt: meal.timestamp,
         mealType: _selectedMealType,
         foodItems: _selectedFoods,
         totalCalories: _getTotalCalories(),

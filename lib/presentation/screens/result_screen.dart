@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 import 'dart:io';
 import '../../l10n/app_localizations.dart';
 import '../../business/services/ai_calorie_service.dart';
@@ -6,17 +8,20 @@ import '../../business/services/barcode_service.dart';
 import '../../business/services/receipt_service.dart';
 import '../../business/services/local_photo_storage_service.dart';
 import '../../business/models/recognition_result.dart';
+import '../../business/providers/meal_provider.dart';
 import '../../data/entities/food_item.dart';
+import '../../data/entities/meal.dart';
+import '../../data/entities/nutrition_info.dart';
 import '../widgets/food_name_display.dart';
 
-class ResultScreen extends StatefulWidget {
+class ResultScreen extends ConsumerStatefulWidget {
   const ResultScreen({Key? key}) : super(key: key);
 
   @override
-  State<ResultScreen> createState() => _ResultScreenState();
+  ConsumerState<ResultScreen> createState() => _ResultScreenState();
 }
 
-class _ResultScreenState extends State<ResultScreen> {
+class _ResultScreenState extends ConsumerState<ResultScreen> {
   late String imagePath;
   late String mode;
   bool _isAnalyzing = true;
@@ -674,14 +679,75 @@ class _ResultScreenState extends State<ResultScreen> {
         mealType = 'snack';
       }
 
+      // Apply quantities to food items
+      final adjustedFoodItems = _foodItems.map((item) {
+        final quantity = _itemQuantities[item.name] ?? 1;
+        return FoodItem(
+          name: item.name,
+          quantity: item.quantity * quantity,
+          unit: item.unit,
+          calories: item.calories * quantity,
+          nutrition: NutritionInfo(
+            calories: item.nutrition.calories * quantity,
+            protein: item.nutrition.protein * quantity,
+            carbohydrates: item.nutrition.carbohydrates * quantity,
+            fat: item.nutrition.fat * quantity,
+            fiber: item.nutrition.fiber * quantity,
+            sugar: item.nutrition.sugar * quantity,
+            sodium: item.nutrition.sodium * quantity,
+          ),
+          confidenceScore: item.confidenceScore,
+        );
+      }).toList();
+
       final savedPath = await _storageService.saveMealPhoto(
         originalPath: imagePath,
-        foodItems: _foodItems,
+        foodItems: adjustedFoodItems,
         totalCalories: _totalCalories,
         mealType: mealType,
+        createdAt: _selectedDate,
       );
 
       if (savedPath != null) {
+        // Calculate total nutrition
+        final totalNutrition = adjustedFoodItems.fold(
+          const NutritionInfo(
+            calories: 0,
+            protein: 0,
+            carbohydrates: 0,
+            fat: 0,
+            fiber: 0,
+            sugar: 0,
+            sodium: 0,
+          ),
+          (prev, item) => NutritionInfo(
+            calories: prev.calories + item.nutrition.calories,
+            protein: prev.protein + item.nutrition.protein,
+            carbohydrates: prev.carbohydrates + item.nutrition.carbohydrates,
+            fat: prev.fat + item.nutrition.fat,
+            fiber: prev.fiber + item.nutrition.fiber,
+            sugar: prev.sugar + item.nutrition.sugar,
+            sodium: prev.sodium + item.nutrition.sodium,
+          ),
+        );
+
+        // Create meal object and save to database
+        final meal = Meal(
+          id: const Uuid().v4(),
+          timestamp: _selectedDate,
+          mealType: MealType.values.firstWhere(
+            (e) => e.toString().split('.').last == mealType,
+          ),
+          imagePath: savedPath,
+          foodItems: adjustedFoodItems,
+          totalCalories: _totalCalories,
+          totalNutrition: totalNutrition,
+          isManualEntry: false,
+        );
+
+        // Save to meal database
+        await ref.read(mealsProvider.notifier).saveMeal(meal);
+
         setState(() {
           _isSaved = true;
         });
