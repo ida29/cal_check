@@ -44,13 +44,15 @@ class AICalorieService {
                 {
                   'type': 'text',
                   'text': '''Analyze this food image and provide detailed nutritional information. 
+                  Please pay special attention to Japanese cuisine, including traditional dishes, bento boxes, sushi, ramen, and common Japanese home cooking.
+                  
                   Return the response in JSON format with the following structure:
                   {
                     "foods": [
                       {
-                        "name": "food name",
+                        "name": "food name (in Japanese if it's a Japanese dish, e.g., 'カツ丼', 'ラーメン', '寿司')",
                         "quantity": estimated_quantity_number,
-                        "unit": "g" or "piece" or "ml",
+                        "unit": "g" or "個" or "皿" or "杯" or "ml",
                         "calories": estimated_calories_number,
                         "nutrition": {
                           "protein": protein_grams,
@@ -66,7 +68,14 @@ class AICalorieService {
                     "confidence": overall_confidence_0_to_1
                   }
                   
-                  Be as accurate as possible with portion sizes and nutritional values.
+                  Important guidelines:
+                  - For Japanese dishes, use the proper Japanese name (e.g., "天ぷら" not "tempura")
+                  - Consider typical Japanese portion sizes (e.g., rice bowls are usually 150-200g)
+                  - Be aware of common Japanese ingredients and cooking methods
+                  - For bento boxes, identify each component separately
+                  - Use appropriate Japanese units when relevant (個 for pieces, 皿 for plates, 杯 for cups/bowls)
+                  
+                  Be as accurate as possible with portion sizes and nutritional values based on typical Japanese servings.
                   Only include foods that you can clearly identify in the image.'''
                 },
                 {

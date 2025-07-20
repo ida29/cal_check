@@ -75,7 +75,7 @@ class _ManualMealEntryScreenState extends ConsumerState<ManualMealEntryScreen> {
     
     return Scaffold(
       appBar: AppBar(
-        title: const Text('食事を手動で記録'),
+        title: const Text('食品を選んで記録'),
         centerTitle: true,
         backgroundColor: const Color(0xFFFF69B4),
         foregroundColor: Colors.white,
@@ -276,12 +276,39 @@ class _ManualMealEntryScreenState extends ConsumerState<ManualMealEntryScreen> {
     final isSelected = _selectedFoods.any((f) => f.id == foodId);
     final quantity = _foodQuantities[foodId] ?? 1.0;
     
-    return Card(
-      margin: const EdgeInsets.only(bottom: 8),
-      elevation: isSelected ? 3 : 1,
-      color: isSelected ? const Color(0xFFFF69B4).withOpacity(0.1) : null,
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    return GestureDetector(
+      onTap: () => _toggleFood(food),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        margin: const EdgeInsets.only(bottom: 8),
+        decoration: isSelected 
+          ? BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFFF69B4).withOpacity(0.4),
+                  blurRadius: 12,
+                  spreadRadius: 1,
+                ),
+              ],
+            )
+          : null,
+        child: Card(
+          elevation: isSelected ? 0 : 1,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: isSelected 
+              ? const BorderSide(
+                  color: Color(0xFFFF69B4),
+                  width: 2,
+                )
+              : BorderSide(
+                  color: Colors.grey.withOpacity(0.2),
+                  width: 1,
+                ),
+          ),
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         leading: Container(
           width: 48,
           height: 48,
@@ -313,46 +340,15 @@ class _ManualMealEntryScreenState extends ConsumerState<ManualMealEntryScreen> {
             Text('/ ${food['unit']}'),
           ],
         ),
-        trailing: isSelected
-          ? Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // 数量調整
-                IconButton(
-                  icon: const Icon(Icons.remove_circle_outline, color: Color(0xFFFF69B4)),
-                  onPressed: () => _updateQuantity(foodId, -0.5),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                ),
-                Container(
-                  width: 50,
-                  child: Text(
-                    quantity == quantity.toInt() 
-                      ? '${quantity.toInt()}個'
-                      : '${quantity}個',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.add_circle_outline, color: Color(0xFFFF69B4)),
-                  onPressed: () => _updateQuantity(foodId, 0.5),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close, color: Colors.red),
-                  onPressed: () => _toggleFood(food),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                ),
-              ],
-            )
-          : IconButton(
-              icon: const Icon(Icons.add_circle_outline),
-              onPressed: () => _toggleFood(food),
-              color: const Color(0xFFFF69B4),
-            ),
+            trailing: isSelected
+              ? const Icon(
+                  Icons.check_circle,
+                  color: Color(0xFFFF69B4),
+                  size: 24,
+                )
+              : null,
+          ),
+        ),
       ),
     );
   }
@@ -597,9 +593,11 @@ class _ManualMealEntryScreenState extends ConsumerState<ManualMealEntryScreen> {
         isManualEntry: true,
       );
       
+      // Save meal and refresh providers
       await ref.read(mealsProvider.notifier).saveMeal(meal);
       
-      // Refresh the provider for the selected date
+      // The mealsByDateProvider should automatically refresh due to the listen setup,
+      // but we can explicitly refresh it as well to ensure it updates
       await ref.read(mealsByDateProvider(_selectedDate).notifier).refreshMeals();
       
       if (mounted) {

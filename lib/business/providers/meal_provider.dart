@@ -12,7 +12,14 @@ final mealsProvider = StateNotifierProvider<MealNotifier, AsyncValue<List<Meal>>
 });
 
 final mealsByDateProvider = StateNotifierProvider.family<MealsByDateNotifier, AsyncValue<List<Meal>>, DateTime>((ref, date) {
-  return MealsByDateNotifier(ref.watch(mealRepositoryProvider), date);
+  final notifier = MealsByDateNotifier(ref.watch(mealRepositoryProvider), date);
+  
+  // Listen to the global meals provider and refresh when it changes
+  ref.listen(mealsProvider, (previous, next) {
+    notifier.refreshMeals();
+  });
+  
+  return notifier;
 });
 
 class MealNotifier extends StateNotifier<AsyncValue<List<Meal>>> {
@@ -81,6 +88,16 @@ class MealsByDateNotifier extends StateNotifier<AsyncValue<List<Meal>>> {
   }
 
   Future<void> refreshMeals() async {
+    state = const AsyncValue.loading();
     await _loadMealsByDate();
+  }
+  
+  Future<void> addMeal(Meal meal) async {
+    try {
+      await _mealRepository.saveMeal(meal);
+      await refreshMeals();
+    } catch (error, stackTrace) {
+      state = AsyncValue.error(error, stackTrace);
+    }
   }
 }

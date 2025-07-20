@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../l10n/app_localizations.dart';
 import '../../business/providers/manager_character_provider.dart';
-import '../../business/models/manager_character.dart';
 import '../../business/services/meal_reminder_service.dart';
-import 'manager_character_setup_screen.dart';
+import '../../business/providers/meal_provider.dart';
+import '../../business/providers/weight_provider.dart';
+import '../../data/entities/meal.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -15,11 +16,10 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> 
     with TickerProviderStateMixin {
-  final PageController _pageController = PageController();
-  int _currentPage = 0;
   late AnimationController _slideController;
   late Animation<Offset> _slideAnimation;
   bool _showCatMessage = false;
+  String _currentCatMessage = '';
 
   @override
   void initState() {
@@ -43,34 +43,39 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     // 2秒後ににゃんこを表示
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
-        final managerCharacter = ref.read(managerCharacterProvider);
-        print('Manager character: ${managerCharacter?.type}'); // デバッグ用
-        if (managerCharacter != null) { // テスト用：マネージャーが設定されていれば表示
-          setState(() {
-            _showCatMessage = true;
-          });
-          _slideController.forward();
-          
-          // 4秒後に自動的に隠す
-          Future.delayed(const Duration(seconds: 4), () {
-            if (mounted && _showCatMessage) {
-              _slideController.reverse().then((_) {
-                if (mounted) {
-                  setState(() {
-                    _showCatMessage = false;
-                  });
-                }
-              });
-            }
-          });
-        }
+        // メッセージをランダムに選択
+        final messages = [
+          'にゃーん！今日も食事記録頑張るにゃ〜！',
+          'おつかれさまにゃ〜！水分補給も忘れずににゃ！',
+          '運動もしてえらいにゃ〜！この調子にゃ！',
+          'バランス良く食べてるにゃ〜！素晴らしいにゃ！',
+        ];
+        final randomIndex = DateTime.now().millisecondsSinceEpoch % messages.length;
+        
+        setState(() {
+          _currentCatMessage = messages[randomIndex];
+          _showCatMessage = true;
+        });
+        _slideController.forward();
+        
+        // 8秒後に自動的に隠す
+        Future.delayed(const Duration(seconds: 8), () {
+          if (mounted && _showCatMessage) {
+            _slideController.reverse().then((_) {
+              if (mounted) {
+                setState(() {
+                  _showCatMessage = false;
+                });
+              }
+            });
+          }
+        });
       }
     });
   }
 
   @override
   void dispose() {
-    _pageController.dispose();
     _slideController.dispose();
     super.dispose();
   }
@@ -139,20 +144,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _buildDailySummaryCard(),
-                  const SizedBox(height: 8),
-                  // スワイプヒント
-                  Text(
-                    '左右にスワイプして詳細を表示',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Colors.grey[600],
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
+                  _buildTasksCard(),
                   const SizedBox(height: 20),
-                  _buildMainActionButton(),
+                  _buildMealRecordButton(),
                   const SizedBox(height: 16),
-                  _buildFoodRecordButton(),
+                  _buildWeightRecordButton(),
                   const SizedBox(height: 16),
                   _buildExerciseRecordButton(),
                   const SizedBox(height: 20), // 下部に余白を追加
@@ -173,96 +169,48 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       return const SizedBox.shrink();
     }
 
-    final messages = managerCharacter.type == CharacterType.cat 
-        ? [
-            'にゃーん！今日も食事記録頑張るにゃ〜！',
-            'おつかれさまにゃ〜！水分補給も忘れずににゃ！',
-            '運動もしてえらいにゃ〜！この調子にゃ！',
-            'バランス良く食べてるにゃ〜！素晴らしいにゃ！',
-          ]
-        : [
-            'こんにちは！今日も食事記録頑張りましょう！',
-            'お疲れ様です！水分補給も忘れずに！',
-            '運動もして素晴らしいですね！',
-            'バランス良く食べていて素晴らしいです！',
-          ];
-    
-    final randomMessage = messages[DateTime.now().millisecond % messages.length];
-
     return Positioned(
       top: 80,
-      right: 0,
+      right: 20,
       child: SlideTransition(
         position: _slideAnimation,
         child: Container(
           constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width * 0.85,
+            maxWidth: MediaQuery.of(context).size.width * 0.7,
           ),
-          child: Row(
+          child: Column(
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              // 吹き出し
+              // メッセージコンテナ（上に配置）
               Container(
-                margin: const EdgeInsets.only(right: 12),
-                padding: const EdgeInsets.all(16),
+                margin: const EdgeInsets.only(bottom: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: Colors.orange.withOpacity(0.3), width: 2),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.15),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
+                      color: Colors.orange.withOpacity(0.15),
+                      blurRadius: 16,
+                      offset: const Offset(0, 6),
                     ),
                   ],
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          width: 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: Colors.orange[400],
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          managerCharacter.name,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: managerCharacter.type == CharacterType.cat 
-                                ? Colors.orange[700]
-                                : Colors.pink[700],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      constraints: BoxConstraints(
-                        maxWidth: MediaQuery.of(context).size.width * 0.55,
-                      ),
-                      child: Text(
-                        randomMessage,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.black87,
-                          height: 1.4,
-                        ),
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  _currentCatMessage,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.brown[800],
+                    height: 1.5,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: 'Hiragino Sans',
+                    letterSpacing: 0.5,
+                  ),
                 ),
               ),
-              // にゃんこキャラクター（シルエット）
+              // にゃんこキャラクター（下に配置）
               GestureDetector(
                 onTap: () {
                   // タップで早めに消す
@@ -274,35 +222,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     }
                   });
                 },
-                child: Container(
-                  width: 65,
-                  height: 65,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: managerCharacter.type == CharacterType.cat
-                          ? [Colors.orange[300]!, Colors.orange[400]!]
-                          : [Colors.pink[300]!, Colors.pink[400]!],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Image.asset(
+                      'assets/images/cat.png',
+                      width: 180,
+                      height: 180,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Icon(
+                          Icons.pets,
+                          size: 100,
+                          color: Colors.orange[300],
+                        );
+                      },
                     ),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: (managerCharacter.type == CharacterType.cat 
-                            ? Colors.orange 
-                            : Colors.pink).withOpacity(0.3),
-                        blurRadius: 10,
-                        offset: const Offset(0, 3),
+                    const SizedBox(height: 8),
+                    Text(
+                      'にゃんこ',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
                       ),
-                    ],
-                  ),
-                  child: Icon(
-                    managerCharacter.type == CharacterType.cat 
-                        ? Icons.pets 
-                        : Icons.person,
-                    size: 35,
-                    color: Colors.white,
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -312,372 +257,250 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     );
   }
 
-  Widget _buildDailySummaryCard() {
-    final l10n = AppLocalizations.of(context)!;
+  Widget _buildTasksCard() {
+    // 現在の時間に基づいて食事タイプを判定
+    final now = DateTime.now();
+    final hour = now.hour;
+    String mealType;
+    IconData mealIcon;
+    Color mealColor;
     
+    if (hour < 10) {
+      mealType = '朝食';
+      mealIcon = Icons.wb_sunny;
+      mealColor = Colors.orange;
+    } else if (hour < 14) {
+      mealType = '昼食';
+      mealIcon = Icons.wb_sunny_outlined;
+      mealColor = Colors.yellow[700]!;
+    } else if (hour < 20) {
+      mealType = '夕食';
+      mealIcon = Icons.nights_stay;
+      mealColor = Colors.indigo;
+    } else {
+      mealType = '間食';
+      mealIcon = Icons.local_cafe;
+      mealColor = Colors.brown;
+    }
+
+    // 今日の記録状況を取得
+    final today = DateTime.now();
+    final todayStart = DateTime(today.year, today.month, today.day);
+    final todayEnd = todayStart.add(const Duration(days: 1));
+    
+    // 食事記録の取得
+    final mealsAsync = ref.watch(mealsByDateProvider(today));
+    final meals = mealsAsync.maybeWhen(
+      data: (data) => data,
+      orElse: () => <Meal>[],
+    );
+    
+    // 食事タイプごとの記録状況をチェック
+    final breakfastRecorded = meals.any((meal) => meal.mealType == MealType.breakfast);
+    final lunchRecorded = meals.any((meal) => meal.mealType == MealType.lunch);
+    final dinnerRecorded = meals.any((meal) => meal.mealType == MealType.dinner);
+    
+    // 体重記録の取得
+    final weightRecordedAsync = ref.watch(todayWeightRecordProvider);
+    final weightRecorded = weightRecordedAsync.maybeWhen(
+      data: (hasRecord) => hasRecord,
+      orElse: () => false,
+    );
+    
+    // タスク数を計算
+    int pendingTasks = 0;
+    if (hour >= 7 && !breakfastRecorded) pendingTasks++;
+    if (hour >= 12 && !lunchRecorded) pendingTasks++;
+    if (hour >= 18 && !dinnerRecorded) pendingTasks++;
+    if (!weightRecorded) pendingTasks++;
+
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Container(
-        height: 185,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
-          gradient: const LinearGradient(
-            colors: [Color(0xFFFFB6C1), Color(0xFFFF69B4)],
+          gradient: LinearGradient(
+            colors: [Colors.amber[50]!, Colors.orange[50]!],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
         ),
-        child: Column(
-          children: [
-            // ヘッダー部分
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
                 children: [
-                  Row(
-                    children: [
-                      Icon(
-                        _currentPage == 0 ? Icons.today_rounded : Icons.health_and_safety_rounded,
-                        color: Colors.white,
-                        size: 24
+                  Icon(
+                    Icons.task_alt,
+                    color: Colors.orange[700],
+                    size: 28,
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'やること',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.orange[800],
+                    ),
+                  ),
+                  const Spacer(),
+                  if (pendingTasks > 0)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.orange,
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                      const SizedBox(width: 8),
-                      Text(
-                        _currentPage == 0 ? l10n.todayTotal : '健康指標',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      child: Text(
+                        '残り$pendingTasks件',
+                        style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  // ページインジケーター
-                  Row(
-                    children: [
-                      _buildPageIndicator(0),
-                      const SizedBox(width: 4),
-                      _buildPageIndicator(1),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            // スライド可能なコンテンツ
-            Expanded(
-              child: PageView(
-                controller: _pageController,
-                onPageChanged: (index) {
-                  setState(() {
-                    _currentPage = index;
-                  });
-                },
-                children: [
-                  _buildNutritionSummaryPage(l10n),
-                  _buildHealthMetricsPage(l10n),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPageIndicator(int pageIndex) {
-    return Container(
-      width: 8,
-      height: 8,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: _currentPage == pageIndex 
-            ? Colors.white 
-            : Colors.white.withOpacity(0.5),
-      ),
-    );
-  }
-
-  Widget _buildNutritionSummaryPage(AppLocalizations l10n) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(15),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildSummaryItem(l10n.calories, '1,245'),
-                _buildSummaryItem(l10n.protein, '45g'),
-                _buildSummaryItem(l10n.carbs, '180g'),
-                _buildSummaryItem(l10n.fat, '40g'),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildHealthMetricsPage(AppLocalizations l10n) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-      child: Column(
-        children: [
-          const SizedBox(height: 8),
-          // BMI & 水分摂取（横並び）
-          Row(
-            children: [
-              Expanded(
-                child: _buildCompactMetricCard(
-                  Icons.monitor_weight,
-                  'BMI',
-                  '22.5',
-                  '標準',
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildCompactMetricCard(
-                  Icons.water_drop,
-                  '水分',
-                  '1.8L',
-                  '/ 2.0L',
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          // 運動時間 & 体重予測（横並び）
-          Row(
-            children: [
-              Expanded(
-                child: _buildCompactMetricCard(
-                  Icons.fitness_center,
-                  '運動',
-                  '45分',
-                  '240kcal',
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildCompactMetricCard(
-                  Icons.trending_up,
-                  '体重予測',
-                  '-0.3kg',
-                  '今月',
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCompactMetricCard(IconData icon, String title, String value, String subtitle) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(icon, color: Colors.white, size: 16),
-              const SizedBox(width: 6),
-              Expanded(
-                child: Text(
-                  title,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Text(
-            subtitle,
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Colors.white70,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSummaryItem(String label, String value) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.w500,
-              ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildManagerCharacterSection() {
-    final managerCharacter = ref.watch(managerCharacterProvider);
-    
-    if (managerCharacter == null) {
-      return Card(
-        elevation: 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        child: GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const ManagerCharacterSetupScreen(),
-                settings: const RouteSettings(arguments: 'initial_setup'),
-              ),
-            );
-          },
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[200],
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.add,
-                    size: 30,
-                    color: Colors.grey,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'マネージャーを設定しよう！',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '食事記録をサポートしてくれます',
-                        style: TextStyle(
                           fontSize: 14,
-                          color: Colors.grey[600],
                         ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              // メインタスク
+              GestureDetector(
+                onTap: () => _showMealRecordOptions(),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: mealColor.withOpacity(0.2),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: mealColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          mealIcon,
+                          color: mealColor,
+                          size: 28,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '$mealTypeを記録する',
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '写真撮影または食品選択で記録',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        Icons.arrow_forward_ios,
+                        color: Colors.grey[400],
+                        size: 20,
                       ),
                     ],
                   ),
                 ),
-                const Icon(Icons.chevron_right, color: Colors.grey),
-              ],
-            ),
+              ),
+              const SizedBox(height: 12),
+              // サブタスクリスト
+              if (!weightRecorded)
+                _buildSubTask(
+                  icon: Icons.monitor_weight,
+                  title: '体重を記録',
+                  color: Colors.blue,
+                  onTap: () => Navigator.pushNamed(context, '/weight-tracking'),
+                ),
+              if (hour >= 7 && !breakfastRecorded && mealType != '朝食')
+                _buildSubTask(
+                  icon: Icons.wb_sunny,
+                  title: '朝食を記録',
+                  color: Colors.orange,
+                  onTap: () => _showMealRecordOptions(),
+                ),
+              if (hour >= 12 && !lunchRecorded && mealType != '昼食')
+                _buildSubTask(
+                  icon: Icons.wb_sunny_outlined,
+                  title: '昼食を記録',
+                  color: Colors.yellow[700]!,
+                  onTap: () => _showMealRecordOptions(),
+                ),
+            ],
           ),
         ),
-      );
-    }
-    
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ),
+    );
+  }
+
+  Widget _buildSubTask({
+    required IconData icon,
+    required String title,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(16),
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withOpacity(0.2)),
+        ),
         child: Row(
           children: [
-            Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                color: managerCharacter.type == CharacterType.human
-                    ? Colors.pink[100]
-                    : Colors.orange[100],
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                managerCharacter.type == CharacterType.human
-                    ? Icons.person
-                    : Icons.pets,
-                size: 35,
-                color: managerCharacter.type == CharacterType.human
-                    ? Colors.pink[300]
-                    : Colors.orange[300],
+            Icon(icon, color: color, size: 20),
+            const SizedBox(width: 12),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 14,
+                color: color,
+                fontWeight: FontWeight.w500,
               ),
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    managerCharacter.name,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'マネージャー',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
+            const Spacer(),
+            Icon(
+              Icons.arrow_forward_ios,
+              color: color.withOpacity(0.5),
+              size: 14,
             ),
           ],
         ),
       ),
     );
   }
-  
-  String _getEncouragementMessage(CharacterType type) {
-    if (type == CharacterType.human) {
-      return '順調に記録できていますね！その調子です！';
-    } else {
-      return 'よく頑張ってるにゃ〜！えらいにゃ〜！';
-    }
-  }
 
-  Widget _buildMainActionButton() {
+
+  Widget _buildMealRecordButton() {
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -694,81 +517,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           color: Colors.transparent,
           child: InkWell(
             onTap: () {
-              Navigator.pushNamed(context, '/camera');
-            },
-            borderRadius: BorderRadius.circular(20),
-            hoverColor: Colors.transparent,
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Row(
-                children: [
-                  Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: const Icon(
-                      Icons.camera_alt_rounded,
-                      color: Colors.white,
-                      size: 28,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '写真から記録',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'カメラで撮影して自動記録',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.white70,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const Icon(
-                    Icons.arrow_forward_ios,
-                    color: Colors.white70,
-                    size: 16,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFoodRecordButton() {
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          gradient: const LinearGradient(
-            colors: [Color(0xFFFFB347), Color(0xFFFF8C00)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () {
-              Navigator.pushNamed(context, '/manual-meal-entry');
+              _showMealRecordOptions();
             },
             borderRadius: BorderRadius.circular(20),
             hoverColor: Colors.transparent,
@@ -795,7 +544,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '食べ物を選んで記録',
+                          '食事を記録',
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -803,7 +552,81 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '食べ物を検索して手動で記録',
+                          '写真や選択で食事を記録',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Colors.white70,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(
+                    Icons.arrow_forward_ios,
+                    color: Colors.white70,
+                    size: 16,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildWeightRecordButton() {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          gradient: const LinearGradient(
+            colors: [Color(0xFF87CEEB), Color(0xFF4682B4)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              Navigator.pushNamed(context, '/weight-tracking');
+            },
+            borderRadius: BorderRadius.circular(20),
+            hoverColor: Colors.transparent,
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Row(
+                children: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: const Icon(
+                      Icons.monitor_weight_rounded,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '体重を記録',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '今日の体重を記録',
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: Colors.white70,
                           ),
@@ -842,7 +665,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           color: Colors.transparent,
           child: InkWell(
             onTap: () {
-              Navigator.pushNamed(context, '/history');
+              Navigator.pushNamed(context, '/exercise');
             },
             borderRadius: BorderRadius.circular(20),
             hoverColor: Colors.transparent,
@@ -918,7 +741,189 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       builder: (context) => const NotificationPanel(),
     );
   }
+
+  void _showMealRecordOptions() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        margin: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(top: 12, bottom: 20),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Text(
+                    '記録方法を選択',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                // 写真で記録
+                InkWell(
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/camera');
+                },
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFB6C1).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: const Color(0xFFFFB6C1).withOpacity(0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFB6C1).withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.camera_alt_rounded,
+                          color: Color(0xFFFF69B4),
+                          size: 28,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '写真で記録',
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFFFF69B4),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'AIが自動でカロリーを計算',
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        Icons.arrow_forward_ios,
+                        color: Colors.grey[400],
+                        size: 16,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              // 食べ物を選んで記録
+              InkWell(
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, '/manual-meal-entry');
+                },
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFB347).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: const Color(0xFFFFB347).withOpacity(0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFB347).withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.search_rounded,
+                          color: Color(0xFFFF8C00),
+                          size: 28,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '食べ物を選んで記録',
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFFFF8C00),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '食品データベースから検索',
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        Icons.arrow_forward_ios,
+                        color: Colors.grey[400],
+                        size: 16,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+              // キャンセルボタン
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(
+                  'キャンセル',
+                  style: TextStyle(
+                    color: Colors.grey[600],
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+            ],
+          ),
+          ),
+        ),
+      ),
+    );
+  }
 }
+
 
 class NotificationPanel extends ConsumerWidget {
   const NotificationPanel({Key? key}) : super(key: key);
@@ -1017,7 +1022,7 @@ class NotificationPanel extends ConsumerWidget {
     );
   }
   
-  Widget _buildNotificationTile(BuildContext context, NotificationItem notification, ManagerCharacter? manager) {
+  Widget _buildNotificationTile(BuildContext context, NotificationItem notification, dynamic manager) {
     IconData icon;
     Color iconColor;
     
@@ -1106,12 +1111,14 @@ class NotificationPanel extends ConsumerWidget {
     // 食事記録リマインダー
     final missedMeals = await MealReminderService.getMissedMealCount();
     if (missedMeals > 0) {
-      final message = managerCharacter != null
-          ? ManagerCharacterMessages.getRandomMessage(
-              managerCharacter.type,
-              managerCharacter.notificationLevel,
-            )
-          : '食事の記録を忘れていませんか？';
+      // にゃんこのメッセージをランダムに選択
+      final catMessages = [
+        'にゃーん！食事の記録を忘れてるにゃ〜！',
+        'お腹すいたにゃ？記録も忘れずににゃ〜！',
+        'ごはんの時間にゃ！記録もお願いにゃ〜！',
+        '食事記録してないにゃ〜？早めに記録にゃ！',
+      ];
+      final message = catMessages[DateTime.now().millisecond % catMessages.length];
           
       notifications.add(NotificationItem(
         id: 'meal_reminder',

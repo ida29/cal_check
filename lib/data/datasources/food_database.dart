@@ -84,6 +84,7 @@ class FoodDatabase {
     // ファーストフード
     {'name': 'ハンバーガー', 'category': 'fastfood', 'calories': 275, 'protein': 13.3, 'carbs': 30.3, 'fat': 10.4, 'unit': '1個'},
     {'name': 'チーズバーガー', 'category': 'fastfood', 'calories': 323, 'protein': 16.2, 'carbs': 30.8, 'fat': 14.0, 'unit': '1個'},
+    {'name': 'ホットドッグ', 'category': 'fastfood', 'calories': 290, 'protein': 10.4, 'carbs': 24.3, 'fat': 17.3, 'unit': '1本'},
     {'name': 'フライドポテト（M）', 'category': 'fastfood', 'calories': 320, 'protein': 3.9, 'carbs': 41.0, 'fat': 15.5, 'unit': '1個'},
     {'name': 'ピザ（マルゲリータ）', 'category': 'fastfood', 'calories': 272, 'protein': 11.0, 'carbs': 33.6, 'fat': 10.1, 'unit': '1切れ'},
     {'name': 'フライドチキン', 'category': 'fastfood', 'calories': 237, 'protein': 18.4, 'carbs': 7.9, 'fat': 14.6, 'unit': '1ピース'},

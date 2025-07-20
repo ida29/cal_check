@@ -12,7 +12,14 @@ final exercisesProvider = StateNotifierProvider<ExerciseNotifier, AsyncValue<Lis
 });
 
 final exercisesByDateProvider = StateNotifierProvider.family<ExercisesByDateNotifier, AsyncValue<List<Exercise>>, DateTime>((ref, date) {
-  return ExercisesByDateNotifier(ref.watch(exerciseRepositoryProvider), date);
+  final notifier = ExercisesByDateNotifier(ref.watch(exerciseRepositoryProvider), date);
+  
+  // Listen to the global exercises provider and refresh when it changes
+  ref.listen(exercisesProvider, (previous, next) {
+    notifier.refreshExercises();
+  });
+  
+  return notifier;
 });
 
 final totalCaloriesBurnedProvider = StateNotifierProvider.family<CaloriesBurnedNotifier, AsyncValue<double>, DateTime>((ref, date) {

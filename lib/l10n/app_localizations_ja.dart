@@ -18,7 +18,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get cameraTitle => 'カメラ';
 
   @override
-  String get historyTitle => '履歴';
+  String get historyTitle => '食事管理';
 
   @override
   String get statisticsTitle => '統計';
@@ -417,7 +417,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get home => 'ホーム';
 
   @override
-  String get history => '履歴';
+  String get history => '食事管理';
 
   @override
   String get statistics => '統計';

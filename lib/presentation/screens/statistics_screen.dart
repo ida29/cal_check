@@ -3,9 +3,9 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../l10n/app_localizations.dart';
 import '../../business/providers/providers.dart';
-import '../../data/entities/user.dart';
 import '../../business/services/setup_service.dart';
 import 'dart:math' as math;
+import '../../data/entities/meal.dart';
 
 class StatisticsScreen extends ConsumerStatefulWidget {
   const StatisticsScreen({Key? key}) : super(key: key);
@@ -16,21 +16,32 @@ class StatisticsScreen extends ConsumerStatefulWidget {
 
 class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
   int _selectedPeriod = 0;
+  UserProfile? _userProfile;
+  double? _dailyCalorieGoal;
   
-  UserProfile? get _userProfile {
-    final userProfileAsync = ref.watch(userProfileProvider);
-    return userProfileAsync.when(
-      data: (profile) => profile,
-      loading: () => null,
-      error: (_, __) => null,
-    );
+  @override
+  void initState() {
+    super.initState();
+    _loadUserProfile();
+  }
+  
+  Future<void> _loadUserProfile() async {
+    final setupService = SetupService();
+    final profile = await setupService.getUserProfile();
+    final goal = await setupService.calculateDailyCalorieGoal();
+    if (mounted) {
+      setState(() {
+        _userProfile = profile;
+        _dailyCalorieGoal = goal;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(AppLocalizations.of(context)!.statisticsTitle),
+        title: const Text('体調管理'),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -103,31 +114,60 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
   }
 
   Widget _buildCalorieChart() {
+    final calorieData = _getCalorieDataForChart();
+    final spots = calorieData['spots'] as List<FlSpot>;
+    final average = calorieData['average'] as double;
+    final lowest = calorieData['lowest'] as double;
+    final highest = calorieData['highest'] as double;
+    final minY = calorieData['minY'] as double;
+    final maxY = calorieData['maxY'] as double;
+    
     return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              AppLocalizations.of(context)!.calorieIntakeTrend,
-              style: Theme.of(context).textTheme.titleLarge,
+            Row(
+              children: [
+                const Icon(Icons.show_chart, color: Color(0xFFFF69B4), size: 24),
+                const SizedBox(width: 8),
+                Text(
+                  AppLocalizations.of(context)!.calorieIntakeTrend,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 20),
             SizedBox(
-              height: 200,
+              height: 250,
               child: LineChart(
                 LineChartData(
-                  gridData: FlGridData(show: false),
+                  gridData: FlGridData(
+                    show: true,
+                    drawVerticalLine: false,
+                    horizontalInterval: 500,
+                    getDrawingHorizontalLine: (value) {
+                      return FlLine(
+                        color: Colors.grey[300]!,
+                        strokeWidth: 1,
+                      );
+                    },
+                  ),
                   titlesData: FlTitlesData(
                     leftTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
-                        reservedSize: 40,
+                        reservedSize: 50,
+                        interval: 500,
                         getTitlesWidget: (value, meta) {
                           return Text(
                             '${value.toInt()}',
-                            style: const TextStyle(fontSize: 12),
+                            style: TextStyle(fontSize: 10, color: Colors.grey[600]),
                           );
                         },
                       ),
@@ -137,19 +177,14 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
                         showTitles: true,
                         reservedSize: 30,
                         getTitlesWidget: (value, meta) {
-                          final days = [
-                            AppLocalizations.of(context)!.monday,
-                            AppLocalizations.of(context)!.tuesday,
-                            AppLocalizations.of(context)!.wednesday,
-                            AppLocalizations.of(context)!.thursday,
-                            AppLocalizations.of(context)!.friday,
-                            AppLocalizations.of(context)!.saturday,
-                            AppLocalizations.of(context)!.sunday,
-                          ];
-                          if (value.toInt() < days.length) {
-                            return Text(
-                              days[value.toInt()],
-                              style: const TextStyle(fontSize: 12),
+                          final labels = _getChartLabels();
+                          if (value.toInt() < labels.length) {
+                            return Padding(
+                              padding: const EdgeInsets.only(top: 8.0),
+                              child: Text(
+                                labels[value.toInt()],
+                                style: TextStyle(fontSize: 10, color: Colors.grey[600]),
+                              ),
                             );
                           }
                           return const Text('');
@@ -162,41 +197,107 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
                   borderData: FlBorderData(show: false),
                   lineBarsData: [
                     LineChartBarData(
-                      spots: [
-                        FlSpot(0, 1800),
-                        FlSpot(1, 2100),
-                        FlSpot(2, 1950),
-                        FlSpot(3, 2200),
-                        FlSpot(4, 1900),
-                        FlSpot(5, 2000),
-                        FlSpot(6, 1770),
-                      ],
+                      spots: spots,
                       isCurved: true,
-                      color: Theme.of(context).primaryColor,
+                      curveSmoothness: 0.3,
+                      color: const Color(0xFFFF69B4),
                       barWidth: 3,
-                      dotData: FlDotData(show: true),
+                      isStrokeCapRound: true,
+                      dotData: FlDotData(
+                        show: true,
+                        getDotPainter: (spot, percent, barData, index) {
+                          return FlDotCirclePainter(
+                            radius: 4,
+                            color: Colors.white,
+                            strokeWidth: 2,
+                            strokeColor: const Color(0xFFFF69B4),
+                          );
+                        },
+                      ),
                       belowBarData: BarAreaData(
                         show: true,
-                        color: Theme.of(context).primaryColor.withOpacity(0.1),
+                        gradient: LinearGradient(
+                          colors: [
+                            const Color(0xFFFF69B4).withOpacity(0.3),
+                            const Color(0xFFFF69B4).withOpacity(0.1),
+                          ],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
                       ),
                     ),
+                    // 目標ライン
+                    if (_dailyCalorieGoal != null)
+                      LineChartBarData(
+                        spots: List.generate(
+                          spots.length,
+                          (index) => FlSpot(index.toDouble(), _dailyCalorieGoal!),
+                        ),
+                        isCurved: false,
+                        color: Colors.green.withOpacity(0.5),
+                        barWidth: 2,
+                        isStrokeCapRound: true,
+                        dotData: FlDotData(show: false),
+                        dashArray: [5, 5],
+                      ),
                   ],
                   minX: 0,
-                  maxX: 6,
-                  minY: 1500,
-                  maxY: 2500,
+                  maxX: spots.length - 1,
+                  minY: minY,
+                  maxY: maxY,
+                  lineTouchData: LineTouchData(
+                    touchTooltipData: LineTouchTooltipData(
+                      tooltipBgColor: Colors.blueGrey.withOpacity(0.8),
+                      getTooltipItems: (List<LineBarSpot> touchedBarSpots) {
+                        return touchedBarSpots.map((barSpot) {
+                          return LineTooltipItem(
+                            '${barSpot.y.toInt()} kcal',
+                            const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          );
+                        }).toList();
+                      },
+                    ),
+                  ),
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildStatItem(AppLocalizations.of(context)!.average, '1,960 cal'),
-                _buildStatItem(AppLocalizations.of(context)!.lowest, '1,770 cal'),
-                _buildStatItem(AppLocalizations.of(context)!.highest, '2,200 cal'),
+                _buildStatItem(AppLocalizations.of(context)!.average, '${average.toInt()} cal'),
+                _buildStatItem(AppLocalizations.of(context)!.lowest, '${lowest.toInt()} cal'),
+                _buildStatItem(AppLocalizations.of(context)!.highest, '${highest.toInt()} cal'),
               ],
             ),
+            if (_dailyCalorieGoal != null) ...[  
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.green.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.green.withOpacity(0.3)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.flag, color: Colors.green[700], size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      '目標カロリー: ${_dailyCalorieGoal!.toInt()} kcal/日',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.green[700],
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -205,7 +306,6 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
 
   Widget _buildHealthMetricsCard() {
     final userProfile = _userProfile;
-    final l10n = AppLocalizations.of(context)!;
     
     // BMI計算
     double? bmi;
@@ -369,18 +469,19 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
   }
 
   Widget _buildPFCBalanceCard() {
-    final l10n = AppLocalizations.of(context)!;
-    final userProfile = _userProfile;
     
     // 推奨PFCバランス（厚生労働省の日本人の食事摂取基準より）
     const recommendedProtein = 15.0; // 13-20%
     const recommendedFat = 25.0; // 20-30%
     const recommendedCarbs = 60.0; // 50-65%
     
-    // TODO: 実際のデータから計算
-    const actualProtein = 18.0;
-    const actualFat = 28.0;
-    const actualCarbs = 54.0;
+    // 実際のデータから計算
+    final mealsForPeriod = _getMealsForSelectedPeriod();
+    final pfcData = _calculatePFCBalance(mealsForPeriod);
+    
+    final actualProtein = pfcData['protein'] ?? 18.0;
+    final actualFat = pfcData['fat'] ?? 28.0;
+    final actualCarbs = pfcData['carbs'] ?? 54.0;
     
     return Card(
       elevation: 4,
@@ -403,85 +504,163 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
               ],
             ),
             const SizedBox(height: 20),
+            // 現在と理想の比較表示
             Row(
               children: [
+                // 現在のPFCバランス
                 Expanded(
-                  flex: 2,
-                  child: SizedBox(
-                    height: 180,
-                    child: PieChart(
-                      PieChartData(
-                        sections: [
-                          PieChartSectionData(
-                            color: Colors.orange,
-                            value: actualProtein,
-                            title: 'P\n${actualProtein.toStringAsFixed(0)}%',
-                            radius: 80,
-                            titleStyle: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          PieChartSectionData(
-                            color: Colors.blue,
-                            value: actualFat,
-                            title: 'F\n${actualFat.toStringAsFixed(0)}%',
-                            radius: 80,
-                            titleStyle: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          PieChartSectionData(
-                            color: Colors.green,
-                            value: actualCarbs,
-                            title: 'C\n${actualCarbs.toStringAsFixed(0)}%',
-                            radius: 80,
-                            titleStyle: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                        sectionsSpace: 2,
-                        centerSpaceRadius: 0,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 20),
-                Expanded(
-                  flex: 3,
                   child: Column(
                     children: [
-                      _buildPFCItem(
-                        'タンパク質',
-                        actualProtein,
-                        recommendedProtein,
-                        '13-20%',
-                        Colors.orange,
+                      Text(
+                        '現在',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey[700],
+                        ),
                       ),
                       const SizedBox(height: 12),
-                      _buildPFCItem(
-                        '脂質',
-                        actualFat,
-                        recommendedFat,
-                        '20-30%',
-                        Colors.blue,
-                      ),
-                      const SizedBox(height: 12),
-                      _buildPFCItem(
-                        '炭水化物',
-                        actualCarbs,
-                        recommendedCarbs,
-                        '50-65%',
-                        Colors.green,
+                      SizedBox(
+                        height: 120,
+                        child: PieChart(
+                          PieChartData(
+                            sections: [
+                              PieChartSectionData(
+                                color: Colors.orange,
+                                value: actualProtein,
+                                title: 'P',
+                                radius: 50,
+                                titleStyle: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              PieChartSectionData(
+                                color: Colors.blue,
+                                value: actualFat,
+                                title: 'F',
+                                radius: 50,
+                                titleStyle: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              PieChartSectionData(
+                                color: Colors.green,
+                                value: actualCarbs,
+                                title: 'C',
+                                radius: 50,
+                                titleStyle: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                            sectionsSpace: 1,
+                            centerSpaceRadius: 20,
+                          ),
+                        ),
                       ),
                     ],
                   ),
+                ),
+                // 矢印
+                Icon(
+                  Icons.arrow_forward,
+                  color: Colors.grey[400],
+                  size: 24,
+                ),
+                // 理想のPFCバランス
+                Expanded(
+                  child: Column(
+                    children: [
+                      Text(
+                        '理想',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.green[700],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        height: 120,
+                        child: PieChart(
+                          PieChartData(
+                            sections: [
+                              PieChartSectionData(
+                                color: Colors.orange.withOpacity(0.7),
+                                value: recommendedProtein,
+                                title: 'P',
+                                radius: 50,
+                                titleStyle: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              PieChartSectionData(
+                                color: Colors.blue.withOpacity(0.7),
+                                value: recommendedFat,
+                                title: 'F',
+                                radius: 50,
+                                titleStyle: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              PieChartSectionData(
+                                color: Colors.green.withOpacity(0.7),
+                                value: recommendedCarbs,
+                                title: 'C',
+                                radius: 50,
+                                titleStyle: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                            sectionsSpace: 1,
+                            centerSpaceRadius: 20,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+            // 詳細な比較
+            Column(
+              children: [
+                _buildPFCComparisonItem(
+                  'タンパク質',
+                  actualProtein,
+                  recommendedProtein,
+                  '13-20%',
+                  Colors.orange,
+                ),
+                const SizedBox(height: 12),
+                _buildPFCComparisonItem(
+                  '脂質',
+                  actualFat,
+                  recommendedFat,
+                  '20-30%',
+                  Colors.blue,
+                ),
+                const SizedBox(height: 12),
+                _buildPFCComparisonItem(
+                  '炭水化物',
+                  actualCarbs,
+                  recommendedCarbs,
+                  '50-65%',
+                  Colors.green,
                 ),
               ],
             ),
@@ -512,70 +691,178 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
     );
   }
   
-  Widget _buildPFCItem(String name, double actual, double recommended, String range, Color color) {
+  Widget _buildPFCComparisonItem(String name, double actual, double recommended, String range, Color color) {
     final difference = actual - recommended;
     final rangeParts = range.replaceAll('%', '').split('-');
     final isOptimal = (actual >= double.parse(rangeParts[0]) && 
                       actual <= double.parse(rangeParts[1]));
     
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Container(
-              width: 12,
-              height: 12,
-              decoration: BoxDecoration(
-                color: color,
-                shape: BoxShape.circle,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                name, 
-                style: const TextStyle(fontSize: 14),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            Text(
-              '${actual.toStringAsFixed(0)}%',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: isOptimal ? Colors.green : Colors.orange,
-              ),
-            ),
-          ],
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: isOptimal ? Colors.green.withOpacity(0.05) : Colors.orange.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: isOptimal ? Colors.green.withOpacity(0.3) : Colors.orange.withOpacity(0.3),
         ),
-        const SizedBox(height: 4),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Flexible(
-              child: Text(
-                '推奨: $range',
-                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            if (!isOptimal)
-              Text(
-                difference > 0 ? '+${difference.toStringAsFixed(0)}%' : '${difference.toStringAsFixed(0)}%',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: difference > 0 ? Colors.red : Colors.blue,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 12,
+                height: 12,
+                decoration: BoxDecoration(
+                  color: color,
+                  shape: BoxShape.circle,
                 ),
               ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  name,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: isOptimal ? Colors.green : Colors.orange,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  isOptimal ? '適正' : '要調整',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          // 比較バー
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '現在',
+                          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                        ),
+                        Text(
+                          '${actual.toStringAsFixed(1)}%',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    LinearProgressIndicator(
+                      value: actual / 100,
+                      backgroundColor: Colors.grey[300],
+                      valueColor: AlwaysStoppedAnimation<Color>(color),
+                      minHeight: 6,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '推奨',
+                          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                        ),
+                        Text(
+                          range,
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.green[700],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Stack(
+                      children: [
+                        Container(
+                          height: 6,
+                          decoration: BoxDecoration(
+                            color: Colors.grey[300],
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                        ),
+                        FractionallySizedBox(
+                          widthFactor: double.parse(rangeParts[1]) / 100,
+                          child: Container(
+                            height: 6,
+                            decoration: BoxDecoration(
+                              color: color.withOpacity(0.3),
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          left: double.parse(rangeParts[0]) / 100 * MediaQuery.of(context).size.width * 0.7,
+                          child: Container(
+                            width: (double.parse(rangeParts[1]) - double.parse(rangeParts[0])) / 100 * MediaQuery.of(context).size.width * 0.7,
+                            height: 6,
+                            decoration: BoxDecoration(
+                              color: color.withOpacity(0.5),
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          if (!isOptimal) ...[
+            const SizedBox(height: 8),
+            Text(
+              difference > 0 
+                ? '${difference.toStringAsFixed(1)}% 多い' 
+                : '${difference.abs().toStringAsFixed(1)}% 少ない',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.orange[700],
+                fontWeight: FontWeight.w500,
+              ),
+            ),
           ],
-        ),
-      ],
+        ],
+      ),
     );
   }
 
   Widget _buildNutritionAssessment() {
-    final l10n = AppLocalizations.of(context)!;
     
     // 栄養素の適正摂取量評価
     return Card(
@@ -701,10 +988,15 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
 
   Widget _buildWeightPrediction() {
     final userProfile = _userProfile;
-    final l10n = AppLocalizations.of(context)!;
     
     // カロリー収支から体重変化を予測
-    const dailyCalorieIntake = 2100.0; // TODO: 実際のデータから取得
+    // 今日のカロリー摂取量を取得
+    final today = DateTime.now();
+    final todayMealsAsync = ref.watch(mealsByDateProvider(today));
+    final dailyCalorieIntake = todayMealsAsync.maybeWhen(
+      data: (meals) => meals.fold<double>(0, (sum, meal) => sum + meal.totalCalories),
+      orElse: () => 0.0,
+    );
     final tdee = userProfile != null ? _calculateTDEE(userProfile) : 2000.0;
     final dailySurplusDeficit = dailyCalorieIntake - tdee;
     final weeklyChange = (dailySurplusDeficit * 7) / 7700; // 1kg = 7700kcal
@@ -874,5 +1166,191 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
         ),
       ],
     );
+  }
+  
+  List<Meal> _getMealsForSelectedPeriod() {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final meals = <Meal>[];
+    
+    int days;
+    switch (_selectedPeriod) {
+      case 0: // Week
+        days = 7;
+        break;
+      case 1: // Month
+        days = 30;
+        break;
+      case 2: // Year
+        days = 365;
+        break;
+      default:
+        days = 7;
+    }
+    
+    for (int i = 0; i < days; i++) {
+      final date = today.subtract(Duration(days: i));
+      final dayMealsAsync = ref.watch(mealsByDateProvider(date));
+      dayMealsAsync.whenData((dayMeals) {
+        meals.addAll(dayMeals);
+      });
+    }
+    
+    return meals;
+  }
+  
+  Map<String, double> _calculatePFCBalance(List<Meal> meals) {
+    if (meals.isEmpty) {
+      return {'protein': 15.0, 'fat': 25.0, 'carbs': 60.0};
+    }
+    
+    double totalProtein = 0;
+    double totalFat = 0;
+    double totalCarbs = 0;
+    
+    for (final meal in meals) {
+      totalProtein += meal.totalNutrition.protein;
+      totalFat += meal.totalNutrition.fat;
+      totalCarbs += meal.totalNutrition.carbohydrates;
+    }
+    
+    // グラムからカロリーに変換
+    final proteinCalories = totalProtein * 4; // 1g = 4kcal
+    final fatCalories = totalFat * 9; // 1g = 9kcal
+    final carbCalories = totalCarbs * 4; // 1g = 4kcal
+    
+    final totalMacroCalories = proteinCalories + fatCalories + carbCalories;
+    
+    if (totalMacroCalories == 0) {
+      return {'protein': 15.0, 'fat': 25.0, 'carbs': 60.0};
+    }
+    
+    return {
+      'protein': (proteinCalories / totalMacroCalories) * 100,
+      'fat': (fatCalories / totalMacroCalories) * 100,
+      'carbs': (carbCalories / totalMacroCalories) * 100,
+    };
+  }
+  
+  Map<String, dynamic> _getCalorieDataForChart() {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final spots = <FlSpot>[];
+    final calorieValues = <double>[];
+    
+    int days;
+    switch (_selectedPeriod) {
+      case 0: // Week
+        days = 7;
+        break;
+      case 1: // Month
+        days = 30;
+        break;
+      case 2: // Year
+        days = 12; // 月ごとの平均
+        break;
+      default:
+        days = 7;
+    }
+    
+    for (int i = days - 1; i >= 0; i--) {
+      double dayCalories = 0;
+      
+      if (_selectedPeriod == 2) { // Year - 月ごと
+        final monthStart = DateTime(today.year, today.month - i, 1);
+        final monthEnd = DateTime(today.year, today.month - i + 1, 0);
+        int totalDays = 0;
+        
+        for (int day = 0; day <= monthEnd.day - 1; day++) {
+          final date = monthStart.add(Duration(days: day));
+          final dayMealsAsync = ref.watch(mealsByDateProvider(date));
+          dayMealsAsync.whenData((dayMeals) {
+            if (dayMeals.isNotEmpty) {
+              totalDays++;
+              dayCalories += dayMeals.fold<double>(0, (sum, meal) => sum + meal.totalCalories);
+            }
+          });
+        }
+        
+        if (totalDays > 0) {
+          dayCalories = dayCalories / totalDays; // 月平均
+        }
+      } else {
+        final date = today.subtract(Duration(days: i));
+        final dayMealsAsync = ref.watch(mealsByDateProvider(date));
+        dayMealsAsync.whenData((dayMeals) {
+          dayCalories = dayMeals.fold<double>(0, (sum, meal) => sum + meal.totalCalories);
+        });
+      }
+      
+      spots.add(FlSpot(spots.length.toDouble(), dayCalories));
+      if (dayCalories > 0) calorieValues.add(dayCalories);
+    }
+    
+    // スポットが空の場合のデフォルト値
+    if (spots.isEmpty) {
+      spots.addAll([
+        FlSpot(0, 1800),
+        FlSpot(1, 2100),
+        FlSpot(2, 1950),
+        FlSpot(3, 2200),
+        FlSpot(4, 1900),
+        FlSpot(5, 2000),
+        FlSpot(6, 1770),
+      ]);
+      calorieValues.addAll([1800, 2100, 1950, 2200, 1900, 2000, 1770]);
+    }
+    
+    final average = calorieValues.isEmpty ? 2000.0 : calorieValues.reduce((a, b) => a + b) / calorieValues.length;
+    final lowest = calorieValues.isEmpty ? 1500.0 : calorieValues.reduce(math.min);
+    final highest = calorieValues.isEmpty ? 2500.0 : calorieValues.reduce(math.max);
+    
+    // Y軸の範囲を計算
+    double minY = (lowest - 500).floorToDouble();
+    double maxY = (highest + 500).ceilToDouble();
+    if (minY < 0) minY = 0;
+    
+    return {
+      'spots': spots,
+      'average': average,
+      'lowest': lowest,
+      'highest': highest,
+      'minY': minY,
+      'maxY': maxY,
+    };
+  }
+  
+  List<String> _getChartLabels() {
+    final now = DateTime.now();
+    final labels = <String>[];
+    
+    switch (_selectedPeriod) {
+      case 0: // Week
+        final weekDays = ['月', '火', '水', '木', '金', '土', '日'];
+        for (int i = 6; i >= 0; i--) {
+          final date = now.subtract(Duration(days: i));
+          labels.add(weekDays[date.weekday - 1]);
+        }
+        break;
+      case 1: // Month
+        for (int i = 29; i >= 0; i--) {
+          final date = now.subtract(Duration(days: i));
+          if (i % 5 == 0) {
+            labels.add('${date.month}/${date.day}');
+          } else {
+            labels.add('');
+          }
+        }
+        break;
+      case 2: // Year
+        final months = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
+        for (int i = 11; i >= 0; i--) {
+          final monthIndex = (now.month - i - 1) % 12;
+          labels.add(months[monthIndex < 0 ? monthIndex + 12 : monthIndex]);
+        }
+        break;
+    }
+    
+    return labels;
   }
 }

@@ -35,37 +35,27 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   }
   
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Refresh when coming back to this screen
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _refreshProviders();
+    });
+  }
+  
+  void _refreshProviders() {
+    // Force refresh the providers
+    ref.read(mealsByDateProvider(_selectedDate).notifier).refreshMeals();
+    ref.read(exercisesByDateProvider(_selectedDate).notifier).refreshExercises();
+  }
+  
+  @override
   Widget build(BuildContext context) {
-    // プロバイダーを監視して自動更新
-    final mealsAsync = ref.watch(mealsByDateProvider(_selectedDate));
-    final exercisesAsync = ref.watch(exercisesByDateProvider(_selectedDate));
-    
-    // データが更新されたら画面を更新
-    mealsAsync.whenData((meals) {
-      if (_mealRecords.length != meals.length) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          setState(() {
-            _mealRecords = meals;
-          });
-        });
-      }
-    });
-    
-    exercisesAsync.whenData((exercises) {
-      if (_exerciseRecords.length != exercises.length) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          setState(() {
-            _exerciseRecords = exercises;
-          });
-        });
-      }
-    });
-    
     return DefaultTabController(
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-          title: Text(AppLocalizations.of(context)!.mealHistory),
+          title: const Text('食事管理'),
           bottom: TabBar(
             onTap: (index) {
               setState(() {
@@ -114,6 +104,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                     setState(() {
                       _selectedDate = _selectedDate.subtract(const Duration(days: 1));
                       _loadMealData();
+                      _refreshProviders();
                     });
                   },
                 ),
@@ -127,6 +118,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                     setState(() {
                       _selectedDate = _selectedDate.add(const Duration(days: 1));
                       _loadMealData();
+                      _refreshProviders();
                     });
                   },
                 ),
@@ -134,9 +126,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
             ),
           ),
           Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _buildContent(),
+            child: _buildContent(),
           ),
           Container(
             padding: const EdgeInsets.all(16),
@@ -258,17 +248,43 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   }
 
   Widget _buildContent() {
-    if (_selectedTab == 'all') {
-      return _buildAllRecords();
-    } else if (_selectedTab == 'meals') {
-      return _buildMealsOnly();
-    } else {
-      return _buildExercisesOnly();
-    }
+    // Get fresh data from providers
+    final mealsAsync = ref.watch(mealsByDateProvider(_selectedDate));
+    final exercisesAsync = ref.watch(exercisesByDateProvider(_selectedDate));
+    
+    return mealsAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stack) => Center(child: Text('エラー: $error')),
+      data: (meals) {
+        return exercisesAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, stack) => Center(child: Text('エラー: $error')),
+          data: (exercises) {
+            // Update local state with fresh data
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                setState(() {
+                  _mealRecords = meals;
+                  _exerciseRecords = exercises;
+                });
+              }
+            });
+            
+            if (_selectedTab == 'all') {
+              return _buildAllRecords(meals, exercises);
+            } else if (_selectedTab == 'meals') {
+              return _buildMealsOnly(meals);
+            } else {
+              return _buildExercisesOnly(exercises);
+            }
+          },
+        );
+      },
+    );
   }
 
-  Widget _buildAllRecords() {
-    final hasAnyData = _mealPhotos.isNotEmpty || _mealRecords.isNotEmpty || _exerciseRecords.isNotEmpty;
+  Widget _buildAllRecords(List<Meal> meals, List<Exercise> exercises) {
+    final hasAnyData = _mealPhotos.isNotEmpty || meals.isNotEmpty || exercises.isNotEmpty;
     
     if (!hasAnyData) {
       return _buildEmptyState();
@@ -281,8 +297,8 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     }
   }
 
-  Widget _buildMealsOnly() {
-    final hasAnyData = _mealPhotos.isNotEmpty || _mealRecords.isNotEmpty;
+  Widget _buildMealsOnly(List<Meal> meals) {
+    final hasAnyData = _mealPhotos.isNotEmpty || meals.isNotEmpty;
     
     if (!hasAnyData) {
       return _buildEmptyState();
@@ -295,16 +311,16 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     }
   }
 
-  Widget _buildExercisesOnly() {
-    if (_exerciseRecords.isEmpty) {
+  Widget _buildExercisesOnly(List<Exercise> exercises) {
+    if (exercises.isEmpty) {
       return _buildEmptyStateExercise();
     }
     
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: _exerciseRecords.length,
+      itemCount: exercises.length,
       itemBuilder: (context, index) {
-        return _buildExerciseCard(_exerciseRecords[index]);
+        return _buildExerciseCard(exercises[index]);
       },
     );
   }
@@ -523,7 +539,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
               color: Theme.of(context).primaryColor,
             ),
           ),
-          title: Text(_getMealDisplayName(mealType)),
+          title: Text(_getMealDisplayName(context, mealType)),
           subtitle: Text(_formatTime(firstMealTime ?? DateTime.now())),
           trailing: Text(
             '${totalCalories.toStringAsFixed(0)} cal',
@@ -547,7 +563,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
         leading: _buildPhotoThumbnail(meal),
-        title: Text(_getMealDisplayName(meal.mealType)),
+        title: Text(_getMealDisplayName(context, meal.mealType)),
         subtitle: Text(_formatDateTime(meal.createdAt)),
         trailing: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -624,20 +640,6 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     return photoCalories + mealCalories + exerciseCalories;
   }
 
-  String _getMealDisplayName(String mealType) {
-    switch (mealType.toLowerCase()) {
-      case 'breakfast':
-        return AppLocalizations.of(context)!.breakfast;
-      case 'lunch':
-        return AppLocalizations.of(context)!.lunch;
-      case 'dinner':
-        return AppLocalizations.of(context)!.dinner;
-      case 'snack':
-        return AppLocalizations.of(context)!.snack;
-      default:
-        return mealType;
-    }
-  }
 
   void _showMealDetails(MealPhotoMetadata meal) {
     showDialog(
@@ -701,6 +703,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
       setState(() {
         _selectedDate = picked;
         _loadMealData();
+        _refreshProviders();
       });
     }
   }
@@ -710,7 +713,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
       margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
         leading: _buildMealRecordThumbnail(meal),
-        title: Text(_getMealDisplayName(meal.mealType.toString().split('.').last)),
+        title: Text(_getMealDisplayName(context, meal.mealType.toString().split('.').last)),
         subtitle: Text(_formatDateTime(meal.timestamp)),
         trailing: Column(
           mainAxisAlignment: MainAxisAlignment.center,

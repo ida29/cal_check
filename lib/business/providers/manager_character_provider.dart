@@ -15,17 +15,15 @@ class ManagerCharacterNotifier extends StateNotifier<ManagerCharacter?> {
   }
 
   Future<void> loadCharacter() async {
-    final prefs = await SharedPreferences.getInstance();
-    final characterData = prefs.getString(_storageKey);
-    
-    if (characterData != null) {
-      try {
-        final json = jsonDecode(characterData);
-        state = ManagerCharacter.fromJson(json);
-      } catch (e) {
-        // エラーの場合はnullのまま
-      }
-    }
+    // 常ににゃんこを返す
+    state = const ManagerCharacter(
+      type: CharacterType.cat,
+      name: 'にゃんこ',
+      imagePath: 'assets/images/cat.png',
+      notificationLevel: NotificationLevel.normal,
+      notificationsEnabled: true,
+      reminderHours: [8, 12, 18],
+    );
   }
 
   Future<void> setCharacter(ManagerCharacter character) async {

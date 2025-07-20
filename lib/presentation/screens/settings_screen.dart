@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../l10n/app_localizations.dart';
 import '../../business/providers/locale_provider.dart';
 import '../../business/providers/manager_character_provider.dart';
-import '../../business/models/manager_character.dart';
-import 'manager_character_setup_screen.dart';
+import '../../business/providers/user_provider.dart';
+import '../../data/entities/user.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
@@ -15,6 +15,13 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _notificationsEnabled = true;
+  ActivityLevel? _selectedActivityLevel;
+  
+  // Controllers for profile dialog
+  final _nameController = TextEditingController();
+  final _ageController = TextEditingController();
+  final _heightController = TextEditingController();
+  final _weightController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -130,42 +137,31 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
         ListTile(
           leading: Icon(
-            managerCharacter?.type == CharacterType.human ? Icons.person : Icons.pets,
-            color: managerCharacter?.type == CharacterType.human ? Colors.pink[300] : Colors.orange[300],
+            Icons.pets,
+            color: Colors.orange[300],
           ),
-          title: const Text('マネージャー設定'),
-          subtitle: Text(
-            managerCharacter != null 
-              ? '${managerCharacter.name} (${_getNotificationLevelText(managerCharacter.notificationLevel)})'
-              : '未設定',
-          ),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const ManagerCharacterSetupScreen(),
-              ),
-            );
-          },
+          title: const Text('マネージャー'),
+          subtitle: const Text('にゃんこ'),
         ),
         SwitchListTile(
           secondary: const Icon(Icons.notifications),
           title: Text(l10n.mealReminders),
           subtitle: Text(l10n.mealReminderDescription),
-          value: managerCharacter?.notificationsEnabled ?? false,
-          onChanged: managerCharacter != null ? (value) {
-            ref.read(managerCharacterProvider.notifier).toggleNotifications(value);
-          } : null,
+          value: _notificationsEnabled,
+          onChanged: (value) {
+            setState(() {
+              _notificationsEnabled = value;
+            });
+          },
         ),
         ListTile(
           leading: const Icon(Icons.schedule),
           title: Text(l10n.reminderTimes),
           subtitle: Text(l10n.defaultReminderTimes),
           trailing: const Icon(Icons.chevron_right),
-          onTap: managerCharacter != null ? () {
+          onTap: () {
             _showReminderTimesDialog();
-          } : null,
+          },
         ),
       ],
     );
@@ -258,44 +254,131 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  void _showPersonalInfoDialog() {
+  void _showPersonalInfoDialog() async {
     final l10n = AppLocalizations.of(context)!;
+    
+    // Load existing user data
+    final userAsync = ref.read(userProvider);
+    await userAsync.when(
+      data: (user) async {
+        if (user != null) {
+          _nameController.text = user.name ?? '';
+          _ageController.text = user.age?.toString() ?? '';
+          _heightController.text = user.height?.toString() ?? '';
+          _weightController.text = user.weight?.toString() ?? '';
+        }
+      },
+      loading: () async {},
+      error: (error, stack) async {},
+    );
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(l10n.personalInformation),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
           children: [
-            TextField(
-              decoration: InputDecoration(labelText: l10n.name),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFF69B4).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(
+                Icons.person,
+                color: Color(0xFFFF69B4),
+                size: 24,
+              ),
             ),
-            TextField(
-              decoration: InputDecoration(labelText: l10n.age),
-              keyboardType: TextInputType.number,
-            ),
-            TextField(
-              decoration: InputDecoration(labelText: l10n.heightCm),
-              keyboardType: TextInputType.number,
-            ),
-            TextField(
-              decoration: InputDecoration(labelText: l10n.weight),
-              keyboardType: TextInputType.number,
-            ),
+            const SizedBox(width: 12),
+            Text(l10n.personalInformation),
           ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: _nameController,
+                decoration: InputDecoration(
+                  labelText: l10n.name,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Color(0xFFFF69B4)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _ageController,
+                decoration: InputDecoration(
+                  labelText: l10n.age,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Color(0xFFFF69B4)),
+                  ),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _heightController,
+                decoration: InputDecoration(
+                  labelText: l10n.heightCm,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Color(0xFFFF69B4)),
+                  ),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _weightController,
+                decoration: InputDecoration(
+                  labelText: l10n.weight,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(color: Color(0xFFFF69B4)),
+                  ),
+                ),
+                keyboardType: TextInputType.number,
+              ),
+            ],
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(AppLocalizations.of(context)!.cancel),
+            child: Text(
+              AppLocalizations.of(context)!.cancel,
+              style: const TextStyle(color: Colors.grey),
+            ),
           ),
-          TextButton(
-            onPressed: () {
+          ElevatedButton(
+            onPressed: () async {
+              await _savePersonalInfo();
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(l10n.profileUpdated)),
-              );
             },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFF69B4),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
             child: Text(AppLocalizations.of(context)!.save),
           ),
         ],
@@ -337,42 +420,166 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   void _showActivityLevelDialog() {
     final l10n = AppLocalizations.of(context)!;
+    final userAsync = ref.read(userProvider);
+    
+    // Get current activity level from user data
+    ActivityLevel? currentActivityLevel;
+    userAsync.whenData((user) {
+      if (user != null) {
+        currentActivityLevel = user.activityLevel;
+        _selectedActivityLevel = user.activityLevel;
+      }
+    });
+    
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(l10n.activityLevelTitle),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            l10n.sedentary,
-            l10n.lightlyActive,
-            l10n.moderatelyActive,
-            l10n.veryActive,
-            l10n.extraActive
-          ].map((level) => RadioListTile(
-                title: Text(level),
-                value: level,
-                groupValue: l10n.moderatelyActive,
-                onChanged: (value) {},
-              )).toList(),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFF69B4).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.fitness_center,
+                  color: Color(0xFFFF69B4),
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Text(l10n.activityLevelTitle),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: ActivityLevel.values.map((activityLevel) {
+                String levelText;
+                String description;
+                
+                switch (activityLevel) {
+                  case ActivityLevel.sedentary:
+                    levelText = l10n.sedentary;
+                    description = 'デスクワーク中心、運動なし';
+                    break;
+                  case ActivityLevel.lightlyActive:
+                    levelText = l10n.lightlyActive;
+                    description = '軽い運動、週1-3回';
+                    break;
+                  case ActivityLevel.moderatelyActive:
+                    levelText = l10n.moderatelyActive;
+                    description = '中程度の運動、週3-5回';
+                    break;
+                  case ActivityLevel.veryActive:
+                    levelText = l10n.veryActive;
+                    description = '激しい運動、週6-7回';
+                    break;
+                  case ActivityLevel.extraActive:
+                    levelText = l10n.extraActive;
+                    description = '非常に激しい運動、1日2回';
+                    break;
+                }
+                
+                return RadioListTile<ActivityLevel>(
+                  title: Text(
+                    levelText,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  subtitle: Text(
+                    description,
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontSize: 12,
+                    ),
+                  ),
+                  value: activityLevel,
+                  groupValue: _selectedActivityLevel,
+                  activeColor: const Color(0xFFFF69B4),
+                  onChanged: (ActivityLevel? value) {
+                    setDialogState(() {
+                      _selectedActivityLevel = value;
+                    });
+                  },
+                );
+              }).toList(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                AppLocalizations.of(context)!.cancel,
+                style: const TextStyle(color: Colors.grey),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: _selectedActivityLevel != null ? () async {
+                Navigator.pop(context);
+                await _saveActivityLevel(_selectedActivityLevel!);
+              } : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFF69B4),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: Text(AppLocalizations.of(context)!.save),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(AppLocalizations.of(context)!.cancel),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(l10n.activityLevelUpdated)),
-              );
-            },
-            child: Text(AppLocalizations.of(context)!.save),
-          ),
-        ],
       ),
     );
+  }
+  
+  Future<void> _saveActivityLevel(ActivityLevel activityLevel) async {
+    try {
+      final userAsync = ref.read(userProvider);
+      await userAsync.when(
+        data: (user) async {
+          if (user != null) {
+            final updatedUser = user.copyWith(
+              activityLevel: activityLevel,
+              updatedAt: DateTime.now(),
+            );
+            await ref.read(userProvider.notifier).updateUser(updatedUser);
+            
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(AppLocalizations.of(context)!.activityLevelUpdated),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            }
+          }
+        },
+        loading: () async {},
+        error: (error, stack) async {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('エラーが発生しました: $error'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        },
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('保存に失敗しました: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   void _showLanguageDialog() {
@@ -478,22 +685,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  String _getNotificationLevelText(NotificationLevel level) {
-    switch (level) {
-      case NotificationLevel.gentle:
-        return '控えめ';
-      case NotificationLevel.normal:
-        return '標準';
-      case NotificationLevel.persistent:
-        return 'しっかり';
-    }
-  }
 
   void _showReminderTimesDialog() {
-    final managerCharacter = ref.read(managerCharacterProvider);
-    if (managerCharacter == null) return;
-    
-    final selectedHours = List<int>.from(managerCharacter.reminderHours);
+    final selectedHours = [8, 12, 18]; // デフォルトのリマインダー時間
     
     showDialog(
       context: context,
@@ -535,7 +729,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
             TextButton(
               onPressed: () {
-                ref.read(managerCharacterProvider.notifier).updateReminderHours(selectedHours);
+                // TODO: リマインダー時間を保存
                 Navigator.pop(context);
               },
               child: const Text('保存'),
@@ -544,6 +738,112 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
       ),
     );
+  }
+  
+  Future<void> _savePersonalInfo() async {
+    try {
+      final age = int.tryParse(_ageController.text);
+      final height = double.tryParse(_heightController.text);
+      final weight = double.tryParse(_weightController.text);
+      final name = _nameController.text.trim();
+      
+      if (name.isEmpty || age == null || height == null || weight == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('すべての項目を正しく入力してください'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+      
+      if (age <= 0 || height <= 0 || weight <= 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('有効な数値を入力してください'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+      
+      final userAsync = ref.read(userProvider);
+      await userAsync.when(
+        data: (user) async {
+          if (user != null) {
+            final updatedUser = user.copyWith(
+              name: name,
+              age: age,
+              height: height,
+              weight: weight,
+              updatedAt: DateTime.now(),
+            );
+            await ref.read(userProvider.notifier).updateUser(updatedUser);
+            
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(AppLocalizations.of(context)!.profileUpdated),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            }
+          } else {
+            // Create new user if none exists
+            final newUser = User(
+              id: DateTime.now().millisecondsSinceEpoch.toString(),
+              name: name,
+              age: age,
+              height: height,
+              weight: weight,
+              gender: Gender.other, // Default value
+              activityLevel: ActivityLevel.moderatelyActive, // Default value
+              createdAt: DateTime.now(),
+              updatedAt: DateTime.now(),
+            );
+            await ref.read(userProvider.notifier).createUser(newUser);
+            
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('プロフィールを作成しました'),
+                  backgroundColor: Colors.green,
+                ),
+              );
+            }
+          }
+        },
+        loading: () async {},
+        error: (error, stack) async {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('エラーが発生しました: $error'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        },
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('保存に失敗しました: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+  
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _ageController.dispose();
+    _heightController.dispose();
+    _weightController.dispose();
+    super.dispose();
   }
 
 }

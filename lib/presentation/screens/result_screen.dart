@@ -436,45 +436,6 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  '個数',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                Row(
-                  children: [
-                    IconButton(
-                      onPressed: () => _updateQuantity(item.name, -1),
-                      icon: const Icon(Icons.remove_circle_outline),
-                      color: const Color(0xFFFF69B4),
-                      constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                    ),
-                    Container(
-                      width: 50,
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Text(
-                        '${_itemQuantities[item.name] ?? 1}',
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      onPressed: () => _updateQuantity(item.name, 1),
-                      icon: const Icon(Icons.add_circle_outline),
-                      color: const Color(0xFFFF69B4),
-                      constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                    ),
-                  ],
-                ),
-              ],
-            ),
             const SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
@@ -482,13 +443,6 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                 TextButton(
                   onPressed: () => _editItem(item),
                   child: Text(AppLocalizations.of(context)!.edit),
-                ),
-                TextButton(
-                  onPressed: () => _removeItem(item),
-                  style: TextButton.styleFrom(
-                    foregroundColor: Colors.red,
-                  ),
-                  child: Text(AppLocalizations.of(context)!.remove),
                 ),
               ],
             ),

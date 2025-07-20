@@ -460,7 +460,7 @@ class _SetupGuideScreenState extends State<SetupGuideScreen> with TickerProvider
             'Lose Weight',
             'Reduce body weight and improve body composition',
             Icons.trending_down,
-            Colors.red,
+            Colors.green,
           ),
           const SizedBox(height: 16),
           _buildGoalTypeOption(
@@ -468,14 +468,6 @@ class _SetupGuideScreenState extends State<SetupGuideScreen> with TickerProvider
             'Maintain Weight',
             'Keep current weight and build healthy habits',
             Icons.balance,
-            Colors.green,
-          ),
-          const SizedBox(height: 16),
-          _buildGoalTypeOption(
-            'gain_weight',
-            'Gain Weight',
-            'Increase muscle mass and overall body weight',
-            Icons.trending_up,
             Colors.blue,
           ),
         ],

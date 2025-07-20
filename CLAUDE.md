@@ -111,8 +111,7 @@ UI → StateNotifierProvider → Service/Repository → Database/API
 
 ```
 SplashScreen → SetupGuideScreen（初回）
-            → ManagerSetupScreen（キャラクター未設定）
-            → MainNavigationScreen（設定済み）
+            → MainNavigationScreen
                 ├── HomeScreen
                 ├── HistoryScreen
                 ├── ExerciseScreen

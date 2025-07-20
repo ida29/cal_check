@@ -74,15 +74,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen> with TickerProvider
 
       // Check if setup is complete
       final isSetupComplete = await _setupService.isSetupComplete();
-      final managerCharacter = ref.read(managerCharacterProvider);
 
       if (mounted) {
         if (!isSetupComplete) {
           // Navigate to setup guide
           Navigator.of(context).pushReplacementNamed('/setup');
-        } else if (managerCharacter == null) {
-          // Navigate to manager character setup
-          Navigator.of(context).pushReplacementNamed('/manager-setup', arguments: 'initial_setup');
         } else {
           // Navigate to main app
           Navigator.of(context).pushReplacementNamed('/main');

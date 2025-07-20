@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 import 'home_screen.dart';
 import 'history_screen.dart';
-import 'exercise_screen.dart';
+import 'weight_tracking_screen.dart';
 import 'statistics_screen.dart';
 import 'settings_screen.dart';
 
@@ -21,7 +21,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   final List<Widget> _screens = [
     const HomeScreen(),
     const HistoryScreen(),
-    const ExerciseScreen(),
+    const WeightTrackingScreen(),
     const StatisticsScreen(),
     const SettingsScreen(),
   ];
@@ -84,17 +84,17 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           BottomNavigationBarItem(
             icon: const Icon(Icons.history_outlined),
             activeIcon: const Icon(Icons.history),
-            label: l10n.history,
+            label: '食事管理',
           ),
           BottomNavigationBarItem(
-            icon: const Icon(Icons.fitness_center_outlined),
-            activeIcon: const Icon(Icons.fitness_center),
-            label: l10n.exerciseTitle,
+            icon: const Icon(Icons.monitor_weight_outlined),
+            activeIcon: const Icon(Icons.monitor_weight),
+            label: '体重管理',
           ),
           BottomNavigationBarItem(
-            icon: const Icon(Icons.bar_chart_outlined),
-            activeIcon: const Icon(Icons.bar_chart),
-            label: l10n.statistics,
+            icon: const Icon(Icons.insights_outlined),
+            activeIcon: const Icon(Icons.insights),
+            label: '体調管理',
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.settings_outlined),
