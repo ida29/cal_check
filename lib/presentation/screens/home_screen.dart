@@ -48,8 +48,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         final hour = DateTime.now().hour;
         
         // 食事記録の取得
-        final mealsAsync = await ref.read(mealsByDateProvider(today).future);
-        final meals = mealsAsync;
+        final mealsAsync = ref.read(mealsByDateProvider(today));
+        final meals = mealsAsync.maybeWhen(
+          data: (data) => data,
+          orElse: () => <Meal>[],
+        );
         
         // 食事タイプごとの記録状況をチェック
         final breakfastRecorded = meals.any((meal) => meal.mealType == MealType.breakfast);
@@ -57,7 +60,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         final dinnerRecorded = meals.any((meal) => meal.mealType == MealType.dinner);
         
         // 体重記録の取得
-        final weightRecorded = await ref.read(todayWeightRecordProvider.future);
+        final weightRecordedAsync = ref.read(todayWeightRecordProvider);
+        final weightRecorded = weightRecordedAsync.maybeWhen(
+          data: (hasRecord) => hasRecord,
+          orElse: () => false,
+        );
         
         // タスクに応じたメッセージを生成
         final taskMessages = <String>[];
@@ -267,10 +274,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.orange.withOpacity(0.3), width: 2),
+                  border: Border.all(color: Colors.green.withOpacity(0.5), width: 2),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.orange.withOpacity(0.15),
+                      color: Colors.green.withOpacity(0.2),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
@@ -388,80 +395,92 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     }
 
     return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: InkWell(
-        onTap: primaryTaskAction,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: primaryTaskColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  primaryTaskIcon,
-                  color: primaryTaskColor,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          gradient: LinearGradient(
+            colors: [primaryTaskColor.withOpacity(0.8), primaryTaskColor],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: primaryTaskAction,
+            borderRadius: BorderRadius.circular(20),
+            hoverColor: Colors.transparent,
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Row(
+                children: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: Icon(
+                      primaryTaskIcon,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'やること',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        if (pendingTasks > 1) ...[
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: Colors.orange.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              '他${pendingTasks - 1}件',
-                              style: const TextStyle(
-                                color: Colors.orange,
+                        Row(
+                          children: [
+                            Text(
+                              'やること',
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                color: Colors.white,
                                 fontWeight: FontWeight.bold,
-                                fontSize: 11,
                               ),
                             ),
+                            if (pendingTasks > 1) ...[
+                              const SizedBox(width: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.3),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  '他${pendingTasks - 1}件',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          primaryTaskTitle,
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Colors.white70,
                           ),
-                        ],
+                        ),
                       ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      primaryTaskTitle,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                  const Icon(
+                    Icons.arrow_forward_ios,
+                    color: Colors.white70,
+                    size: 16,
+                  ),
+                ],
               ),
-              Icon(
-                Icons.arrow_forward_ios,
-                color: Colors.grey[400],
-                size: 18,
-              ),
-            ],
+            ),
           ),
         ),
       ),
