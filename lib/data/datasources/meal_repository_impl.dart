@@ -150,29 +150,55 @@ class MealRepositoryImpl implements MealRepository {
       whereArgs: [mealMap['id']],
     );
 
-    final foodItems = foodItemMaps.map((map) => FoodItem.fromJson({
-      'id': map['id'],
-      'name': map['name'],
-      'quantity': map['quantity'],
-      'unit': map['unit'],
-      'calories': map['calories'],
-      'nutritionInfo': NutritionInfo.fromJson(jsonDecode(map['nutrition_info'])),
-      'confidenceScore': map['confidence_score'],
-      'imageUrl': map['image_url'],
-    })).toList();
+    // Build food items directly without using fromJson
+    final foodItems = foodItemMaps.map((map) {
+      // Parse nutrition info from JSON string
+      final nutritionInfoData = jsonDecode(map['nutrition_info'] as String);
+      
+      return FoodItem(
+        id: map['id'] as String,
+        name: map['name'] as String,
+        quantity: (map['quantity'] as num).toDouble(),
+        unit: map['unit'] as String,
+        calories: (map['calories'] as num).toDouble(),
+        nutritionInfo: NutritionInfo(
+          protein: (nutritionInfoData['protein'] as num).toDouble(),
+          carbohydrates: (nutritionInfoData['carbohydrates'] as num).toDouble(),
+          fat: (nutritionInfoData['fat'] as num).toDouble(),
+          fiber: (nutritionInfoData['fiber'] as num).toDouble(),
+          sugar: (nutritionInfoData['sugar'] as num).toDouble(),
+          sodium: (nutritionInfoData['sodium'] as num).toDouble(),
+        ),
+        confidenceScore: (map['confidence_score'] as num).toDouble(),
+        imageUrl: map['image_url'] as String?,
+      );
+    }).toList();
 
-    return Meal.fromJson({
-      'id': mealMap['id'],
-      'timestamp': mealMap['timestamp'],
-      'mealType': mealMap['meal_type'],
-      'imagePath': mealMap['image_path'],
-      'foodItems': foodItems,
-      'totalCalories': mealMap['total_calories'],
-      'totalNutrition': NutritionInfo.fromJson(jsonDecode(mealMap['total_nutrition'])),
-      'notes': mealMap['notes'],
-      'isSynced': mealMap['is_synced'] == 1,
-      'isManualEntry': mealMap['is_manual_entry'] == 1,
-    });
+    // Parse total nutrition from JSON string
+    final totalNutritionData = jsonDecode(mealMap['total_nutrition'] as String);
+    
+    return Meal(
+      id: mealMap['id'] as String,
+      timestamp: DateTime.parse(mealMap['timestamp'] as String),
+      mealType: MealType.values.firstWhere(
+        (e) => e.name == mealMap['meal_type'],
+        orElse: () => MealType.breakfast,
+      ),
+      imagePath: mealMap['image_path'] as String,
+      foodItems: foodItems,
+      totalCalories: (mealMap['total_calories'] as num).toDouble(),
+      totalNutrition: NutritionInfo(
+        protein: (totalNutritionData['protein'] as num).toDouble(),
+        carbohydrates: (totalNutritionData['carbohydrates'] as num).toDouble(),
+        fat: (totalNutritionData['fat'] as num).toDouble(),
+        fiber: (totalNutritionData['fiber'] as num).toDouble(),
+        sugar: (totalNutritionData['sugar'] as num).toDouble(),
+        sodium: (totalNutritionData['sodium'] as num).toDouble(),
+      ),
+      notes: mealMap['notes'] as String?,
+      isSynced: mealMap['is_synced'] == 1,
+      isManualEntry: mealMap['is_manual_entry'] == 1,
+    );
   }
 
   Map<String, dynamic> _mealToMap(Meal meal) {

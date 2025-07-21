@@ -798,10 +798,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               weight: weight,
               gender: Gender.other, // Default value
               activityLevel: ActivityLevel.moderatelyActive, // Default value
+              targetCalories: 2000.0, // Default value
               createdAt: DateTime.now(),
               updatedAt: DateTime.now(),
             );
-            await ref.read(userProvider.notifier).createUser(newUser);
+            await ref.read(userProvider.notifier).saveUser(newUser);
             
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
