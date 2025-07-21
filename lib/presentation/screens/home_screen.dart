@@ -41,22 +41,74 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     ));
     
     // 2秒後ににゃんこを表示
-    Future.delayed(const Duration(seconds: 2), () {
+    Future.delayed(const Duration(seconds: 2), () async {
       if (mounted) {
-        // メッセージをランダムに選択
-        final messages = [
+        // タスク状況を確認してメッセージを選択
+        final today = DateTime.now();
+        final hour = DateTime.now().hour;
+        
+        // 食事記録の取得
+        final mealsAsync = await ref.read(mealsByDateProvider(today).future);
+        final meals = mealsAsync;
+        
+        // 食事タイプごとの記録状況をチェック
+        final breakfastRecorded = meals.any((meal) => meal.mealType == MealType.breakfast);
+        final lunchRecorded = meals.any((meal) => meal.mealType == MealType.lunch);
+        final dinnerRecorded = meals.any((meal) => meal.mealType == MealType.dinner);
+        
+        // 体重記録の取得
+        final weightRecorded = await ref.read(todayWeightRecordProvider.future);
+        
+        // タスクに応じたメッセージを生成
+        final taskMessages = <String>[];
+        final generalMessages = [
           'にゃーん！今日も食事記録頑張るにゃ〜！',
           'おつかれさまにゃ〜！水分補給も忘れずににゃ！',
           '運動もしてえらいにゃ〜！この調子にゃ！',
           'バランス良く食べてるにゃ〜！素晴らしいにゃ！',
         ];
-        final randomIndex = DateTime.now().millisecondsSinceEpoch % messages.length;
         
-        setState(() {
-          _currentCatMessage = messages[randomIndex];
-          _showCatMessage = true;
-        });
-        _slideController.forward();
+        // 体重記録がない場合
+        if (!weightRecorded) {
+          taskMessages.addAll([
+            'にゃーん！今日の体重まだ記録してないにゃ〜！',
+            '体重記録忘れてるにゃ？毎日の記録が大切にゃ〜！',
+            '朝の体重測定はもう済んだかにゃ〜？',
+          ]);
+        }
+        
+        // 時間帯に応じた食事記録リマインダー
+        if (hour >= 7 && hour < 10 && !breakfastRecorded) {
+          taskMessages.addAll([
+            'おはようにゃ〜！朝ごはん食べたら記録するにゃ！',
+            '朝食の記録、忘れずににゃ〜！',
+            'にゃーん！朝ごはんの写真撮るの忘れないでにゃ！',
+          ]);
+        } else if (hour >= 12 && hour < 14 && !lunchRecorded) {
+          taskMessages.addAll([
+            'お昼ごはんの時間にゃ！記録も忘れずににゃ〜！',
+            'ランチの記録まだにゃ？美味しそうなの食べてるにゃ〜？',
+            'にゃーん！昼食の記録してないにゃ〜！',
+          ]);
+        } else if (hour >= 18 && hour < 21 && !dinnerRecorded) {
+          taskMessages.addAll([
+            '夕ごはんの記録も忘れないでにゃ〜！',
+            'ディナータイムにゃ！今日は何食べるにゃ〜？',
+            'にゃーん！夕食の記録まだみたいにゃ〜！',
+          ]);
+        }
+        
+        // メッセージリストを結合
+        final allMessages = taskMessages.isNotEmpty ? taskMessages : generalMessages;
+        final randomIndex = DateTime.now().millisecondsSinceEpoch % allMessages.length;
+        
+        if (mounted) {
+          setState(() {
+            _currentCatMessage = allMessages[randomIndex];
+            _showCatMessage = true;
+          });
+          _slideController.forward();
+        }
         
         // 8秒後に自動的に隠す
         Future.delayed(const Duration(seconds: 8), () {
@@ -170,7 +222,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     }
 
     return Positioned(
-      top: 80,
+      bottom: 100, // フッターの上に配置
       right: 20,
       child: SlideTransition(
         position: _slideAnimation,
@@ -182,35 +234,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              // メッセージコンテナ（上に配置）
-              Container(
-                margin: const EdgeInsets.only(bottom: 10),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.orange.withOpacity(0.3), width: 2),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.orange.withOpacity(0.15),
-                      blurRadius: 16,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: Text(
-                  _currentCatMessage,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.brown[800],
-                    height: 1.5,
-                    fontWeight: FontWeight.w600,
-                    fontFamily: 'Hiragino Sans',
-                    letterSpacing: 0.5,
-                  ),
-                ),
-              ),
-              // にゃんこキャラクター（下に配置）
+              // にゃんこキャラクター（上に配置）
               GestureDetector(
                 onTap: () {
                   // タップで早めに消す
@@ -222,32 +246,46 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     }
                   });
                 },
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Image.asset(
-                      'assets/images/cat.png',
-                      width: 180,
-                      height: 180,
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Icon(
-                          Icons.pets,
-                          size: 100,
-                          color: Colors.orange[300],
-                        );
-                      },
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'にゃんこ',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
+                child: Image.asset(
+                  'assets/images/cat.png',
+                  width: 120,
+                  height: 120,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Icon(
+                      Icons.pets,
+                      size: 80,
+                      color: Colors.orange[300],
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 8),
+              // メッセージコンテナ（下に配置）
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: Colors.orange.withOpacity(0.3), width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.orange.withOpacity(0.15),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
                     ),
                   ],
+                ),
+                child: Text(
+                  _currentCatMessage,
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Colors.brown[800],
+                    height: 1.4,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: 'Hiragino Sans',
+                    letterSpacing: 0.3,
+                  ),
                 ),
               ),
             ],
