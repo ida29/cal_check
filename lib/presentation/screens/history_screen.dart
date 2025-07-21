@@ -644,11 +644,6 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     double mealCalories = _mealRecords.fold<double>(0, (sum, meal) => sum + meal.totalCalories);
     double exerciseCalories = _exerciseRecords.fold<double>(0, (sum, exercise) => sum - exercise.caloriesBurned);
     
-    if (_selectedTab == 'meals') {
-      return photoCalories + mealCalories;
-    } else if (_selectedTab == 'exercises') {
-      return exerciseCalories;
-    }
     return photoCalories + mealCalories + exerciseCalories;
   }
 

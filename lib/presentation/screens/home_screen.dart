@@ -278,9 +278,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       mealIcon = Icons.nights_stay;
       mealColor = Colors.indigo;
     } else {
-      mealType = '間食';
-      mealIcon = Icons.local_cafe;
-      mealColor = Colors.brown;
+      // 間食は除外するため、夕食を表示
+      mealType = '夕食';
+      mealIcon = Icons.nights_stay;
+      mealColor = Colors.indigo;
     }
 
     // 今日の記録状況を取得
@@ -307,151 +308,121 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       orElse: () => false,
     );
     
-    // タスク数を計算
+    // タスク数を計算（間食は除外）
     int pendingTasks = 0;
     if (hour >= 7 && !breakfastRecorded) pendingTasks++;
     if (hour >= 12 && !lunchRecorded) pendingTasks++;
     if (hour >= 18 && !dinnerRecorded) pendingTasks++;
     if (!weightRecorded) pendingTasks++;
 
+    // 優先度の高いタスクを決定
+    String primaryTaskTitle = '';
+    IconData primaryTaskIcon = Icons.task_alt;
+    Color primaryTaskColor = Colors.orange;
+    VoidCallback? primaryTaskAction;
+    
+    // 体重記録を最優先
+    if (!weightRecorded) {
+      primaryTaskTitle = '体重を記録';
+      primaryTaskIcon = Icons.monitor_weight;
+      primaryTaskColor = Colors.blue;
+      primaryTaskAction = () => Navigator.pushNamed(context, '/weight-tracking');
+    } else if (hour >= 7 && !breakfastRecorded) {
+      primaryTaskTitle = '朝食を記録する';
+      primaryTaskIcon = Icons.wb_sunny;
+      primaryTaskColor = Colors.orange;
+      primaryTaskAction = () => _showMealRecordOptions();
+    } else if (hour >= 12 && !lunchRecorded) {
+      primaryTaskTitle = '昼食を記録する';
+      primaryTaskIcon = Icons.wb_sunny_outlined;
+      primaryTaskColor = Colors.yellow[700]!;
+      primaryTaskAction = () => _showMealRecordOptions();
+    } else if (hour >= 18 && !dinnerRecorded) {
+      primaryTaskTitle = '夕食を記録する';
+      primaryTaskIcon = Icons.nights_stay;
+      primaryTaskColor = Colors.indigo;
+      primaryTaskAction = () => _showMealRecordOptions();
+    }
+    
+    // タスクがない場合は表示しない
+    if (pendingTasks == 0) {
+      return const SizedBox.shrink();
+    }
+
     return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(20),
-          gradient: LinearGradient(
-            colors: [Colors.amber[50]!, Colors.orange[50]!],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: InkWell(
+        onTap: primaryTaskAction,
+        borderRadius: BorderRadius.circular(16),
         child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
             children: [
-              Row(
-                children: [
-                  Icon(
-                    Icons.task_alt,
-                    color: Colors.orange[700],
-                    size: 28,
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    'やること',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.orange[800],
-                    ),
-                  ),
-                  const Spacer(),
-                  if (pendingTasks > 0)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.orange,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        '残り$pendingTasks件',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                ],
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: primaryTaskColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  primaryTaskIcon,
+                  color: primaryTaskColor,
+                  size: 24,
+                ),
               ),
-              const SizedBox(height: 16),
-              // メインタスク
-              GestureDetector(
-                onTap: () => _showMealRecordOptions(),
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: mealColor.withOpacity(0.2),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: mealColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          'やること',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                        child: Icon(
-                          mealIcon,
-                          color: mealColor,
-                          size: 28,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '$mealTypeを記録する',
+                        if (pendingTasks > 1) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.orange.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              '他${pendingTasks - 1}件',
                               style: const TextStyle(
-                                fontSize: 18,
+                                color: Colors.orange,
                                 fontWeight: FontWeight.bold,
+                                fontSize: 11,
                               ),
                             ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '写真撮影または食品選択で記録',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      primaryTaskTitle,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
                       ),
-                      Icon(
-                        Icons.arrow_forward_ios,
-                        color: Colors.grey[400],
-                        size: 20,
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 12),
-              // サブタスクリスト
-              if (!weightRecorded)
-                _buildSubTask(
-                  icon: Icons.monitor_weight,
-                  title: '体重を記録',
-                  color: Colors.blue,
-                  onTap: () => Navigator.pushNamed(context, '/weight-tracking'),
-                ),
-              if (hour >= 7 && !breakfastRecorded && mealType != '朝食')
-                _buildSubTask(
-                  icon: Icons.wb_sunny,
-                  title: '朝食を記録',
-                  color: Colors.orange,
-                  onTap: () => _showMealRecordOptions(),
-                ),
-              if (hour >= 12 && !lunchRecorded && mealType != '昼食')
-                _buildSubTask(
-                  icon: Icons.wb_sunny_outlined,
-                  title: '昼食を記録',
-                  color: Colors.yellow[700]!,
-                  onTap: () => _showMealRecordOptions(),
-                ),
+              Icon(
+                Icons.arrow_forward_ios,
+                color: Colors.grey[400],
+                size: 18,
+              ),
             ],
           ),
         ),
@@ -459,45 +430,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     );
   }
 
-  Widget _buildSubTask({
-    required IconData icon,
-    required String title,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: color.withOpacity(0.05),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withOpacity(0.2)),
-        ),
-        child: Row(
-          children: [
-            Icon(icon, color: color, size: 20),
-            const SizedBox(width: 12),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 14,
-                color: color,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-            const Spacer(),
-            Icon(
-              Icons.arrow_forward_ios,
-              color: color.withOpacity(0.5),
-              size: 14,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
 
   Widget _buildMealRecordButton() {
