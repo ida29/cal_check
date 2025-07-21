@@ -229,7 +229,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     }
 
     return Positioned(
-      bottom: 100, // フッターの上に配置
+      bottom: 80, // フッターのギリギリ上に配置
       right: 20,
       child: SlideTransition(
         position: _slideAnimation,
