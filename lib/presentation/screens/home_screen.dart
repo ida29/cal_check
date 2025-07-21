@@ -210,7 +210,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   _buildWeightRecordButton(),
                   const SizedBox(height: 16),
                   _buildExerciseRecordButton(),
-                  const SizedBox(height: 20), // 下部に余白を追加
+                  const SizedBox(height: 120), // にゃんこ表示用の余白
                 ],
               ),
             ),
