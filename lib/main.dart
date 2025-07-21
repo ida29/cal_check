@@ -14,6 +14,7 @@ import 'presentation/screens/manual_meal_entry_screen.dart';
 import 'presentation/screens/exercise_screen.dart';
 import 'presentation/screens/privacy_policy_screen.dart';
 import 'presentation/screens/weight_tracking_screen.dart';
+import 'presentation/screens/weight_record_screen.dart';
 import 'config/ai_config.dart';
 import 'business/services/notification_service.dart';
 
@@ -101,6 +102,7 @@ class CalorieCheckerApp extends ConsumerWidget {
         '/manual-meal-entry': (context) => const ManualMealEntryScreen(),
         '/exercise': (context) => const ExerciseScreen(),
         '/weight-tracking': (context) => const WeightTrackingScreen(),
+        '/weight-record': (context) => const WeightRecordScreen(),
         '/privacy-policy': (context) => const PrivacyPolicyScreen(),
       },
     );
