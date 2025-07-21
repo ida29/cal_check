@@ -145,7 +145,36 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
             const SizedBox(height: 20),
             SizedBox(
               height: 250,
-              child: LineChart(
+              child: spots.isEmpty 
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.insert_chart_outlined,
+                          size: 64,
+                          color: Colors.grey[400],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'まだ記録がありません',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          '食事を記録するとここにグラフが表示されます',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[500],
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : LineChart(
                 LineChartData(
                   gridData: FlGridData(
                     show: true,
@@ -265,14 +294,15 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
               ),
             ),
             const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildStatItem(AppLocalizations.of(context)!.average, '${average.toInt()} cal'),
-                _buildStatItem(AppLocalizations.of(context)!.lowest, '${lowest.toInt()} cal'),
-                _buildStatItem(AppLocalizations.of(context)!.highest, '${highest.toInt()} cal'),
-              ],
-            ),
+            if (spots.isNotEmpty)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildStatItem(AppLocalizations.of(context)!.average, '${average.toInt()} cal'),
+                  _buildStatItem(AppLocalizations.of(context)!.lowest, '${lowest.toInt()} cal'),
+                  _buildStatItem(AppLocalizations.of(context)!.highest, '${highest.toInt()} cal'),
+                ],
+              ),
             if (_dailyCalorieGoal != null) ...[  
               const SizedBox(height: 12),
               Container(
@@ -1237,6 +1267,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
     final today = DateTime(now.year, now.month, now.day);
     final spots = <FlSpot>[];
     final calorieValues = <double>[];
+    final dateLabels = <String>[];
     
     int days;
     switch (_selectedPeriod) {
@@ -1255,6 +1286,8 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
     
     for (int i = days - 1; i >= 0; i--) {
       double dayCalories = 0;
+      bool hasData = false;
+      String dateLabel = '';
       
       if (_selectedPeriod == 2) { // Year - 月ごと
         final monthStart = DateTime(today.year, today.month - i, 1);
@@ -1268,23 +1301,40 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
             if (dayMeals.isNotEmpty) {
               totalDays++;
               dayCalories += dayMeals.fold<double>(0, (sum, meal) => sum + meal.totalCalories);
+              hasData = true;
             }
           });
         }
         
         if (totalDays > 0) {
           dayCalories = dayCalories / totalDays; // 月平均
+          final months = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
+          dateLabel = months[monthStart.month - 1];
         }
       } else {
         final date = today.subtract(Duration(days: i));
         final dayMealsAsync = ref.watch(mealsByDateProvider(date));
         dayMealsAsync.whenData((dayMeals) {
-          dayCalories = dayMeals.fold<double>(0, (sum, meal) => sum + meal.totalCalories);
+          if (dayMeals.isNotEmpty) {
+            dayCalories = dayMeals.fold<double>(0, (sum, meal) => sum + meal.totalCalories);
+            hasData = true;
+            
+            if (_selectedPeriod == 0) { // Week
+              final weekDays = ['月', '火', '水', '木', '金', '土', '日'];
+              dateLabel = weekDays[date.weekday - 1];
+            } else { // Month
+              dateLabel = '${date.month}/${date.day}';
+            }
+          }
         });
       }
       
-      spots.add(FlSpot(spots.length.toDouble(), dayCalories));
-      if (dayCalories > 0) calorieValues.add(dayCalories);
+      // 記録がある日のみチャートに追加
+      if (hasData && dayCalories > 0) {
+        spots.add(FlSpot(spots.length.toDouble(), dayCalories));
+        calorieValues.add(dayCalories);
+        dateLabels.add(dateLabel);
+      }
     }
     
     // スポットが空の場合のデフォルト値
@@ -1301,9 +1351,9 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
       calorieValues.addAll([1800, 2100, 1950, 2200, 1900, 2000, 1770]);
     }
     
-    final average = calorieValues.isEmpty ? 2000.0 : calorieValues.reduce((a, b) => a + b) / calorieValues.length;
-    final lowest = calorieValues.isEmpty ? 1500.0 : calorieValues.reduce(math.min);
-    final highest = calorieValues.isEmpty ? 2500.0 : calorieValues.reduce(math.max);
+    final average = calorieValues.isEmpty ? 0.0 : calorieValues.reduce((a, b) => a + b) / calorieValues.length;
+    final lowest = calorieValues.isEmpty ? 0.0 : calorieValues.reduce(math.min);
+    final highest = calorieValues.isEmpty ? 0.0 : calorieValues.reduce(math.max);
     
     // Y軸の範囲を計算
     double minY = (lowest - 500).floorToDouble();
@@ -1317,38 +1367,39 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
       'highest': highest,
       'minY': minY,
       'maxY': maxY,
+      'dateLabels': dateLabels,
     };
   }
   
   List<String> _getChartLabels() {
-    final now = DateTime.now();
+    // チャートデータの生成と同じロジックでラベルを生成
+    final chartData = _getCalorieDataForChart();
+    final dateLabels = chartData['dateLabels'] as List<String>;
     final labels = <String>[];
     
-    switch (_selectedPeriod) {
-      case 0: // Week
-        final weekDays = ['月', '火', '水', '木', '金', '土', '日'];
-        for (int i = 6; i >= 0; i--) {
-          final date = now.subtract(Duration(days: i));
-          labels.add(weekDays[date.weekday - 1]);
+    // 実際のデータポイント数に合わせてラベルを生成
+    for (int i = 0; i < dateLabels.length; i++) {
+      labels.add(''); // デフォルトは空ラベル
+    }
+    
+    // データがある場合は適切なラベルを設定
+    if (dateLabels.isNotEmpty) {
+      // 最初と最後のラベルは必ず表示
+      labels[0] = dateLabels[0];
+      labels[dateLabels.length - 1] = dateLabels[dateLabels.length - 1];
+      
+      // 中間のラベルも適度に表示
+      if (dateLabels.length > 4) {
+        // 5つ以上のデータポイントがある場合、適度にラベルを表示
+        final step = dateLabels.length ~/ 4;
+        for (int i = step; i < dateLabels.length - 1; i += step) {
+          labels[i] = dateLabels[i];
         }
-        break;
-      case 1: // Month
-        for (int i = 29; i >= 0; i--) {
-          final date = now.subtract(Duration(days: i));
-          if (i % 5 == 0) {
-            labels.add('${date.month}/${date.day}');
-          } else {
-            labels.add('');
-          }
-        }
-        break;
-      case 2: // Year
-        final months = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
-        for (int i = 11; i >= 0; i--) {
-          final monthIndex = (now.month - i - 1) % 12;
-          labels.add(months[monthIndex < 0 ? monthIndex + 12 : monthIndex]);
-        }
-        break;
+      } else if (dateLabels.length > 2) {
+        // 3-4つのデータポイントの場合、中間も表示
+        final midIndex = dateLabels.length ~/ 2;
+        labels[midIndex] = dateLabels[midIndex];
+      }
     }
     
     return labels;
