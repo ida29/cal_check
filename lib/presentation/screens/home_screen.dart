@@ -313,48 +313,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   }
 
   Widget _buildTasksCard() {
-    return FutureBuilder(
-      future: _buildTasksCardContent(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const SizedBox.shrink();
-        }
-        return snapshot.data ?? const SizedBox.shrink();
-      },
-    );
-  }
-
-  Future<Widget> _buildTasksCardContent() async {
-    // 現在の時間に基づいて食事タイプを判定
-    final now = DateTime.now();
-    final hour = now.hour;
-    String mealType;
-    IconData mealIcon;
-    Color mealColor;
-    
-    if (hour < 10) {
-      mealType = '朝食';
-      mealIcon = Icons.wb_sunny;
-      mealColor = Colors.orange;
-    } else if (hour < 14) {
-      mealType = '昼食';
-      mealIcon = Icons.wb_sunny_outlined;
-      mealColor = Colors.yellow[700]!;
-    } else if (hour < 20) {
-      mealType = '夕食';
-      mealIcon = Icons.nights_stay;
-      mealColor = Colors.indigo;
-    } else {
-      // 間食は除外するため、夕食を表示
-      mealType = '夕食';
-      mealIcon = Icons.nights_stay;
-      mealColor = Colors.indigo;
-    }
-
-    // 今日の記録状況を取得
     final today = DateTime.now();
-    final todayStart = DateTime(today.year, today.month, today.day);
-    final todayEnd = todayStart.add(const Duration(days: 1));
+    final hour = DateTime.now().hour;
     
     // 食事記録の取得
     final mealsAsync = ref.watch(mealsByDateProvider(today));
@@ -375,16 +335,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       orElse: () => false,
     );
     
-    // タスク数を計算（間食は除外、設定でスキップされた食事も除外）
+    // タスクを表示するかどうかの判定
+    return _buildTasksCardSync(hour, breakfastRecorded, lunchRecorded, dinnerRecorded, weightRecorded);
+  }
+
+  Widget _buildTasksCardSync(int hour, bool breakfastRecorded, bool lunchRecorded, bool dinnerRecorded, bool weightRecorded) {
+    // タスク数を計算（間食は除外）
     int pendingTasks = 0;
-    final prefs = await SharedPreferences.getInstance();
-    final skipBreakfast = prefs.getBool('skipBreakfast') ?? false;
-    final skipLunch = prefs.getBool('skipLunch') ?? false;
-    final skipDinner = prefs.getBool('skipDinner') ?? false;
     
-    if (hour >= 7 && !breakfastRecorded && !skipBreakfast) pendingTasks++;
-    if (hour >= 12 && !lunchRecorded && !skipLunch) pendingTasks++;
-    if (hour >= 18 && !dinnerRecorded && !skipDinner) pendingTasks++;
+    if (hour >= 7 && !breakfastRecorded) pendingTasks++;
+    if (hour >= 12 && !lunchRecorded) pendingTasks++;
+    if (hour >= 18 && !dinnerRecorded) pendingTasks++;
     if (!weightRecorded) pendingTasks++;
 
     // 優先度の高いタスクを決定
@@ -397,19 +358,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     if (!weightRecorded) {
       primaryTaskTitle = '体重を記録';
       primaryTaskIcon = Icons.monitor_weight;
-      primaryTaskColor = Colors.teal; // 青緑色に変更
+      primaryTaskColor = Colors.teal;
       primaryTaskAction = () => ref.read(navigationProvider.notifier).setSubScreen(SubScreen.weightRecord);
-    } else if (hour >= 7 && !breakfastRecorded && !skipBreakfast) {
+    } else if (hour >= 7 && !breakfastRecorded) {
       primaryTaskTitle = '朝食を記録する';
       primaryTaskIcon = Icons.wb_sunny;
       primaryTaskColor = Colors.orange;
       primaryTaskAction = () => _showMealRecordOptions();
-    } else if (hour >= 12 && !lunchRecorded && !skipLunch) {
+    } else if (hour >= 12 && !lunchRecorded) {
       primaryTaskTitle = '昼食を記録する';
       primaryTaskIcon = Icons.wb_sunny_outlined;
       primaryTaskColor = Colors.yellow[700]!;
       primaryTaskAction = () => _showMealRecordOptions();
-    } else if (hour >= 18 && !dinnerRecorded && !skipDinner) {
+    } else if (hour >= 18 && !dinnerRecorded) {
       primaryTaskTitle = '夕食を記録する';
       primaryTaskIcon = Icons.nights_stay;
       primaryTaskColor = Colors.indigo;
@@ -461,38 +422,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          children: [
-                            Text(
-                              'やること',
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            if (pendingTasks > 1) ...[
-                              const SizedBox(width: 8),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.3),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  '他${pendingTasks - 1}件',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ],
+                        Text(
+                          primaryTaskTitle,
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          primaryTaskTitle,
+                          pendingTasks > 1 
+                            ? '他${pendingTasks - 1}件のタスク'
+                            : 'タップして記録',
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: Colors.white70,
                           ),
@@ -500,6 +441,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       ],
                     ),
                   ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.task_alt,
+                          color: Colors.white,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '$pendingTasks',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
                   const Icon(
                     Icons.arrow_forward_ios,
                     color: Colors.white70,
@@ -918,7 +884,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   ),
                 ),
               ),
-              // スキップして記録
+              // 食べていない
               InkWell(
                 onTap: () {
                   Navigator.pop(context);
@@ -928,10 +894,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Colors.grey.withOpacity(0.1),
+                    color: Colors.orange.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: Colors.grey.withOpacity(0.3),
+                      color: Colors.orange.withOpacity(0.3),
                       width: 1,
                     ),
                   ),
@@ -941,12 +907,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         width: 50,
                         height: 50,
                         decoration: BoxDecoration(
-                          color: Colors.grey.withOpacity(0.2),
+                          color: Colors.orange.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Icon(
-                          Icons.not_interested_rounded,
-                          color: Colors.grey[700],
+                        child: const Icon(
+                          Icons.no_meals_rounded,
+                          color: Colors.orange,
                           size: 28,
                         ),
                       ),
@@ -956,15 +922,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '食事をスキップ',
+                              '食べていない',
                               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
-                                color: Colors.grey[700],
+                                color: Colors.orange[700],
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              '食べなかった場合の記録',
+                              '食事を取らなかった場合',
                               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                 color: Colors.grey[600],
                               ),
@@ -1021,17 +987,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       context: context,
       builder: (BuildContext context) {
         MealType selectedMealType = defaultMealType;
-        String reason = '';
         
         return StatefulBuilder(
           builder: (context, setState) {
             return AlertDialog(
-              title: const Text('食事をスキップ'),
+              title: const Text('食べていない'),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('どの食事をスキップしましたか？'),
+                  const Text('どの食事を食べていませんか？'),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<MealType>(
                     value: selectedMealType,
@@ -1068,17 +1033,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       }
                     },
                   ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    decoration: const InputDecoration(
-                      labelText: '理由（任意）',
-                      hintText: '例：時間がなかった、お腹が空いていなかった',
-                      border: OutlineInputBorder(),
-                    ),
-                    onChanged: (value) {
-                      reason = value;
-                    },
-                  ),
                 ],
               ),
               actions: [
@@ -1088,12 +1042,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 ),
                 ElevatedButton(
                   onPressed: () async {
-                    await _saveSkippedMeal(selectedMealType, reason);
+                    await _saveSkippedMeal(selectedMealType, '');
                     if (mounted) {
                       Navigator.of(context).pop();
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('スキップを記録しました'),
+                          content: Text('記録しました'),
                           backgroundColor: Colors.green,
                         ),
                       );
@@ -1126,7 +1080,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         sugar: 0,
         sodium: 0,
       ),
-      notes: reason.isNotEmpty ? 'スキップ: $reason' : 'スキップ',
+      notes: '食べていない',
       isSynced: false,
       isManualEntry: true,
     );
@@ -1134,6 +1088,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     await ref.read(mealsProvider.notifier).saveMeal(skippedMeal);
     // Refresh the meals for today
     ref.refresh(mealsByDateProvider(DateTime.now()));
+    // Force rebuild of the home screen to update tasks immediately
+    setState(() {});
   }
 }
 
