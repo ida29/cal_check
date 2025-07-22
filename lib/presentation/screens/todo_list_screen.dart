@@ -78,7 +78,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
         subtitle: '7:00〜10:00',
         icon: Icons.wb_sunny,
         color: Colors.orange,
-        onTap: () => _showMealRecordOptions(),
+        onTap: () => _showMealRecordOptions(MealType.breakfast),
       ));
     }
     
@@ -89,7 +89,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
         subtitle: '12:00〜14:00',
         icon: Icons.wb_sunny_outlined,
         color: Colors.yellow[700]!,
-        onTap: () => _showMealRecordOptions(),
+        onTap: () => _showMealRecordOptions(MealType.lunch),
       ));
     }
     
@@ -100,7 +100,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
         subtitle: '18:00〜20:00',
         icon: Icons.nights_stay,
         color: Colors.indigo,
-        onTap: () => _showMealRecordOptions(),
+        onTap: () => _showMealRecordOptions(MealType.dinner),
       ));
     }
     
@@ -202,8 +202,8 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
     );
   }
   
-  void _showMealRecordOptions() {
-    // HomeScreenの_showMealRecordOptionsと同じ処理
+  void _showMealRecordOptions(MealType mealType) {
+    // 指定された食事タイプで記録オプションを表示
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -369,7 +369,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                 InkWell(
                   onTap: () {
                     Navigator.pop(context); // ボトムシートを閉じる
-                    _showSkipMealDialog();
+                    _showSkipMealDialog(mealType);
                   },
                   child: Container(
                     margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -449,97 +449,51 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
     );
   }
   
-  void _showSkipMealDialog() {
-    final now = DateTime.now();
-    final hour = now.hour;
-    MealType defaultMealType;
-    
-    if (hour < 10) {
-      defaultMealType = MealType.breakfast;
-    } else if (hour < 14) {
-      defaultMealType = MealType.lunch;
-    } else if (hour < 20) {
-      defaultMealType = MealType.dinner;
-    } else {
-      defaultMealType = MealType.snack;
+  void _showSkipMealDialog(MealType mealType) {
+    String mealName;
+    switch (mealType) {
+      case MealType.breakfast:
+        mealName = '朝食';
+        break;
+      case MealType.lunch:
+        mealName = '昼食';
+        break;
+      case MealType.dinner:
+        mealName = '夕食';
+        break;
+      case MealType.snack:
+        mealName = '間食';
+        break;
     }
 
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        MealType selectedMealType = defaultMealType;
-        
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              title: const Text('食べていない'),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('どの食事を食べていませんか？'),
-                  const SizedBox(height: 16),
-                  DropdownButtonFormField<MealType>(
-                    value: selectedMealType,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        return AlertDialog(
+          title: const Text('食べていない'),
+          content: Text('${mealName}を食べていないことを記録しますか？'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('キャンセル'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                await _saveSkippedMeal(mealType);
+                if (mounted) {
+                  Navigator.of(context).pop(); // ダイアログを閉じる
+                  Navigator.of(context).pop(); // やること一覧を閉じる
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('${mealName}を記録しました'),
+                      backgroundColor: Colors.green,
                     ),
-                    items: MealType.values.map((type) {
-                      String displayName;
-                      switch (type) {
-                        case MealType.breakfast:
-                          displayName = '朝食';
-                          break;
-                        case MealType.lunch:
-                          displayName = '昼食';
-                          break;
-                        case MealType.dinner:
-                          displayName = '夕食';
-                          break;
-                        case MealType.snack:
-                          displayName = '間食';
-                          break;
-                      }
-                      return DropdownMenuItem(
-                        value: type,
-                        child: Text(displayName),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      if (value != null) {
-                        setState(() {
-                          selectedMealType = value;
-                        });
-                      }
-                    },
-                  ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('キャンセル'),
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    await _saveSkippedMeal(selectedMealType);
-                    if (mounted) {
-                      Navigator.of(context).pop(); // ダイアログを閉じる
-                      Navigator.of(context).pop(); // やること一覧を閉じる
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('記録しました'),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                    }
-                  },
-                  child: const Text('記録'),
-                ),
-              ],
-            );
-          },
+                  );
+                }
+              },
+              child: const Text('記録'),
+            ),
+          ],
         );
       },
     );
