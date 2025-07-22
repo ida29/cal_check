@@ -370,7 +370,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     if (!weightRecorded) {
       primaryTaskTitle = '体重を記録';
       primaryTaskIcon = Icons.monitor_weight;
-      primaryTaskColor = Colors.blue;
+      primaryTaskColor = Colors.teal; // 青緑色に変更
       primaryTaskAction = () => Navigator.pushNamed(context, '/weight-record');
     } else if (hour >= 7 && !breakfastRecorded) {
       primaryTaskTitle = '朝食を記録する';
@@ -571,7 +571,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           gradient: const LinearGradient(
-            colors: [Color(0xFF87CEEB), Color(0xFF4682B4)],
+            colors: [Color(0xFF2196F3), Color(0xFF1976D2)], // 青色のグラデーション
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),

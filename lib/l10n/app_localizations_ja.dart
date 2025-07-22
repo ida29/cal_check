@@ -93,7 +93,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get dinner => '夕食';
 
   @override
-  String get snack => 'おやつ';
+  String get snack => '間食';
 
   @override
   String get recentMeals => '最近の食事';
