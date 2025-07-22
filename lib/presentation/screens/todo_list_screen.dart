@@ -203,7 +203,6 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
   }
   
   void _showMealRecordOptions() {
-    Navigator.of(context).pop(); // やること一覧を閉じる
     // HomeScreenの_showMealRecordOptionsと同じ処理
     showModalBottomSheet(
       context: context,
@@ -241,7 +240,8 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                 // 写真で記録
                 InkWell(
                   onTap: () {
-                    Navigator.pop(context);
+                    Navigator.pop(context); // ボトムシートを閉じる
+                    Navigator.pop(context); // やること一覧を閉じる
                     ref.read(navigationProvider.notifier).setSubScreen(SubScreen.camera);
                   },
                   child: Container(
@@ -304,7 +304,8 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                 // 食べ物を選んで記録
                 InkWell(
                   onTap: () {
-                    Navigator.pop(context);
+                    Navigator.pop(context); // ボトムシートを閉じる
+                    Navigator.pop(context); // やること一覧を閉じる
                     ref.read(navigationProvider.notifier).setSubScreen(SubScreen.manualMealEntry);
                   },
                   child: Container(
@@ -367,7 +368,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                 // 食べていない
                 InkWell(
                   onTap: () {
-                    Navigator.pop(context);
+                    Navigator.pop(context); // ボトムシートを閉じる
                     _showSkipMealDialog();
                   },
                   child: Container(
@@ -524,7 +525,8 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
                   onPressed: () async {
                     await _saveSkippedMeal(selectedMealType);
                     if (mounted) {
-                      Navigator.of(context).pop();
+                      Navigator.of(context).pop(); // ダイアログを閉じる
+                      Navigator.of(context).pop(); // やること一覧を閉じる
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('記録しました'),
@@ -565,8 +567,10 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
     );
     
     await ref.read(mealsProvider.notifier).saveMeal(skippedMeal);
-    // Refresh the meals for today
+    // Refresh the meals for today to update the state
     ref.refresh(mealsByDateProvider(DateTime.now()));
+    // Also refresh the general meals provider to ensure home screen updates
+    ref.refresh(mealsProvider);
   }
 }
 
