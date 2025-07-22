@@ -6,6 +6,7 @@ import '../../data/entities/weight_record.dart';
 import '../../business/services/record_storage_service.dart';
 import '../../business/services/setup_service.dart';
 import '../../business/providers/weight_provider.dart';
+import '../../business/providers/navigation_provider.dart';
 
 class WeightRecordScreen extends ConsumerStatefulWidget {
   const WeightRecordScreen({Key? key}) : super(key: key);
@@ -25,6 +26,18 @@ class _WeightRecordScreenState extends ConsumerState<WeightRecordScreen> {
   DateTime _selectedDate = DateTime.now();
   TimeOfDay _selectedTime = TimeOfDay.now();
   bool _isSaving = false;
+  
+  @override
+  void initState() {
+    super.initState();
+    // 登録ボタンのコールバックを設定
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(navigationProvider.notifier).setSubScreen(
+        SubScreen.weightRecord,
+        onSubmit: _saveWeight,
+      );
+    });
+  }
 
   @override
   void dispose() {
@@ -77,7 +90,7 @@ class _WeightRecordScreenState extends ConsumerState<WeightRecordScreen> {
             backgroundColor: Colors.green,
           ),
         );
-        Navigator.of(context).pop();
+        ref.read(navigationProvider.notifier).clearSubScreen();
       }
     } catch (e) {
       if (mounted) {
@@ -97,12 +110,7 @@ class _WeightRecordScreenState extends ConsumerState<WeightRecordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('体重を記録'),
-        centerTitle: true,
-      ),
-      body: SafeArea(
+    return SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Form(
@@ -335,58 +343,10 @@ class _WeightRecordScreenState extends ConsumerState<WeightRecordScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 32),
-                
-                // Save button
-                ElevatedButton(
-                  onPressed: _isSaving ? null : _saveWeight,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 2,
-                  ),
-                  child: _isSaving
-                      ? const SizedBox(
-                          height: 24,
-                          width: 24,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
-                      : const Text(
-                          '記録する',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                ),
-                const SizedBox(height: 16),
-                
-                // Cancel button
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                  child: Text(
-                    'キャンセル',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ),
               ],
             ),
           ),
         ),
-      ),
-    );
+      );
   }
 }

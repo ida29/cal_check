@@ -21,6 +21,7 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen> {
   final _noteController = TextEditingController();
   
   DateTime _selectedDate = DateTime.now();
+  TimeOfDay _selectedTime = TimeOfDay.now();
   bool _isSaving = false;
   bool _useDistance = false; // 距離を使用するかどうか
   

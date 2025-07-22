@@ -7,6 +7,7 @@ import '../../business/providers/manager_character_provider.dart';
 import '../../business/services/meal_reminder_service.dart';
 import '../../business/providers/meal_provider.dart';
 import '../../business/providers/weight_provider.dart';
+import '../../business/providers/navigation_provider.dart';
 import '../../data/entities/meal.dart';
 import '../../data/entities/nutrition_info.dart';
 
@@ -397,7 +398,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       primaryTaskTitle = '体重を記録';
       primaryTaskIcon = Icons.monitor_weight;
       primaryTaskColor = Colors.teal; // 青緑色に変更
-      primaryTaskAction = () => Navigator.pushNamed(context, '/weight-record');
+      primaryTaskAction = () => ref.read(navigationProvider.notifier).setSubScreen(SubScreen.weightRecord);
     } else if (hour >= 7 && !breakfastRecorded && !skipBreakfast) {
       primaryTaskTitle = '朝食を記録する';
       primaryTaskIcon = Icons.wb_sunny;
@@ -680,7 +681,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           color: Colors.transparent,
           child: InkWell(
             onTap: () {
-              Navigator.pushNamed(context, '/exercise');
+              ref.read(navigationProvider.notifier).setSubScreen(SubScreen.exerciseEntry);
             },
             borderRadius: BorderRadius.circular(20),
             hoverColor: Colors.transparent,
@@ -795,7 +796,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                 InkWell(
                 onTap: () {
                   Navigator.pop(context);
-                  Navigator.pushNamed(context, '/camera');
+                  ref.read(navigationProvider.notifier).setSubScreen(SubScreen.camera);
                 },
                 child: Container(
                   margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -858,7 +859,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               InkWell(
                 onTap: () {
                   Navigator.pop(context);
-                  Navigator.pushNamed(context, '/manual-meal-entry');
+                  ref.read(navigationProvider.notifier).setSubScreen(SubScreen.manualMealEntry);
                 },
                 child: Container(
                   margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -1130,7 +1131,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       isManualEntry: true,
     );
     
-    await ref.read(mealProvider.notifier).saveMeal(skippedMeal);
+    await ref.read(mealsProvider.notifier).saveMeal(skippedMeal);
     // Refresh the meals for today
     ref.refresh(mealsByDateProvider(DateTime.now()));
   }

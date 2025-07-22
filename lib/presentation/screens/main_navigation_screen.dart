@@ -1,21 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../l10n/app_localizations.dart';
+import '../../business/providers/navigation_provider.dart';
 import 'home_screen.dart';
 import 'history_screen.dart';
 import 'weight_tracking_screen.dart';
 import 'statistics_screen.dart';
 import 'settings_screen.dart';
+import 'weight_record_screen.dart';
+import 'camera_screen.dart';
+import 'manual_meal_entry_screen.dart';
+import 'exercise_screen.dart';
 
-class MainNavigationScreen extends StatefulWidget {
+class MainNavigationScreen extends ConsumerStatefulWidget {
   final int initialIndex;
   
   const MainNavigationScreen({super.key, this.initialIndex = 0});
 
   @override
-  State<MainNavigationScreen> createState() => _MainNavigationScreenState();
+  ConsumerState<MainNavigationScreen> createState() => _MainNavigationScreenState();
 }
 
-class _MainNavigationScreenState extends State<MainNavigationScreen> {
+class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
   late int _currentIndex;
 
   final List<Widget> _screens = [
@@ -61,9 +67,16 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final navigationState = ref.watch(navigationProvider);
     
     return Scaffold(
-      body: _screens[_currentIndex],
+      body: Stack(
+        children: [
+          _screens[_currentIndex],
+          if (navigationState.subScreen != SubScreen.none)
+            _buildSubScreen(navigationState.subScreen),
+        ],
+      ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         backgroundColor: const Color(0xFFFFC1CC),
@@ -74,6 +87,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
           setState(() {
             _currentIndex = index;
           });
+          ref.read(navigationProvider.notifier).setMainIndex(index);
         },
         items: [
           BottomNavigationBarItem(
@@ -102,6 +116,106 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
             label: l10n.settings,
           ),
         ],
+      ),
+    );
+  }
+  
+  Widget _buildSubScreen(SubScreen subScreen) {
+    final navigationState = ref.watch(navigationProvider);
+    Widget? content;
+    String title = '';
+    
+    switch (subScreen) {
+      case SubScreen.weightRecord:
+        content = const WeightRecordScreen();
+        title = '体重を記録';
+        break;
+      case SubScreen.camera:
+        content = const CameraScreen();
+        title = '写真で記録';
+        break;
+      case SubScreen.manualMealEntry:
+        content = const ManualMealEntryScreen();
+        title = '食品を選んで記録';
+        break;
+      case SubScreen.exerciseEntry:
+        content = const ExerciseScreen();
+        title = '運動を記録';
+        break;
+      case SubScreen.none:
+        return const SizedBox.shrink();
+    }
+    
+    return Container(
+      color: Colors.black54,
+      child: SafeArea(
+        child: Container(
+          margin: const EdgeInsets.only(top: 40),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20),
+              topRight: Radius.circular(20),
+            ),
+          ),
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.1),
+                      spreadRadius: 1,
+                      blurRadius: 3,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextButton(
+                      onPressed: () {
+                        ref.read(navigationProvider.notifier).clearSubScreen();
+                      },
+                      child: const Text(
+                        'キャンセル',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ),
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: navigationState.onSubmit,
+                      child: Text(
+                        '登録する',
+                        style: TextStyle(
+                          color: navigationState.onSubmit != null 
+                            ? const Color(0xFFFF69B4)
+                            : Colors.grey,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: content ?? const SizedBox.shrink(),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
