@@ -46,131 +46,19 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
         centerTitle: true,
       ),
       body: SafeArea(
-        child: FutureBuilder<List<TodoItem>>(
-          future: _buildTodoList(hour, breakfastRecorded, lunchRecorded, dinnerRecorded, weightRecorded),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
-            
-            final todos = snapshot.data ?? [];
-            
-            if (todos.isEmpty) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.check_circle_outline,
-                      size: 80,
-                      color: Colors.green[400],
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      '今日のタスクは完了しました！',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        color: Colors.green[700],
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'お疲れさまでした',
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }
-            
-            return ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: todos.length,
-              itemBuilder: (context, index) {
-                final todo = todos[index];
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: InkWell(
-                    onTap: todo.onTap,
-                    borderRadius: BorderRadius.circular(16),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Row(
-                        children: [
-                          Container(
-                            width: 50,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              color: todo.color.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(
-                              todo.icon,
-                              color: todo.color,
-                              size: 28,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  todo.title,
-                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                if (todo.subtitle != null) ...[
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    todo.subtitle!,
-                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                      color: Colors.grey[600],
-                                    ),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                          Icon(
-                            Icons.arrow_forward_ios,
-                            color: Colors.grey[400],
-                            size: 16,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              },
-            );
-          },
-        ),
+        child: _buildTodoListSync(hour, breakfastRecorded, lunchRecorded, dinnerRecorded, weightRecorded),
       ),
     );
   }
 
-  Future<List<TodoItem>> _buildTodoList(
+  Widget _buildTodoListSync(
     int hour,
     bool breakfastRecorded,
     bool lunchRecorded,
     bool dinnerRecorded,
     bool weightRecorded,
-  ) async {
+  ) {
     final todos = <TodoItem>[];
-    
-    // 設定でスキップされた食事を確認
-    final prefs = await SharedPreferences.getInstance();
-    final skipBreakfast = prefs.getBool('skipBreakfast') ?? false;
-    final skipLunch = prefs.getBool('skipLunch') ?? false;
-    final skipDinner = prefs.getBool('skipDinner') ?? false;
     
     // 体重記録
     if (!weightRecorded) {
@@ -184,7 +72,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
     }
     
     // 朝食
-    if (hour >= 7 && !breakfastRecorded && !skipBreakfast) {
+    if (hour >= 7 && !breakfastRecorded) {
       todos.add(TodoItem(
         title: '朝食を記録する',
         subtitle: '7:00〜10:00',
@@ -195,7 +83,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
     }
     
     // 昼食
-    if (hour >= 12 && !lunchRecorded && !skipLunch) {
+    if (hour >= 12 && !lunchRecorded) {
       todos.add(TodoItem(
         title: '昼食を記録する',
         subtitle: '12:00〜14:00',
@@ -206,7 +94,7 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
     }
     
     // 夕食
-    if (hour >= 18 && !dinnerRecorded && !skipDinner) {
+    if (hour >= 18 && !dinnerRecorded) {
       todos.add(TodoItem(
         title: '夕食を記録する',
         subtitle: '18:00〜20:00',
@@ -216,7 +104,102 @@ class _TodoListScreenState extends ConsumerState<TodoListScreen> {
       ));
     }
     
-    return todos;
+    if (todos.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.check_circle_outline,
+              size: 80,
+              color: Colors.green[400],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              '今日のタスクは完了しました！',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                color: Colors.green[700],
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'お疲れさまでした',
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: Colors.grey[600],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+    
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: todos.length,
+      itemBuilder: (context, index) {
+        final todo = todos[index];
+        return Card(
+          margin: const EdgeInsets.only(bottom: 12),
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: InkWell(
+            onTap: todo.onTap,
+            borderRadius: BorderRadius.circular(16),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: todo.color.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      todo.icon,
+                      color: todo.color,
+                      size: 28,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          todo.title,
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        if (todo.subtitle != null) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            todo.subtitle!,
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    color: Colors.grey[400],
+                    size: 16,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
   
   void _showMealRecordOptions() {

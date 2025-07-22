@@ -77,46 +77,48 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
             _buildSubScreen(navigationState.subScreen),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: const Color(0xFFFFC1CC),
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white70,
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-          ref.read(navigationProvider.notifier).setMainIndex(index);
-        },
-        items: [
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.home_outlined),
-            activeIcon: const Icon(Icons.home),
-            label: l10n.home,
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.history_outlined),
-            activeIcon: const Icon(Icons.history),
-            label: '食事管理',
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.monitor_weight_outlined),
-            activeIcon: const Icon(Icons.monitor_weight),
-            label: '体重管理',
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.insights_outlined),
-            activeIcon: const Icon(Icons.insights),
-            label: '体調管理',
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.settings_outlined),
-            activeIcon: const Icon(Icons.settings),
-            label: l10n.settings,
-          ),
-        ],
-      ),
+      bottomNavigationBar: navigationState.subScreen == SubScreen.camera
+          ? null
+          : BottomNavigationBar(
+              type: BottomNavigationBarType.fixed,
+              backgroundColor: const Color(0xFFFFC1CC),
+              selectedItemColor: Colors.white,
+              unselectedItemColor: Colors.white70,
+              currentIndex: _currentIndex,
+              onTap: (index) {
+                setState(() {
+                  _currentIndex = index;
+                });
+                ref.read(navigationProvider.notifier).setMainIndex(index);
+              },
+              items: [
+                BottomNavigationBarItem(
+                  icon: const Icon(Icons.home_outlined),
+                  activeIcon: const Icon(Icons.home),
+                  label: l10n.home,
+                ),
+                BottomNavigationBarItem(
+                  icon: const Icon(Icons.history_outlined),
+                  activeIcon: const Icon(Icons.history),
+                  label: '食事管理',
+                ),
+                BottomNavigationBarItem(
+                  icon: const Icon(Icons.monitor_weight_outlined),
+                  activeIcon: const Icon(Icons.monitor_weight),
+                  label: '体重管理',
+                ),
+                BottomNavigationBarItem(
+                  icon: const Icon(Icons.insights_outlined),
+                  activeIcon: const Icon(Icons.insights),
+                  label: '体調管理',
+                ),
+                BottomNavigationBarItem(
+                  icon: const Icon(Icons.settings_outlined),
+                  activeIcon: const Icon(Icons.settings),
+                  label: l10n.settings,
+                ),
+              ],
+            ),
     );
   }
   
@@ -144,6 +146,11 @@ class _MainNavigationScreenState extends ConsumerState<MainNavigationScreen> {
         break;
       case SubScreen.none:
         return const SizedBox.shrink();
+    }
+    
+    // カメラ画面の場合はフルスクリーン表示
+    if (subScreen == SubScreen.camera) {
+      return content ?? const SizedBox.shrink();
     }
     
     return Container(
