@@ -10,6 +10,7 @@ import '../../business/providers/weight_provider.dart';
 import '../../business/providers/navigation_provider.dart';
 import '../../data/entities/meal.dart';
 import '../../data/entities/nutrition_info.dart';
+import 'todo_list_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -352,34 +353,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     String primaryTaskTitle = '';
     IconData primaryTaskIcon = Icons.task_alt;
     Color primaryTaskColor = Colors.orange;
-    VoidCallback? primaryTaskAction;
     
-    // 体重記録を最優先
-    if (!weightRecorded) {
+    // タスクがない場合
+    if (pendingTasks == 0) {
+      primaryTaskTitle = 'すべて完了！';
+      primaryTaskIcon = Icons.check_circle;
+      primaryTaskColor = Colors.green;
+    } else if (!weightRecorded) {
       primaryTaskTitle = '体重を記録';
       primaryTaskIcon = Icons.monitor_weight;
       primaryTaskColor = Colors.teal;
-      primaryTaskAction = () => ref.read(navigationProvider.notifier).setSubScreen(SubScreen.weightRecord);
     } else if (hour >= 7 && !breakfastRecorded) {
       primaryTaskTitle = '朝食を記録する';
       primaryTaskIcon = Icons.wb_sunny;
       primaryTaskColor = Colors.orange;
-      primaryTaskAction = () => _showMealRecordOptions();
     } else if (hour >= 12 && !lunchRecorded) {
       primaryTaskTitle = '昼食を記録する';
       primaryTaskIcon = Icons.wb_sunny_outlined;
       primaryTaskColor = Colors.yellow[700]!;
-      primaryTaskAction = () => _showMealRecordOptions();
     } else if (hour >= 18 && !dinnerRecorded) {
       primaryTaskTitle = '夕食を記録する';
       primaryTaskIcon = Icons.nights_stay;
       primaryTaskColor = Colors.indigo;
-      primaryTaskAction = () => _showMealRecordOptions();
-    }
-    
-    // タスクがない場合は表示しない
-    if (pendingTasks == 0) {
-      return const SizedBox.shrink();
     }
 
     return Card(
@@ -397,7 +392,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         child: Material(
           color: Colors.transparent,
           child: InkWell(
-            onTap: primaryTaskAction,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const TodoListScreen()),
+              );
+            },
             borderRadius: BorderRadius.circular(20),
             hoverColor: Colors.transparent,
             child: Padding(
@@ -423,7 +423,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          primaryTaskTitle,
+                          'やること',
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,
@@ -431,9 +431,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          pendingTasks > 1 
-                            ? '他${pendingTasks - 1}件のタスク'
-                            : 'タップして記録',
+                          pendingTasks == 0
+                            ? 'すべて完了しました'
+                            : '$primaryTaskTitle',
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: Colors.white70,
                           ),
