@@ -518,10 +518,8 @@ class _AddWeightDialogState extends ConsumerState<_AddWeightDialog> {
   final _weightController = TextEditingController();
   final _bodyFatController = TextEditingController();
   final _muscleMassController = TextEditingController();
-  final _noteController = TextEditingController();
   
   DateTime _selectedDate = DateTime.now();
-  TimeOfDay _selectedTime = TimeOfDay.now();
   bool _isSaving = false;
 
   @override
@@ -529,7 +527,6 @@ class _AddWeightDialogState extends ConsumerState<_AddWeightDialog> {
     _weightController.dispose();
     _bodyFatController.dispose();
     _muscleMassController.dispose();
-    _noteController.dispose();
     super.dispose();
   }
 
@@ -539,16 +536,23 @@ class _AddWeightDialogState extends ConsumerState<_AddWeightDialog> {
     setState(() => _isSaving = true);
     
     try {
+      // 時刻を朝（6:00）に固定
       final recordedAt = DateTime(
         _selectedDate.year,
         _selectedDate.month,
         _selectedDate.day,
-        _selectedTime.hour,
-        _selectedTime.minute,
+        6,
+        0,
+      );
+      
+      // 同じ日の既存の記録を確認
+      final existingRecords = await _recordStorageService.getWeightRecordsByDateRange(
+        startDate: DateTime(recordedAt.year, recordedAt.month, recordedAt.day),
+        endDate: DateTime(recordedAt.year, recordedAt.month, recordedAt.day, 23, 59, 59),
       );
       
       final record = WeightRecord(
-        id: const Uuid().v4(),
+        id: existingRecords.isNotEmpty ? existingRecords.first.id : const Uuid().v4(),
         recordedAt: recordedAt,
         weight: double.parse(_weightController.text),
         bodyFat: _bodyFatController.text.isNotEmpty
@@ -557,8 +561,9 @@ class _AddWeightDialogState extends ConsumerState<_AddWeightDialog> {
         muscleMass: _muscleMassController.text.isNotEmpty
             ? double.tryParse(_muscleMassController.text)
             : null,
-        note: _noteController.text.isNotEmpty ? _noteController.text : null,
-        createdAt: DateTime.now(),
+        note: null,
+        createdAt: existingRecords.isNotEmpty ? existingRecords.first.createdAt : DateTime.now(),
+        updatedAt: DateTime.now(),
       );
       
       await _recordStorageService.saveWeightRecord(record);
@@ -627,58 +632,28 @@ class _AddWeightDialogState extends ConsumerState<_AddWeightDialog> {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: InkWell(
-                          onTap: () async {
-                            final picked = await showDatePicker(
-                              context: context,
-                              initialDate: _selectedDate,
-                              firstDate: DateTime(2020),
-                              lastDate: DateTime.now(),
-                            );
-                            if (picked != null) {
-                              setState(() => _selectedDate = picked);
-                            }
-                          },
-                          child: InputDecorator(
-                            decoration: const InputDecoration(
-                              labelText: '日付',
-                              prefixIcon: Icon(Icons.calendar_today),
-                              isDense: true,
-                            ),
-                            child: Text(
-                              '${_selectedDate.year}/${_selectedDate.month}/${_selectedDate.day}',
-                            ),
-                          ),
-                        ),
+                  InkWell(
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: _selectedDate,
+                        firstDate: DateTime(2020),
+                        lastDate: DateTime.now(),
+                      );
+                      if (picked != null) {
+                        setState(() => _selectedDate = picked);
+                      }
+                    },
+                    child: InputDecorator(
+                      decoration: const InputDecoration(
+                        labelText: '日付',
+                        prefixIcon: Icon(Icons.calendar_today),
+                        isDense: true,
                       ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: InkWell(
-                          onTap: () async {
-                            final picked = await showTimePicker(
-                              context: context,
-                              initialTime: _selectedTime,
-                            );
-                            if (picked != null) {
-                              setState(() => _selectedTime = picked);
-                            }
-                          },
-                          child: InputDecorator(
-                            decoration: const InputDecoration(
-                              labelText: '時刻',
-                              prefixIcon: Icon(Icons.access_time),
-                              isDense: true,
-                            ),
-                            child: Text(
-                              '${_selectedTime.hour.toString().padLeft(2, '0')}:${_selectedTime.minute.toString().padLeft(2, '0')}',
-                            ),
-                          ),
-                        ),
+                      child: Text(
+                        '${_selectedDate.year}/${_selectedDate.month}/${_selectedDate.day}',
                       ),
-                    ],
+                    ),
                   ),
                   const SizedBox(height: 20),
                   TextFormField(
@@ -708,7 +683,7 @@ class _AddWeightDialogState extends ConsumerState<_AddWeightDialog> {
                   TextFormField(
                     controller: _bodyFatController,
                     decoration: const InputDecoration(
-                      labelText: '体脂肪率（任意）',
+                      labelText: '体脂肪率',
                       suffixText: '%',
                       hintText: '例: 20.5',
                       prefixIcon: Icon(Icons.percent),
@@ -717,6 +692,15 @@ class _AddWeightDialogState extends ConsumerState<_AddWeightDialog> {
                     inputFormatters: [
                       FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')),
                     ],
+                    validator: (value) {
+                      if (value != null && value.isNotEmpty) {
+                        final bodyFat = double.tryParse(value);
+                        if (bodyFat == null || bodyFat < 0 || bodyFat > 60) {
+                          return '正しい体脂肪率を入力してください';
+                        }
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
@@ -731,16 +715,6 @@ class _AddWeightDialogState extends ConsumerState<_AddWeightDialog> {
                     inputFormatters: [
                       FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,1}')),
                     ],
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _noteController,
-                    decoration: const InputDecoration(
-                      labelText: 'メモ（任意）',
-                      hintText: '体調や食事の記録など',
-                      prefixIcon: Icon(Icons.note),
-                    ),
-                    maxLines: 2,
                   ),
                   const SizedBox(height: 24),
                   Row(

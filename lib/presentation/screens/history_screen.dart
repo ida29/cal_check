@@ -467,10 +467,16 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                     const SizedBox(height: 4),
                     Text(
                       hasData 
-                        ? '${meals.length}品 • ${totalCalories.toStringAsFixed(0)} kcal'
+                        ? meals.any((meal) => meal.notes?.contains('スキップ') ?? false)
+                          ? 'スキップ'
+                          : '${meals.length}品 • ${totalCalories.toStringAsFixed(0)} kcal'
                         : '未入力',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: hasData ? null : Colors.grey,
+                        color: hasData 
+                          ? meals.any((meal) => meal.notes?.contains('スキップ') ?? false)
+                            ? Colors.orange
+                            : null
+                          : Colors.grey,
                       ),
                     ),
                   ],

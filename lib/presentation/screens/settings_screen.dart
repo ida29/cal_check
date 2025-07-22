@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../l10n/app_localizations.dart';
 import '../../business/providers/locale_provider.dart';
 import '../../business/providers/manager_character_provider.dart';
@@ -112,6 +113,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
             _showActivityLevelDialog();
+          },
+        ),
+        ListTile(
+          leading: const Icon(Icons.no_meals),
+          title: const Text('食事スキップ設定'),
+          subtitle: const Text('定期的にスキップする食事を設定'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () {
+            _showMealSkipSettingsDialog();
           },
         ),
       ],
@@ -838,6 +848,95 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
   
+  void _showMealSkipSettingsDialog() async {
+    // Get current skip settings from shared preferences
+    final prefs = await SharedPreferences.getInstance();
+    final skipBreakfast = prefs.getBool('skipBreakfast') ?? false;
+    final skipLunch = prefs.getBool('skipLunch') ?? false;
+    final skipDinner = prefs.getBool('skipDinner') ?? false;
+    
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        bool tempSkipBreakfast = skipBreakfast;
+        bool tempSkipLunch = skipLunch;
+        bool tempSkipDinner = skipDinner;
+        
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('食事スキップ設定'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('定期的にスキップする食事を選択してください。'),
+                  const SizedBox(height: 16),
+                  CheckboxListTile(
+                    title: const Text('朝食を常にスキップ'),
+                    value: tempSkipBreakfast,
+                    onChanged: (value) {
+                      setState(() {
+                        tempSkipBreakfast = value ?? false;
+                      });
+                    },
+                  ),
+                  CheckboxListTile(
+                    title: const Text('昼食を常にスキップ'),
+                    value: tempSkipLunch,
+                    onChanged: (value) {
+                      setState(() {
+                        tempSkipLunch = value ?? false;
+                      });
+                    },
+                  ),
+                  CheckboxListTile(
+                    title: const Text('夕食を常にスキップ'),
+                    value: tempSkipDinner,
+                    onChanged: (value) {
+                      setState(() {
+                        tempSkipDinner = value ?? false;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    '※選択した食事は「やること」に表示されません',
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('キャンセル'),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    // Save settings
+                    await prefs.setBool('skipBreakfast', tempSkipBreakfast);
+                    await prefs.setBool('skipLunch', tempSkipLunch);
+                    await prefs.setBool('skipDinner', tempSkipDinner);
+                    
+                    if (mounted) {
+                      Navigator.of(context).pop();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('設定を保存しました'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    }
+                  },
+                  child: const Text('保存'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   @override
   void dispose() {
     _nameController.dispose();

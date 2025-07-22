@@ -21,7 +21,6 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen> {
   final _noteController = TextEditingController();
   
   DateTime _selectedDate = DateTime.now();
-  TimeOfDay _selectedTime = TimeOfDay.now();
   bool _isSaving = false;
   bool _useDistance = false; // 距離を使用するかどうか
   
@@ -115,37 +114,33 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen> {
                     style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 12),
-                  Row(
+                  Column(
                     children: [
-                      Expanded(
-                        child: RadioListTile<bool>(
-                          title: const Text('時間で記録'),
-                          value: false,
-                          groupValue: _useDistance,
-                          onChanged: (value) {
-                            setState(() {
-                              _useDistance = value!;
-                              _distanceController.clear();
-                              _durationController.clear();
-                              _caloriesController.clear();
-                            });
-                          },
-                        ),
+                      RadioListTile<bool>(
+                        title: const Text('時間で記録'),
+                        value: false,
+                        groupValue: _useDistance,
+                        onChanged: (value) {
+                          setState(() {
+                            _useDistance = value!;
+                            _distanceController.clear();
+                            _durationController.clear();
+                            _caloriesController.clear();
+                          });
+                        },
                       ),
-                      Expanded(
-                        child: RadioListTile<bool>(
-                          title: const Text('距離で記録'),
-                          value: true,
-                          groupValue: _useDistance,
-                          onChanged: (value) {
-                            setState(() {
-                              _useDistance = value!;
-                              _distanceController.clear();
-                              _durationController.clear();
-                              _caloriesController.clear();
-                            });
-                          },
-                        ),
+                      RadioListTile<bool>(
+                        title: const Text('距離で記録'),
+                        value: true,
+                        groupValue: _useDistance,
+                        onChanged: (value) {
+                          setState(() {
+                            _useDistance = value!;
+                            _distanceController.clear();
+                            _durationController.clear();
+                            _caloriesController.clear();
+                          });
+                        },
                       ),
                     ],
                   ),
@@ -226,37 +221,18 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen> {
             ),
             const SizedBox(height: 16),
             
-            // 日付と時間選択
-            Row(
-              children: [
-                Expanded(
-                  child: ListTile(
-                    leading: const Icon(Icons.calendar_today, color: Color(0xFF4CAF50)),
-                    title: const Text('日付'),
-                    subtitle: Text(
-                      '${_selectedDate.year}/${_selectedDate.month}/${_selectedDate.day}',
-                    ),
-                    onTap: _selectDate,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      side: BorderSide(color: Colors.grey.shade300),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: ListTile(
-                    leading: const Icon(Icons.access_time, color: Color(0xFF4CAF50)),
-                    title: const Text('時刻'),
-                    subtitle: Text(_selectedTime.format(context)),
-                    onTap: _selectTime,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      side: BorderSide(color: Colors.grey.shade300),
-                    ),
-                  ),
-                ),
-              ],
+            // 日付選択
+            ListTile(
+              leading: const Icon(Icons.calendar_today, color: Color(0xFF4CAF50)),
+              title: const Text('日付'),
+              subtitle: Text(
+                '${_selectedDate.year}/${_selectedDate.month}/${_selectedDate.day}',
+              ),
+              onTap: _selectDate,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: Colors.grey.shade300),
+              ),
             ),
             const SizedBox(height: 32),
             
@@ -450,8 +426,8 @@ class _ExerciseScreenState extends ConsumerState<ExerciseScreen> {
         _selectedDate.year,
         _selectedDate.month,
         _selectedDate.day,
-        _selectedTime.hour,
-        _selectedTime.minute,
+        DateTime.now().hour,
+        DateTime.now().minute,
       );
       
       // 運動タイプを決定

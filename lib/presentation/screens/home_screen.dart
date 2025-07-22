@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../l10n/app_localizations.dart';
 import '../../business/providers/manager_character_provider.dart';
 import '../../business/services/meal_reminder_service.dart';
 import '../../business/providers/meal_provider.dart';
 import '../../business/providers/weight_provider.dart';
 import '../../data/entities/meal.dart';
+import '../../data/entities/nutrition_info.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -84,20 +87,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           ]);
         }
         
+        // 設定でスキップされた食事を確認
+        final prefs = await SharedPreferences.getInstance();
+        final skipBreakfast = prefs.getBool('skipBreakfast') ?? false;
+        final skipLunch = prefs.getBool('skipLunch') ?? false;
+        final skipDinner = prefs.getBool('skipDinner') ?? false;
+        
         // 時間帯に応じた食事記録リマインダー
-        if (hour >= 7 && hour < 10 && !breakfastRecorded) {
+        if (hour >= 7 && hour < 10 && !breakfastRecorded && !skipBreakfast) {
           taskMessages.addAll([
             'おはようにゃ〜！朝ごはん食べたら記録するにゃ！',
             '朝食の記録、忘れずににゃ〜！',
             'にゃーん！朝ごはんの写真撮るの忘れないでにゃ！',
           ]);
-        } else if (hour >= 12 && hour < 14 && !lunchRecorded) {
+        } else if (hour >= 12 && hour < 14 && !lunchRecorded && !skipLunch) {
           taskMessages.addAll([
             'お昼ごはんの時間にゃ！記録も忘れずににゃ〜！',
             'ランチの記録まだにゃ？美味しそうなの食べてるにゃ〜？',
             'にゃーん！昼食の記録してないにゃ〜！',
           ]);
-        } else if (hour >= 18 && hour < 21 && !dinnerRecorded) {
+        } else if (hour >= 18 && hour < 21 && !dinnerRecorded && !skipDinner) {
           taskMessages.addAll([
             '夕ごはんの記録も忘れないでにゃ〜！',
             'ディナータイムにゃ！今日は何食べるにゃ〜？',
@@ -303,6 +312,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   }
 
   Widget _buildTasksCard() {
+    return FutureBuilder(
+      future: _buildTasksCardContent(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const SizedBox.shrink();
+        }
+        return snapshot.data ?? const SizedBox.shrink();
+      },
+    );
+  }
+
+  Future<Widget> _buildTasksCardContent() async {
     // 現在の時間に基づいて食事タイプを判定
     final now = DateTime.now();
     final hour = now.hour;
@@ -353,11 +374,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       orElse: () => false,
     );
     
-    // タスク数を計算（間食は除外）
+    // タスク数を計算（間食は除外、設定でスキップされた食事も除外）
     int pendingTasks = 0;
-    if (hour >= 7 && !breakfastRecorded) pendingTasks++;
-    if (hour >= 12 && !lunchRecorded) pendingTasks++;
-    if (hour >= 18 && !dinnerRecorded) pendingTasks++;
+    final prefs = await SharedPreferences.getInstance();
+    final skipBreakfast = prefs.getBool('skipBreakfast') ?? false;
+    final skipLunch = prefs.getBool('skipLunch') ?? false;
+    final skipDinner = prefs.getBool('skipDinner') ?? false;
+    
+    if (hour >= 7 && !breakfastRecorded && !skipBreakfast) pendingTasks++;
+    if (hour >= 12 && !lunchRecorded && !skipLunch) pendingTasks++;
+    if (hour >= 18 && !dinnerRecorded && !skipDinner) pendingTasks++;
     if (!weightRecorded) pendingTasks++;
 
     // 優先度の高いタスクを決定
@@ -372,17 +398,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       primaryTaskIcon = Icons.monitor_weight;
       primaryTaskColor = Colors.teal; // 青緑色に変更
       primaryTaskAction = () => Navigator.pushNamed(context, '/weight-record');
-    } else if (hour >= 7 && !breakfastRecorded) {
+    } else if (hour >= 7 && !breakfastRecorded && !skipBreakfast) {
       primaryTaskTitle = '朝食を記録する';
       primaryTaskIcon = Icons.wb_sunny;
       primaryTaskColor = Colors.orange;
       primaryTaskAction = () => _showMealRecordOptions();
-    } else if (hour >= 12 && !lunchRecorded) {
+    } else if (hour >= 12 && !lunchRecorded && !skipLunch) {
       primaryTaskTitle = '昼食を記録する';
       primaryTaskIcon = Icons.wb_sunny_outlined;
       primaryTaskColor = Colors.yellow[700]!;
       primaryTaskAction = () => _showMealRecordOptions();
-    } else if (hour >= 18 && !dinnerRecorded) {
+    } else if (hour >= 18 && !dinnerRecorded && !skipDinner) {
       primaryTaskTitle = '夕食を記録する';
       primaryTaskIcon = Icons.nights_stay;
       primaryTaskColor = Colors.indigo;
@@ -891,6 +917,69 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                   ),
                 ),
               ),
+              // スキップして記録
+              InkWell(
+                onTap: () {
+                  Navigator.pop(context);
+                  _showSkipMealDialog();
+                },
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Colors.grey.withOpacity(0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          Icons.not_interested_rounded,
+                          color: Colors.grey[700],
+                          size: 28,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '食事をスキップ',
+                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey[700],
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '食べなかった場合の記録',
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        Icons.arrow_forward_ios,
+                        color: Colors.grey[400],
+                        size: 16,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
               const SizedBox(height: 20),
               // キャンセルボタン
               TextButton(
@@ -910,6 +999,140 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         ),
       ),
     );
+  }
+
+  void _showSkipMealDialog() {
+    final now = DateTime.now();
+    final hour = now.hour;
+    MealType defaultMealType;
+    
+    if (hour < 10) {
+      defaultMealType = MealType.breakfast;
+    } else if (hour < 14) {
+      defaultMealType = MealType.lunch;
+    } else if (hour < 20) {
+      defaultMealType = MealType.dinner;
+    } else {
+      defaultMealType = MealType.snack;
+    }
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        MealType selectedMealType = defaultMealType;
+        String reason = '';
+        
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text('食事をスキップ'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text('どの食事をスキップしましたか？'),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<MealType>(
+                    value: selectedMealType,
+                    decoration: const InputDecoration(
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
+                    items: MealType.values.map((type) {
+                      String displayName;
+                      switch (type) {
+                        case MealType.breakfast:
+                          displayName = '朝食';
+                          break;
+                        case MealType.lunch:
+                          displayName = '昼食';
+                          break;
+                        case MealType.dinner:
+                          displayName = '夕食';
+                          break;
+                        case MealType.snack:
+                          displayName = '間食';
+                          break;
+                      }
+                      return DropdownMenuItem(
+                        value: type,
+                        child: Text(displayName),
+                      );
+                    }).toList(),
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() {
+                          selectedMealType = value;
+                        });
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    decoration: const InputDecoration(
+                      labelText: '理由（任意）',
+                      hintText: '例：時間がなかった、お腹が空いていなかった',
+                      border: OutlineInputBorder(),
+                    ),
+                    onChanged: (value) {
+                      reason = value;
+                    },
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('キャンセル'),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    await _saveSkippedMeal(selectedMealType, reason);
+                    if (mounted) {
+                      Navigator.of(context).pop();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('スキップを記録しました'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    }
+                  },
+                  child: const Text('記録'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _saveSkippedMeal(MealType mealType, String reason) async {
+    // Save skipped meal as a meal with 0 calories
+    final skippedMeal = Meal(
+      id: const Uuid().v4(),
+      timestamp: DateTime.now(),
+      mealType: mealType,
+      imagePath: '',
+      foodItems: [],
+      totalCalories: 0,
+      totalNutrition: const NutritionInfo(
+        protein: 0,
+        carbohydrates: 0,
+        fat: 0,
+        fiber: 0,
+        sugar: 0,
+        sodium: 0,
+      ),
+      notes: reason.isNotEmpty ? 'スキップ: $reason' : 'スキップ',
+      isSynced: false,
+      isManualEntry: true,
+    );
+    
+    await ref.read(mealProvider.notifier).saveMeal(skippedMeal);
+    // Refresh the meals for today
+    ref.refresh(mealsByDateProvider(DateTime.now()));
   }
 }
 
